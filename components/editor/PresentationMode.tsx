@@ -1,0 +1,343 @@
+'use client'
+
+import { useEffect, useState, useCallback } from 'react'
+import { X, ChevronLeft, ChevronRight, Minimize2 } from 'lucide-react'
+import { DeckSection, Block, MOCK_DECK } from '@/lib/fixtures'
+
+interface Slide {
+  id: string
+  type: 'cover' | 'section'
+  title: string
+  subtitle?: string
+  author?: string
+  color?: string
+  section?: DeckSection
+}
+
+function buildSlides(deckTitle: string, sections: DeckSection[]): Slide[] {
+  return [
+    {
+      id: 'cover',
+      type: 'cover',
+      title: deckTitle,
+      subtitle: MOCK_DECK.subtitle,
+      author: MOCK_DECK.author,
+      color: MOCK_DECK.coverColor,
+    },
+    ...sections.map(s => ({ id: s.id, type: 'section' as const, title: s.title, section: s })),
+  ]
+}
+
+function renderBlockPreview(block: Block) {
+  switch (block.type) {
+    case 'heading':
+      return (
+        <h2 key={block.id} style={{ fontFamily: 'var(--font-heading)', fontSize: 28, fontWeight: 700, color: 'var(--text)', marginBottom: 12, lineHeight: 1.2 }}>
+          {block.content}
+        </h2>
+      )
+    case 'paragraph':
+      return (
+        <p key={block.id} style={{ fontFamily: 'var(--font-body)', fontSize: 16, color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: 16 }}>
+          {block.content}
+        </p>
+      )
+    case 'callout':
+      return (
+        <div key={block.id} style={{ borderLeft: '3px solid var(--accent)', paddingLeft: 16, paddingTop: 10, paddingBottom: 10, marginBottom: 16, background: 'var(--accent-soft)', borderRadius: '0 var(--r-sm) var(--r-sm) 0' }}>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 15, color: 'var(--accent)', fontWeight: 500, margin: 0 }}>{block.content}</p>
+        </div>
+      )
+    case 'card-group':
+      if (!block.cards) return null
+      return (
+        <div key={block.id} style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(block.cards.length, 3)}, 1fr)`, gap: 12, marginBottom: 16 }}>
+          {block.cards.map((card, i) => (
+            <div key={i} style={{ padding: 16, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', borderRadius: 'var(--r-md)' }}>
+              <div style={{ fontSize: 20, marginBottom: 6 }}>{card.icon}</div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.7)', marginBottom: 4 }}>{card.title}</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: 'white' }}>{card.value}</div>
+            </div>
+          ))}
+        </div>
+      )
+    default:
+      return null
+  }
+}
+
+interface PresentationModeProps {
+  deckTitle: string
+  sections: DeckSection[]
+  onClose: () => void
+}
+
+export function PresentationMode({ deckTitle, sections, onClose }: PresentationModeProps) {
+  const slides = buildSlides(deckTitle, sections)
+  const [current, setCurrent] = useState(0)
+  const [controlsVisible, setControlsVisible] = useState(true)
+  const [hideTimer, setHideTimer] = useState<ReturnType<typeof setTimeout> | null>(null)
+
+  const go = useCallback((dir: 1 | -1) => {
+    setCurrent(c => Math.max(0, Math.min(slides.length - 1, c + dir)))
+  }, [slides.length])
+
+  // Keyboard navigation
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); go(1) }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); go(-1) }
+      else if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [go, onClose])
+
+  // Auto-hide controls
+  const showControls = useCallback(() => {
+    setControlsVisible(true)
+    if (hideTimer) clearTimeout(hideTimer)
+    const t = setTimeout(() => setControlsVisible(false), 2500)
+    setHideTimer(t)
+  }, [hideTimer])
+
+  useEffect(() => {
+    showControls()
+    return () => { if (hideTimer) clearTimeout(hideTimer) }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [current])
+
+  const slide = slides[current]
+
+  return (
+    <div
+      onMouseMove={showControls}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 9999,
+        background: '#0A0A0B',
+        display: 'flex',
+        flexDirection: 'column',
+        cursor: controlsVisible ? 'default' : 'none',
+      }}
+    >
+      {/* Top bar — fades out */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '16px 24px',
+          background: 'linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%)',
+          zIndex: 10,
+          opacity: controlsVisible ? 1 : 0,
+          transition: 'opacity 0.4s ease',
+          pointerEvents: controlsVisible ? 'auto' : 'none',
+        }}
+      >
+        <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.8)', fontFamily: 'var(--font-body)' }}>
+          {deckTitle}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', fontFamily: 'var(--font-body)' }}>
+            {current + 1} / {slides.length}
+          </span>
+          <button
+            onClick={onClose}
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: '50%',
+              background: 'rgba(255,255,255,0.1)',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+            }}
+          >
+            <X size={16} />
+          </button>
+        </div>
+      </div>
+
+      {/* Slide content */}
+      <div
+        style={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '80px 60px',
+        }}
+        onClick={e => {
+          // Click right half to advance, left half to go back
+          const x = (e as React.MouseEvent).clientX
+          if (x > window.innerWidth / 2) go(1)
+          else go(-1)
+        }}
+      >
+        <div
+          className="animate-fade-in"
+          key={slide.id}
+          style={{
+            width: '100%',
+            maxWidth: 860,
+            minHeight: 480,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+          }}
+        >
+          {slide.type === 'cover' ? (
+            /* Cover slide */
+            <div
+              style={{
+                background: slide.color,
+                borderRadius: 'var(--r-xl)',
+                padding: '60px 64px',
+                minHeight: 440,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-end',
+                boxShadow: '0 40px 100px rgba(0,0,0,0.6)',
+              }}
+            >
+              <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 44, fontWeight: 700, color: 'rgba(255,255,255,0.95)', lineHeight: 1.15, marginBottom: 14 }}>
+                {slide.title}
+              </h1>
+              {slide.subtitle && (
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: 18, color: 'rgba(255,255,255,0.65)', marginBottom: 28, lineHeight: 1.5 }}>
+                  {slide.subtitle}
+                </p>
+              )}
+              {slide.author && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'white' }}>
+                    {slide.author.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                  </div>
+                  <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', fontFamily: 'var(--font-body)' }}>{slide.author}</span>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Section slide */
+            <div
+              style={{
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: 'var(--r-xl)',
+                padding: '52px 60px',
+                minHeight: 440,
+                boxShadow: '0 40px 100px rgba(0,0,0,0.5)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+              }}
+            >
+              {slide.section?.blocks.map(block => renderBlockPreview(block))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Bottom nav bar */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 16,
+          padding: '24px',
+          background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%)',
+          opacity: controlsVisible ? 1 : 0,
+          transition: 'opacity 0.4s ease',
+          pointerEvents: controlsVisible ? 'auto' : 'none',
+        }}
+      >
+        <button
+          onClick={e => { e.stopPropagation(); go(-1) }}
+          disabled={current === 0}
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: '50%',
+            background: 'rgba(255,255,255,0.1)',
+            border: 'none',
+            cursor: current === 0 ? 'not-allowed' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: current === 0 ? 'rgba(255,255,255,0.3)' : 'white',
+            transition: 'background 0.15s',
+          }}
+        >
+          <ChevronLeft size={20} />
+        </button>
+
+        {/* Slide dots */}
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          {slides.map((s, i) => (
+            <button
+              key={s.id}
+              onClick={e => { e.stopPropagation(); setCurrent(i) }}
+              style={{
+                width: i === current ? 20 : 6,
+                height: 6,
+                borderRadius: 999,
+                background: i === current ? 'white' : 'rgba(255,255,255,0.3)',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
+                transition: 'all 0.2s ease',
+              }}
+            />
+          ))}
+        </div>
+
+        <button
+          onClick={e => { e.stopPropagation(); go(1) }}
+          disabled={current === slides.length - 1}
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: '50%',
+            background: 'rgba(255,255,255,0.1)',
+            border: 'none',
+            cursor: current === slides.length - 1 ? 'not-allowed' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: current === slides.length - 1 ? 'rgba(255,255,255,0.3)' : 'white',
+            transition: 'background 0.15s',
+          }}
+        >
+          <ChevronRight size={20} />
+        </button>
+      </div>
+
+      {/* Keyboard hint */}
+      <div style={{
+        position: 'absolute',
+        bottom: 24,
+        right: 24,
+        fontSize: 11,
+        color: 'rgba(255,255,255,0.3)',
+        fontFamily: 'var(--font-body)',
+        opacity: controlsVisible ? 1 : 0,
+        transition: 'opacity 0.4s',
+      }}>
+        ← → to navigate · ESC to exit
+      </div>
+    </div>
+  )
+}

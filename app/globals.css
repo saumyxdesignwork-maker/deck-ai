@@ -1,0 +1,474 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ─── VL1: Visual Language 1 tokens ─── */
+:root {
+  /* Canvas & Surfaces */
+  --bg-canvas: #F6F6F4;
+  --surface: #FFFFFF;
+  --surface-muted: #F2F2F0;
+
+  /* Borders */
+  --border: #E8E8E6;
+  --divider: #ECECEC;
+
+  /* Text */
+  --text: #1C1C1A;
+  --text-muted: #6B6B68;
+  --text-disabled: #ABABAB;
+
+  /* Accent (blue) */
+  --accent: #1E7BFF;
+  --accent-soft: #EAF2FF;
+  --accent-hover: #1565D8;
+
+  /* Primary CTA (black pill) */
+  --primary: #141414;
+  --primary-fg: #FFFFFF;
+  --primary-hover: #2A2A2A;
+
+  /* States */
+  --success: #2FA36B;
+  --success-soft: #E8F7EF;
+  --warning: #F59E0B;
+  --destructive: oklch(0.577 0.245 27.325);
+
+  /* Radius */
+  --r-xs: 4px;
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+  --r-pill: 999px;
+
+  /* Elevation */
+  --sh-1: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --sh-2: 0 4px 16px rgba(0, 0, 0, 0.06);
+  --sh-3: 0 12px 40px rgba(0, 0, 0, 0.10);
+
+  /* Fonts — preset A (Hedvig) active by default */
+  --font-heading: var(--font-hedvig-serif), ui-serif, Georgia, serif;
+  --font-body: var(--font-hedvig-sans), ui-sans-serif, system-ui, sans-serif;
+
+  /* Topbar + sidebar dimensions */
+  --topbar-h: 52px;
+  --sidebar-w: 240px;
+  --insert-panel-w: 276px;
+  --section-nav-w: 220px;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+/* ─── VL2: Suno-style dark direction ───────────────────────────────────
+   Using html[data-vl="2"] (specificity 0-1-1) so these tokens beat the
+   .dark block (specificity 0-1-0) added by shadcn, regardless of order.
+──────────────────────────────────────────────────────────────────────── */
+html[data-vl="2"] {
+  /* Canvas & surfaces — bg-canvas is transparent so body::before (meadow) shows */
+  --bg-canvas: transparent;
+  --surface: rgba(255, 255, 255, 0.10);
+  --surface-muted: rgba(255, 255, 255, 0.06);
+  --surface-solid: #141416;
+  --surface-panel: rgba(10, 10, 11, 0.85); /* sidebar/topbar — dark at 85% */
+
+  /* Borders */
+  --border: rgba(255, 255, 255, 0.08);
+  --divider: rgba(255, 255, 255, 0.06);
+
+  /* Text */
+  --text: #F5F5F4;
+  --text-muted: #A1A1A0;
+  --text-disabled: #5B5B5A;
+
+  /* Accent (violet — midpoint of navy→blush gradient) */
+  --accent: #A78BCC;
+  --accent-soft: rgba(167, 139, 204, 0.14);
+  --accent-hover: #BBA0D8;
+
+  /* Primary CTA (navy → blush gradient) */
+  --primary: linear-gradient(90deg, #1D2B64 0%, #F8CDDA 100%);
+  --primary-fg: #FFFFFF;
+  --primary-hover: linear-gradient(90deg, #2A3B80 0%, #FADADD 100%);
+
+  /* States */
+  --success: #3AD68A;
+  --success-soft: rgba(58, 214, 138, 0.14);
+
+  /* Elevation (deeper in dark) */
+  --sh-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --sh-2: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --sh-3: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.06);
+
+  /* Extras */
+  --backdrop-blur: blur(20px) saturate(140%);
+  --glow-accent: 0 0 40px rgba(167, 139, 204, 0.35);
+
+  background-color: #0A0A0B; /* html fallback so no white flash */
+}
+
+html[data-vl="2"] body {
+  color: var(--text);
+  background-color: transparent; /* let ::before/::after show */
+}
+
+html[data-vl="2"] body::before {
+  content: '';
+  position: fixed;
+  inset: -4px; /* bleed past edges to hide blur fringe */
+  z-index: -2;
+  pointer-events: none;
+  /* --vl2-bg is set inline on <html> by ThemeProvider; falls back to default */
+  background: var(--vl2-bg, url('/Bg-image.webp')) center / cover no-repeat;
+  filter: blur(2px) saturate(120%);
+  opacity: 0.70;
+  transition: opacity 0.4s ease;
+}
+
+html[data-vl="2"] body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(160deg, rgba(10, 10, 11, 0.52) 0%, rgba(10, 10, 11, 0.70) 100%);
+}
+
+/* Glass utility — apply data-glass on Sidebar/TopBar/panels for backdrop blur under VL2 */
+html[data-vl="2"] [data-glass] {
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+}
+
+/* Primary CTA hover glow under VL2 */
+html[data-vl="2"] button[data-primary]:hover {
+  box-shadow: var(--glow-accent);
+}
+
+/* ─── VL3: Warm editorial direction ────────────────────────────────────
+   Light mode — NO .dark class. Warm cream canvas with CSS ambient blobs.
+   Specificity 0-1-1 beats .dark (0-1-0) same as VL2.
+──────────────────────────────────────────────────────────────────────── */
+html[data-vl="3"] {
+  /* Canvas — transparent so body::before gradient shows */
+  --bg-canvas: transparent;
+
+  /* Surfaces — warm white glass */
+  --surface: rgba(255, 251, 247, 0.88);
+  --surface-muted: rgba(250, 244, 237, 0.72);
+  --surface-panel: rgba(255, 253, 250, 0.94);
+
+  /* Borders — warm hairlines */
+  --border: rgba(160, 120, 90, 0.12);
+  --divider: rgba(160, 120, 90, 0.08);
+
+  /* Text — warm near-black */
+  --text: #2C2118;
+  --text-muted: #9B8070;
+  --text-disabled: #C8B4A8;
+
+  /* Accent — warm terracotta */
+  --accent: #C07755;
+  --accent-soft: rgba(192, 119, 85, 0.12);
+  --accent-hover: #A85E3C;
+
+  /* Primary CTA — warm charcoal → espresso gradient */
+  --primary: linear-gradient(135deg, #2C2118 0%, #5C3A24 100%);
+  --primary-fg: #FFFBF7;
+  --primary-hover: linear-gradient(135deg, #3D3028 0%, #6B4A2E 100%);
+
+  /* States */
+  --success: #5A9E72;
+  --success-soft: rgba(90, 158, 114, 0.12);
+
+  /* Elevation — warm-tinted shadows */
+  --sh-1: 0 1px 3px rgba(80, 45, 20, 0.07);
+  --sh-2: 0 6px 24px rgba(80, 45, 20, 0.11);
+  --sh-3: 0 20px 60px rgba(80, 45, 20, 0.16);
+
+  /* Glass + glow */
+  --backdrop-blur: blur(28px) saturate(180%);
+  --glow-accent: 0 0 36px rgba(192, 119, 85, 0.30);
+
+  background-color: #FAF6F1; /* warm cream flash fallback on <html> */
+
+  /* VL3 Layout tokens — floating editorial windows */
+  --r-window: 28px;             /* outer floating app-window */
+  --r-card: 18px;               /* inner cards (nested) */
+  --window-inset: 14px;         /* gap so ambient blobs show at edges */
+  --spine: rgba(160,120,90,0.28); /* dashed timeline spine colour */
+}
+
+html[data-vl="3"] body {
+  color: var(--text);
+  background-color: transparent;
+}
+
+html[data-vl="3"] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  /* Ambient colour pools — terracotta top-left, dusty rose top-right,
+     muted blue bottom-centre, warm amber mid-right */
+  background:
+    radial-gradient(ellipse 55% 45% at 10% 15%, rgba(255, 185, 145, 0.38) 0%, transparent 65%),
+    radial-gradient(ellipse 45% 55% at 88% 20%, rgba(225, 175, 195, 0.30) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 40% at 50% 92%, rgba(175, 205, 225, 0.22) 0%, transparent 65%),
+    radial-gradient(ellipse 35% 35% at 72% 52%, rgba(245, 220, 195, 0.18) 0%, transparent 60%),
+    #FAF6F1;
+  opacity: 1;
+}
+
+/* Kill the dark scrim — VL3 is light */
+html[data-vl="3"] body::after {
+  display: none;
+}
+
+/* Glass utility — light-mode frosted */
+html[data-vl="3"] [data-glass] {
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+}
+
+/* Primary CTA glow on hover */
+html[data-vl="3"] button[data-primary]:hover {
+  box-shadow: var(--glow-accent);
+}
+
+/* ─── Font preset B: Geist (everything) ─── */
+[data-font="b"] {
+  --font-heading: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ─── Font preset C: Instrument Serif (headings) + Geist (body) ─── */
+[data-font="c"] {
+  --font-heading: var(--font-instrument-serif), ui-serif, Georgia, serif;
+  --font-body: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ─── Font preset D: Tiffin Latin Variable (headings) + Geist (body) ─── */
+[data-font="d"] {
+  --font-heading: 'tiffin-latin-variable', ui-serif, Georgia, serif;
+  --font-body: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ─── Tailwind v4 @theme bridge ─── */
+@theme inline {
+  --color-canvas: var(--bg-canvas);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-border: var(--border);
+  --color-divider: var(--divider);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-text-disabled: var(--text-disabled);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-primary: var(--primary);
+  --color-primary-fg: var(--primary-fg);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-destructive: var(--destructive);
+  --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-heading);
+  --shadow-card: var(--sh-1);
+  --shadow-float: var(--sh-2);
+  --shadow-dialog: var(--sh-3);
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
+  --radius-pill: var(--r-pill);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+  @keyframes liquid-drift {
+  0% {
+    background-position: 0% 0%, 100% 100%, 0% 0%;
+    }
+  50% {
+    background-position: 30% 20%, 70% 80%, 0% 0%;
+    }
+  100% {
+    background-position: 0% 0%, 100% 100%, 0% 0%;
+    }
+  }
+}
+
+/* ─── Base ─── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--bg-canvas);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Heading elements use display/heading font */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: var(--r-pill);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* ─── Utility: spin animation for Loader2 ─── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin {
+  animation: spin 0.8s linear infinite;
+}
+
+/* ─── Utility: progress fill ─── */
+@keyframes progress-fill {
+  from { width: 0%; }
+  to { width: var(--progress-target, 100%); }
+}
+
+/* ─── Fade in ─── */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out both;
+}
+
+/* ─── Slide up ─── */
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out both;
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
