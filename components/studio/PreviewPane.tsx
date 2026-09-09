@@ -8,8 +8,10 @@ import { InsertPanel } from '@/components/editor/InsertPanel'
 import { BottomToolbar } from '@/components/editor/BottomToolbar'
 import { PreviewToolbar } from './PreviewToolbar'
 import { SlideThumbRail } from './SlideThumbRail'
+import { OutlineReviewPanel } from './OutlineReviewPanel'
 import { ResizeHandle } from '@/components/shared/ResizeHandle'
 import { MOCK_DECK, DeckSection, Block } from '@/lib/fixtures'
+import { OutlineSection } from '@/lib/studioScript'
 import { PreviewState } from '@/lib/useStudioSession'
 import { useResizableWidth } from '@/lib/useResizableWidth'
 
@@ -21,6 +23,9 @@ interface PreviewPaneProps {
   previewState: PreviewState
   revealedSlides: number[]
   isWorking: boolean
+  outlinePending: { id: string; sections: OutlineSection[] } | null
+  onApproveOutline: () => void
+  onRegenerateOutline: () => void
 }
 
 // Mirrors app/editor/page.tsx's makeBlock/makeDefaultSection — kept local so Studio stays additive.
@@ -48,7 +53,7 @@ function makeDefaultSection(): DeckSection {
   }
 }
 
-export function PreviewPane({ previewState, revealedSlides, isWorking }: PreviewPaneProps) {
+export function PreviewPane({ previewState, revealedSlides, isWorking, outlinePending, onApproveOutline, onRegenerateOutline }: PreviewPaneProps) {
   const [sections, setSections] = useState<DeckSection[]>(() =>
     MOCK_DECK.sections.map(s => ({ ...s, blocks: [...s.blocks] }))
   )
@@ -95,7 +100,8 @@ export function PreviewPane({ previewState, revealedSlides, isWorking }: Preview
     })
   }, [])
 
-  const showPlaceholder = previewState === 'idle' || previewState === 'preparing' || activeIndex === null
+  const showOutlineReview = !!outlinePending
+  const showPlaceholder = !showOutlineReview && (previewState === 'idle' || previewState === 'preparing' || activeIndex === null)
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -139,7 +145,7 @@ export function PreviewPane({ previewState, revealedSlides, isWorking }: Preview
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative', background: 'var(--bg-canvas)' }}>
           {isDone && <PreviewToolbar />}
 
-          {!isDone && !showPlaceholder && (
+          {!isDone && !showPlaceholder && !showOutlineReview && (
             <div
               style={{
                 position: 'absolute', top: 14, right: 14, zIndex: 10,
@@ -173,7 +179,13 @@ export function PreviewPane({ previewState, revealedSlides, isWorking }: Preview
               transition: 'outline 0.12s',
             }}
           >
-            {showPlaceholder ? (
+            {showOutlineReview ? (
+              <OutlineReviewPanel
+                sections={outlinePending!.sections}
+                onApprove={onApproveOutline}
+                onRegenerate={onRegenerateOutline}
+              />
+            ) : showPlaceholder ? (
               <div style={{
                 height: '100%', minHeight: 320,
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',

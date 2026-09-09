@@ -11,11 +11,9 @@ import { OutlineCard } from './OutlineCard'
 interface ChatItemProps {
   item: ChatItemType
   onAnswerClarify: (answer: string) => void
-  onApproveOutline: () => void
-  onRegenerateOutline: () => void
 }
 
-export function ChatItemView({ item, onAnswerClarify, onApproveOutline, onRegenerateOutline }: ChatItemProps) {
+export function ChatItemView({ item, onAnswerClarify }: ChatItemProps) {
   switch (item.type) {
     case 'user':
       return (
@@ -66,14 +64,7 @@ export function ChatItemView({ item, onAnswerClarify, onApproveOutline, onRegene
       )
 
     case 'outline':
-      return (
-        <OutlineCard
-          sections={item.sections}
-          approved={item.approved}
-          onApprove={onApproveOutline}
-          onRegenerate={onRegenerateOutline}
-        />
-      )
+      return <OutlineCard sectionCount={item.sections.length} approved={item.approved} />
 
     case 'summary':
       return (

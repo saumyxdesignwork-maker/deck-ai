@@ -64,8 +64,6 @@ export function StudioSession({ initialPrompt, onBackToLanding }: StudioSessionP
             items={session.items}
             isWorking={session.isWorking}
             onAnswerClarify={session.answerClarify}
-            onApproveOutline={session.approveOutline}
-            onRegenerateOutline={session.regenerateOutline}
             onSendFollowUp={session.sendFollowUp}
           />
           <ResizeHandle isResizing={isResizing} onPointerDown={handlePointerDown} />
@@ -73,6 +71,9 @@ export function StudioSession({ initialPrompt, onBackToLanding }: StudioSessionP
             previewState={session.previewState}
             revealedSlides={session.revealedSlides}
             isWorking={session.isWorking}
+            outlinePending={session.outlinePending}
+            onApproveOutline={session.approveOutline}
+            onRegenerateOutline={session.regenerateOutline}
           />
         </div>
       </div>
