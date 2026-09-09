@@ -78,6 +78,8 @@ function ToolBtn({ active, onClick, Icon, label }: { active: boolean; onClick: (
         transition: 'all 0.12s',
         fontWeight: active ? 600 : 500,
         boxShadow: active ? 'var(--sh-1)' : 'none',
+        whiteSpace: 'nowrap',
+        flexShrink: 0,
       }}
       onMouseEnter={e => {
         if (!active) {
@@ -110,7 +112,7 @@ function DrawerShell({ title, onClose, children }: { title: string; onClose: () 
         left: '50%',
         transform: 'translateX(-50%)',
         marginBottom: 8,
-        background: 'var(--surface)',
+        background: 'var(--surface-panel, var(--surface))',
         border: '1px solid var(--border)',
         borderRadius: 'var(--r-lg)',
         boxShadow: 'var(--sh-3)',
@@ -402,7 +404,7 @@ export function BottomToolbar() {
         justifyContent: 'center',
         padding: '10px 16px',
         borderTop: '1px solid var(--divider)',
-        background: 'var(--surface)',
+        background: 'var(--surface-panel, var(--surface))',
         flexShrink: 0,
         gap: 4,
         position: 'relative',

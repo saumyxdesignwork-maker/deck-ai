@@ -1,37 +1,13 @@
 'use client'
 
 import { Search, Bell, Coins } from 'lucide-react'
-import { useTheme } from '../controls/ThemeProvider'
 
 interface TopBarProps {
   title?: string
   showSearch?: boolean
 }
 
-// macOS-style traffic-light cluster — warm muted colours for VL3
-function TrafficLights() {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-      {['#E8A0A0', '#E8C889', '#A9CBA0'].map((color, i) => (
-        <div
-          key={i}
-          style={{
-            width: 11,
-            height: 11,
-            borderRadius: '50%',
-            background: color,
-            opacity: 0.85,
-          }}
-        />
-      ))}
-    </div>
-  )
-}
-
 export function TopBar({ title, showSearch = true }: TopBarProps) {
-  const { vl } = useTheme()
-  const isVL3 = vl === '3'
-
   return (
     <header
       style={{
@@ -45,9 +21,6 @@ export function TopBar({ title, showSearch = true }: TopBarProps) {
         gap: 12,
       }}
     >
-      {/* VL3: traffic-light dots at left */}
-      {isVL3 && <TrafficLights />}
-
       {/* Center: title or search */}
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {title ? (

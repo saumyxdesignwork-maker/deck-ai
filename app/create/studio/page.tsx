@@ -10,11 +10,10 @@ import { StudioSession } from '@/components/studio/StudioSession'
 type Phase = 'landing' | 'session'
 
 export default function StudioPage() {
-  const { vl, flow, setFlow } = useTheme()
+  const { flow, setFlow } = useTheme()
   const { setInput } = useCreate()
   const [phase, setPhase] = useState<Phase>('landing')
   const [prompt, setPrompt] = useState('')
-  const isVL3 = vl === '3'
 
   // Keep the Controls "Create Flow" pill in sync if this route is reached directly.
   useEffect(() => {
@@ -42,31 +41,11 @@ export default function StudioPage() {
     )
   }
 
-  const landing = <StudioLanding onSubmit={handleSubmit} />
-
   return (
     <>
-      {isVL3 ? (
-        <div style={{ padding: 'var(--window-inset)', height: '100vh', boxSizing: 'border-box', background: 'transparent' }}>
-          <div
-            data-glass
-            style={{
-              height: '100%',
-              borderRadius: 'var(--r-window)',
-              overflow: 'hidden',
-              boxShadow: 'var(--sh-3)',
-              border: '1px solid var(--border)',
-              background: 'var(--surface-panel, var(--surface))',
-            }}
-          >
-            {landing}
-          </div>
-        </div>
-      ) : (
-        <div style={{ height: '100vh', overflow: 'hidden', background: 'var(--bg-canvas)' }}>
-          {landing}
-        </div>
-      )}
+      <div style={{ height: '100vh', overflow: 'hidden', background: 'var(--bg-canvas)' }}>
+        <StudioLanding onSubmit={handleSubmit} />
+      </div>
       <ControlsPanel />
     </>
   )

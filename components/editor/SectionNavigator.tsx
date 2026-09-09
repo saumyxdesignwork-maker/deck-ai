@@ -171,7 +171,7 @@ export function SectionNavigator({
         width: 'var(--section-nav-w)',
         flexShrink: 0,
         height: '100%',
-        background: 'var(--surface)',
+        background: 'var(--surface-panel, var(--surface))',
         borderRight: '1px solid var(--divider)',
         display: 'flex',
         flexDirection: 'column',

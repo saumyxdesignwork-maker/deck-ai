@@ -10,9 +10,10 @@ interface ChatPaneProps {
   isWorking: boolean
   onAnswerClarify: (answer: string) => void
   onSendFollowUp: (text: string) => void
+  width: number
 }
 
-export function ChatPane({ items, isWorking, onAnswerClarify, onSendFollowUp }: ChatPaneProps) {
+export function ChatPane({ items, isWorking, onAnswerClarify, onSendFollowUp, width }: ChatPaneProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -22,11 +23,10 @@ export function ChatPane({ items, isWorking, onAnswerClarify, onSendFollowUp }: 
   return (
     <div
       style={{
-        width: 380,
+        width,
         flexShrink: 0,
         display: 'flex',
         flexDirection: 'column',
-        borderRight: '1px solid var(--divider)',
         overflow: 'hidden',
       }}
     >

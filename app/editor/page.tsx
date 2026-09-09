@@ -82,7 +82,6 @@ export default function EditorPage() {
 
   const handleReorder = (newSections: DeckSection[]) => setSections(newSections)
 
-  // ── Inner 3-pane editor area (shared between VL3 and VL1/VL2) ────────────
   const editorPane = (
     <div style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>
       {/* Section navigator — sortable */}
@@ -155,55 +154,6 @@ export default function EditorPage() {
     </div>
   )
 
-  // ── VL3: floating document window ────────────────────────────────────────
-  if (isVL3) {
-    return (
-      <>
-        <div
-          style={{
-            padding: 'var(--window-inset)',
-            height: '100vh',
-            boxSizing: 'border-box',
-            background: 'transparent',
-          }}
-        >
-          {/* Rounded window */}
-          <div
-            data-glass
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              height: '100%',
-              borderRadius: 'var(--r-window)',
-              overflow: 'hidden',
-              boxShadow: 'var(--sh-3)',
-              border: '1px solid var(--border)',
-              background: 'var(--surface-panel, var(--surface))',
-            }}
-          >
-            <EditorTopBar
-              title={deckTitle}
-              onTitleChange={setDeckTitle}
-              onPresent={() => setIsPresenting(true)}
-            />
-            {editorPane}
-          </div>
-        </div>
-
-        <ControlsPanel />
-
-        {isPresenting && (
-          <PresentationMode
-            deckTitle={deckTitle}
-            sections={sections}
-            onClose={() => setIsPresenting(false)}
-          />
-        )}
-      </>
-    )
-  }
-
-  // ── VL1 / VL2: flat full-bleed layout (unchanged) ────────────────────────
   return (
     <>
       <div

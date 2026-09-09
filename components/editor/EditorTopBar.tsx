@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Palette, Play, MoreHorizontal, Users } from 'lucide-react'
-import { useTheme } from '@/components/controls/ThemeProvider'
 
 interface EditorTopBarProps {
   title: string
@@ -10,30 +9,8 @@ interface EditorTopBarProps {
   onPresent: () => void
 }
 
-// macOS-style traffic-light cluster — warm muted colours for VL3
-function TrafficLights() {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, marginRight: 4 }}>
-      {['#E8A0A0', '#E8C889', '#A9CBA0'].map((color, i) => (
-        <div
-          key={i}
-          style={{
-            width: 11,
-            height: 11,
-            borderRadius: '50%',
-            background: color,
-            opacity: 0.85,
-          }}
-        />
-      ))}
-    </div>
-  )
-}
-
 export function EditorTopBar({ title, onTitleChange, onPresent }: EditorTopBarProps) {
   const router = useRouter()
-  const { vl } = useTheme()
-  const isVL3 = vl === '3'
 
   return (
     <div
@@ -48,9 +25,6 @@ export function EditorTopBar({ title, onTitleChange, onPresent }: EditorTopBarPr
         gap: 8,
       }}
     >
-      {/* VL3: traffic-light dots at left */}
-      {isVL3 && <TrafficLights />}
-
       {/* Back */}
       <button
         onClick={() => router.push('/create/storyline')}

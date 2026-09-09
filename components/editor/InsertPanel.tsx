@@ -80,7 +80,7 @@ export function InsertPanel() {
         width: 'var(--insert-panel-w)',
         flexShrink: 0,
         height: '100%',
-        background: 'var(--surface)',
+        background: 'var(--surface-panel, var(--surface))',
         borderLeft: '1px solid var(--divider)',
         display: 'flex',
         flexDirection: 'column',

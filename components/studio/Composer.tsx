@@ -1,7 +1,25 @@
 'use client'
 
-import { useState, KeyboardEvent } from 'react'
-import { Plus, Mic, ArrowUp, ChevronDown } from 'lucide-react'
+import { useEffect, useRef, useState, KeyboardEvent } from 'react'
+import { Plus, Mic, ArrowUp, ChevronDown, Upload, FolderOpenDot } from 'lucide-react'
+
+// Simple three-tone Drive mark — no brand asset dependency, just a recognizable shape.
+// Accepts the same size/style props as the lucide icons it sits alongside in ATTACH_OPTIONS.
+function GoogleDriveIcon({ size = 14, style }: { size?: number; style?: React.CSSProperties }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" style={style}>
+      <path d="M8.1 2.5 1 14.6l3.1 5.4h6.4l-3.1-5.4z" fill="#4285F4" />
+      <path d="M15.9 2.5H8.1l6.4 11.1h7.8z" fill="#FBBC04" />
+      <path d="M17.2 20h6.4l-3.1-5.4h-6.4z" fill="#34A853" />
+    </svg>
+  )
+}
+
+const ATTACH_OPTIONS = [
+  { key: 'local', icon: Upload, label: 'Browse Local Files' },
+  { key: 'ai-drive', icon: FolderOpenDot, label: 'Choose from AI Drive' },
+  { key: 'google-drive', icon: GoogleDriveIcon, label: 'Choose from Google Drive' },
+] as const
 
 interface ComposerProps {
   onSubmit: (text: string) => void
@@ -13,7 +31,18 @@ interface ComposerProps {
 export function Composer({ onSubmit, placeholder = 'Enter your slides request here', variant = 'session', disabled }: ComposerProps) {
   const [value, setValue] = useState('')
   const [model, setModel] = useState<'Standard' | 'Ultra'>('Standard')
+  const [attachOpen, setAttachOpen] = useState(false)
+  const attachRef = useRef<HTMLDivElement>(null)
   const isHero = variant === 'hero'
+
+  useEffect(() => {
+    if (!attachOpen) return
+    const handler = (e: MouseEvent) => {
+      if (attachRef.current && !attachRef.current.contains(e.target as Node)) setAttachOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [attachOpen])
 
   const submit = () => {
     if (!value.trim() || disabled) return
@@ -60,17 +89,63 @@ export function Composer({ onSubmit, placeholder = 'Enter your slides request he
         }}
       />
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <button
-          style={{
-            width: 28, height: 28, borderRadius: '50%',
-            border: '1px solid var(--border)', background: 'var(--surface-muted)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', color: 'var(--text-muted)', flexShrink: 0,
-          }}
-          title="Attach"
-        >
-          <Plus size={14} />
-        </button>
+        <div ref={attachRef} style={{ position: 'relative' }}>
+          <button
+            onClick={() => setAttachOpen(o => !o)}
+            style={{
+              width: 28, height: 28, borderRadius: '50%',
+              border: '1px solid var(--border)',
+              background: attachOpen ? 'var(--accent-soft)' : 'var(--surface-muted)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', color: attachOpen ? 'var(--accent)' : 'var(--text-muted)', flexShrink: 0,
+            }}
+            title="Attach"
+          >
+            <Plus size={14} style={{ transform: attachOpen ? 'rotate(45deg)' : 'none', transition: 'transform 0.12s' }} />
+          </button>
+
+          {attachOpen && (
+            <div
+              className="animate-slide-up"
+              style={{
+                position: 'absolute',
+                bottom: '100%',
+                left: 0,
+                marginBottom: 8,
+                minWidth: 210,
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--r-md)',
+                boxShadow: 'var(--sh-3)',
+                padding: 4,
+                zIndex: 20,
+              }}
+            >
+              {ATTACH_OPTIONS.map(({ key, icon: Icon, label }) => (
+                <button
+                  key={key}
+                  onClick={() => setAttachOpen(false)}
+                  style={{
+                    width: '100%',
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    padding: '8px 10px',
+                    borderRadius: 'var(--r-sm)',
+                    border: 'none', background: 'transparent',
+                    cursor: 'pointer', textAlign: 'left',
+                    fontSize: 13, color: 'var(--text)',
+                    fontFamily: 'var(--font-body)',
+                    transition: 'background 0.1s',
+                  }}
+                  onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'var(--surface-muted)')}
+                  onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
+                >
+                  <Icon size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         <button
           onClick={() => setModel(m => (m === 'Standard' ? 'Ultra' : 'Standard'))}
