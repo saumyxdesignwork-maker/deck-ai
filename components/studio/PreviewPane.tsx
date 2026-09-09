@@ -168,7 +168,7 @@ export function PreviewPane({ previewState, revealedSlides, isWorking, outlinePe
             style={{
               flex: 1,
               overflow: 'auto',
-              padding: isDone ? '56px 40px 96px' : '28px 40px',
+              padding: isDone ? '56px 40px 96px' : showOutlineReview ? '0 40px 28px' : '28px 40px',
               maxWidth: 820,
               width: '100%',
               margin: '0 auto',
