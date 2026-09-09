@@ -22,7 +22,7 @@ export function OutlineReviewPanel({ sections, onApprove, onRegenerate }: Outlin
         border: '1px solid var(--border)',
         borderRadius: 'var(--r-xl)',
         background: 'var(--surface)',
-        boxShadow: 'var(--sh-2)',
+        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.1)',
         overflow: 'hidden',
       }}
     >
