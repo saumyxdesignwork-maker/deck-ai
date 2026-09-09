@@ -51,7 +51,10 @@ export function OutlineCard({ sections, approved, onApprove, onRegenerate }: Out
         </p>
       </div>
 
-      <div style={{ padding: '10px 16px', display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 320, overflow: 'auto' }}>
+      {/* No inner scroll here on purpose — nesting a scrollable box inside the
+          chat pane's own scroll made the "Generate Slides" button below hard
+          to reach (users would get stuck scrolling this box and never see it). */}
+      <div style={{ padding: '10px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         {sections.map((section, i) => (
           <div key={i} style={{ display: 'flex', gap: 10 }}>
             <div
