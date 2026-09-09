@@ -227,13 +227,13 @@ export function PreviewPane({ previewState, revealedSlides, isWorking, outlinePe
                 author={MOCK_DECK.author}
                 coverColor={MOCK_DECK.coverColor}
               />
-            ) : (
+            ) : activeIndex !== null ? (
               <ContentSection
                 section={sections[activeIndex - 1]}
                 isActive
                 onClick={() => {}}
               />
-            )}
+            ) : null}
           </div>
 
           {isDone && <BottomToolbar />}
