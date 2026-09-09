@@ -9,9 +9,15 @@ import { InsertPanel } from '@/components/editor/InsertPanel'
 import { BottomToolbar } from '@/components/editor/BottomToolbar'
 import { PresentationMode } from '@/components/editor/PresentationMode'
 import { ControlsPanel } from '@/components/controls/ControlsPanel'
+import { ResizeHandle } from '@/components/shared/ResizeHandle'
 import { MOCK_DECK, DeckSection, Block } from '@/lib/fixtures'
 import { useCreate } from '@/lib/createContext'
 import { useTheme } from '@/components/controls/ThemeProvider'
+import { useResizableWidth } from '@/lib/useResizableWidth'
+
+const MIN_INSERT_WIDTH = 220
+const MAX_INSERT_WIDTH = 480
+const DEFAULT_INSERT_WIDTH = 276
 
 export default function EditorPage() {
   const { deckTitle, setDeckTitle } = useCreate()
@@ -21,6 +27,8 @@ export default function EditorPage() {
   const [activeSectionId, setActiveSectionId] = useState('cover')
   const [isPresenting, setIsPresenting] = useState(false)
   const [isDragOver, setIsDragOver] = useState(false)
+  const { width: insertWidth, isResizing: isResizingInsert, handlePointerDown: handleInsertResizeStart } =
+    useResizableWidth(DEFAULT_INSERT_WIDTH, MIN_INSERT_WIDTH, MAX_INSERT_WIDTH, /* invert */ true)
 
   // Build a new block from a dropped block type
   const makeBlock = (blockType: string): Block => {
@@ -65,18 +73,31 @@ export default function EditorPage() {
     [activeSectionId]
   )
 
+  const makeDefaultSection = (): DeckSection => ({
+    id: `ds-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    title: 'New Section',
+    layout: 'key-points',
+    thumbnailColor: '#F3F4F6',
+    blocks: [
+      { id: `bl-h-${Date.now()}`, type: 'heading',   content: 'New Section' },
+      { id: `bl-p-${Date.now()}`, type: 'paragraph', content: 'Start writing your content here…' },
+    ],
+  })
+
   const handleAddSection = () => {
-    const newSection: DeckSection = {
-      id: `ds-${Date.now()}`,
-      title: 'New Section',
-      layout: 'key-points',
-      thumbnailColor: '#F3F4F6',
-      blocks: [
-        { id: `bl-h-${Date.now()}`, type: 'heading',   content: 'New Section' },
-        { id: `bl-p-${Date.now()}`, type: 'paragraph', content: 'Start writing your content here…' },
-      ],
-    }
+    const newSection = makeDefaultSection()
     setSections(prev => [...prev, newSection])
+    setActiveSectionId(newSection.id)
+  }
+
+  // Inserts a new slide immediately before the section at `index`
+  const handleInsertSectionAt = (index: number) => {
+    const newSection = makeDefaultSection()
+    setSections(prev => {
+      const next = [...prev]
+      next.splice(index, 0, newSection)
+      return next
+    })
     setActiveSectionId(newSection.id)
   }
 
@@ -133,12 +154,13 @@ export default function EditorPage() {
           />
 
           {/* Content sections */}
-          {sections.map((section) => (
+          {sections.map((section, i) => (
             <ContentSection
               key={section.id}
               section={section}
               isActive={activeSectionId === section.id}
               onClick={() => setActiveSectionId(section.id)}
+              onInsertBefore={() => handleInsertSectionAt(i)}
             />
           ))}
 
@@ -150,7 +172,8 @@ export default function EditorPage() {
       </div>
 
       {/* Insert panel */}
-      <InsertPanel />
+      <ResizeHandle isResizing={isResizingInsert} onPointerDown={handleInsertResizeStart} />
+      <InsertPanel width={insertWidth} />
     </div>
   )
 

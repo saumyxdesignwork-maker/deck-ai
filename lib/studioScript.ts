@@ -3,11 +3,16 @@
 // chat transcript and/or the deck preview after a fixed delay, exactly like
 // the existing app/create/generating/page.tsx setTimeout theater.
 
-import { MOCK_DECK } from './fixtures'
+import { MOCK_DECK, MOCK_STORYLINE } from './fixtures'
 
 export interface ChecklistTask {
   label: string
   done: boolean
+}
+
+export interface OutlineSection {
+  title: string
+  bullets: string[]
 }
 
 export type ChatItem =
@@ -17,6 +22,7 @@ export type ChatItem =
   | { id: string; type: 'thinking' }
   | { id: string; type: 'clarify'; question: string; options: string[]; answered?: string }
   | { id: string; type: 'checklist'; title: string; tasks: ChecklistTask[] }
+  | { id: string; type: 'outline'; sections: OutlineSection[]; approved?: boolean }
   | { id: string; type: 'verify'; label: string; detail: string; status: 'running' | 'done' }
   | { id: string; type: 'summary'; text: string }
 
@@ -26,8 +32,16 @@ export type ScriptStep =
   | { kind: 'chat'; delay: number; item: ChatItem }
   | { kind: 'update'; delay: number; id: string; patch: ChatItemPatch }
   | { kind: 'clarify'; delay: number; id: string; question: string; options: string[] }
+  | { kind: 'outline'; delay: number; id: string; sections: OutlineSection[] }
   | { kind: 'preview'; delay: number; state: 'preparing' | 'thumbs' | 'done' }
   | { kind: 'reveal-slide'; delay: number; index: number }
+
+// The outline shown for review before slide generation begins —
+// reuses the same section titles/bullets the Classic wizard's storyline uses.
+export const OUTLINE_SECTIONS: OutlineSection[] = MOCK_STORYLINE.map(s => ({
+  title: s.title,
+  bullets: s.bullets.map(b => b.text),
+}))
 
 export const CLARIFY_QUESTION = "What's the primary goal for this deck?"
 export const CLARIFY_OPTIONS = [
@@ -56,7 +70,7 @@ export function buildScript(): ScriptStep[] {
     item: {
       id: 'agent-intro',
       type: 'agent',
-      text: "I'll build this deck for you. Let me lock the direction with one quick question, then structure the storyline and generate the slides.",
+      text: "I'll build this deck for you. Let me lock the direction with one quick question, draft a storyline for you to review, then generate the slides.",
     },
   })
 
@@ -125,6 +139,17 @@ export function buildScript(): ScriptStep[] {
     ] },
   })
 
+  // ── Outline review (blocks) ──────────────────────────────────────────
+  // Playback stops here until the user approves the outline via
+  // approveOutline() — no slides are written before that happens.
+  steps.push({
+    kind: 'outline',
+    delay: 500,
+    id: 'outline-1',
+    sections: OUTLINE_SECTIONS,
+  })
+
+  // ── Resumes here after approveOutline() ──────────────────────────────
   // ── Preview begins ────────────────────────────────────────────────────
   steps.push({ kind: 'preview', delay: 400, state: 'preparing' })
   steps.push({ kind: 'preview', delay: 600, state: 'thumbs' })

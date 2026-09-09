@@ -6,13 +6,16 @@ import { ToolChip } from './ToolChip'
 import { ThinkingDots } from './ThinkingDots'
 import { TaskChecklist } from './TaskChecklist'
 import { ClarifyCard } from './ClarifyCard'
+import { OutlineCard } from './OutlineCard'
 
 interface ChatItemProps {
   item: ChatItemType
   onAnswerClarify: (answer: string) => void
+  onApproveOutline: () => void
+  onRegenerateOutline: () => void
 }
 
-export function ChatItemView({ item, onAnswerClarify }: ChatItemProps) {
+export function ChatItemView({ item, onAnswerClarify, onApproveOutline, onRegenerateOutline }: ChatItemProps) {
   switch (item.type) {
     case 'user':
       return (
@@ -59,6 +62,16 @@ export function ChatItemView({ item, onAnswerClarify }: ChatItemProps) {
           options={item.options}
           answered={item.answered}
           onSubmit={onAnswerClarify}
+        />
+      )
+
+    case 'outline':
+      return (
+        <OutlineCard
+          sections={item.sections}
+          approved={item.approved}
+          onApprove={onApproveOutline}
+          onRegenerate={onRegenerateOutline}
         />
       )
 

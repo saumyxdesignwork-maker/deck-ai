@@ -60,7 +60,11 @@ export const BLOCK_GROUPS = [
 
 const TABS = ['Insert', 'Format', 'Style', 'Info'] as const
 
-export function InsertPanel() {
+interface InsertPanelProps {
+  width?: number
+}
+
+export function InsertPanel({ width }: InsertPanelProps) {
   const [activeTab, setActiveTab] = useState<typeof TABS[number]>('Insert')
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(['Text', 'Cards']))
   const [dragging, setDragging] = useState<string | null>(null)
@@ -77,7 +81,7 @@ export function InsertPanel() {
   return (
     <div
       style={{
-        width: 'var(--insert-panel-w)',
+        width: width ?? 'var(--insert-panel-w)',
         flexShrink: 0,
         height: '100%',
         background: 'var(--surface-panel, var(--surface))',
@@ -127,11 +131,10 @@ export function InsertPanel() {
             <p
               style={{
                 fontSize: 12,
-                fontWeight: 600,
+                fontWeight: 500,
                 color: 'var(--text-muted)',
-                letterSpacing: '0.05em',
-                textTransform: 'uppercase',
                 padding: '4px 14px 8px',
+                fontFamily: 'var(--font-body)',
               }}
             >
               Drag and drop any item to the canvas

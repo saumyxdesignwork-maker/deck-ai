@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { BookOpen, History, FolderOpen, Play, Download, PanelLeft } from 'lucide-react'
 import { CoverBlock } from '@/components/editor/blocks/CoverBlock'
 import { ContentSection } from '@/components/editor/blocks/ContentSection'
@@ -8,9 +8,14 @@ import { InsertPanel } from '@/components/editor/InsertPanel'
 import { BottomToolbar } from '@/components/editor/BottomToolbar'
 import { PreviewToolbar } from './PreviewToolbar'
 import { SlideThumbRail } from './SlideThumbRail'
+import { ResizeHandle } from '@/components/shared/ResizeHandle'
 import { MOCK_DECK, DeckSection, Block } from '@/lib/fixtures'
-import { TOTAL_SLIDES } from '@/lib/studioScript'
 import { PreviewState } from '@/lib/useStudioSession'
+import { useResizableWidth } from '@/lib/useResizableWidth'
+
+const MIN_INSERT_WIDTH = 220
+const MAX_INSERT_WIDTH = 480
+const DEFAULT_INSERT_WIDTH = 276
 
 interface PreviewPaneProps {
   previewState: PreviewState
@@ -18,7 +23,7 @@ interface PreviewPaneProps {
   isWorking: boolean
 }
 
-// Mirrors app/editor/page.tsx's makeBlock — kept local so Studio stays additive.
+// Mirrors app/editor/page.tsx's makeBlock/makeDefaultSection — kept local so Studio stays additive.
 function makeBlock(blockType: string): Block {
   const id = `bl-${Date.now()}-${Math.random().toString(36).slice(2)}`
   if (blockType === 'card-group') {
@@ -30,6 +35,19 @@ function makeBlock(blockType: string): Block {
   return { id, type: blockType as Block['type'], content: defaults[blockType] ?? '' }
 }
 
+function makeDefaultSection(): DeckSection {
+  return {
+    id: `ds-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    title: 'New Section',
+    layout: 'key-points',
+    thumbnailColor: '#F3F4F6',
+    blocks: [
+      { id: `bl-h-${Date.now()}`, type: 'heading',   content: 'New Section' },
+      { id: `bl-p-${Date.now()}`, type: 'paragraph', content: 'Start writing your content here…' },
+    ],
+  }
+}
+
 export function PreviewPane({ previewState, revealedSlides, isWorking }: PreviewPaneProps) {
   const [sections, setSections] = useState<DeckSection[]>(() =>
     MOCK_DECK.sections.map(s => ({ ...s, blocks: [...s.blocks] }))
@@ -37,10 +55,13 @@ export function PreviewPane({ previewState, revealedSlides, isWorking }: Preview
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const [autoFollow, setAutoFollow] = useState(true)
   const [isDragOver, setIsDragOver] = useState(false)
+  const { width: insertWidth, isResizing: isResizingInsert, handlePointerDown: handleInsertResizeStart } =
+    useResizableWidth(DEFAULT_INSERT_WIDTH, MIN_INSERT_WIDTH, MAX_INSERT_WIDTH, /* invert */ true)
 
   const isDone = previewState === 'done'
+  const slideRefs = useRef<Array<HTMLDivElement | null>>([])
 
-  // Follow the newest revealed slide while streaming
+  // Follow the newest revealed slide while streaming (single-slide preview)
   useEffect(() => {
     if (autoFollow && revealedSlides.length > 0) {
       setActiveIndex(revealedSlides[revealedSlides.length - 1])
@@ -50,6 +71,9 @@ export function PreviewPane({ previewState, revealedSlides, isWorking }: Preview
   const handleSelect = useCallback((index: number) => {
     setAutoFollow(false)
     setActiveIndex(index)
+    // Once the deck is fully assembled, all slides render stacked —
+    // clicking a thumbnail scrolls to it instead of swapping a single view.
+    slideRefs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }, [])
 
   const handleCanvasDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
@@ -60,6 +84,16 @@ export function PreviewPane({ previewState, revealedSlides, isWorking }: Preview
     const sectionIdx = activeIndex - 1
     setSections(prev => prev.map((s, i) => (i === sectionIdx ? { ...s, blocks: [...s.blocks, makeBlock(blockType)] } : s)))
   }, [activeIndex])
+
+  // Inserts a new slide immediately before the section at `index`
+  const handleInsertSectionAt = useCallback((index: number) => {
+    const newSection = makeDefaultSection()
+    setSections(prev => {
+      const next = [...prev]
+      next.splice(index, 0, newSection)
+      return next
+    })
+  }, [])
 
   const showPlaceholder = previewState === 'idle' || previewState === 'preparing' || activeIndex === null
 
@@ -75,6 +109,7 @@ export function PreviewPane({ previewState, revealedSlides, isWorking }: Preview
           gap: 10,
           padding: '0 14px',
           borderBottom: '1px solid var(--divider)',
+          background: 'var(--surface-panel, var(--surface))',
         }}
       >
         <PanelLeft size={14} style={{ color: 'var(--text-muted)' }} />
@@ -149,7 +184,31 @@ export function PreviewPane({ previewState, revealedSlides, isWorking }: Preview
                   {previewState === 'idle' ? 'Waiting to start…' : 'Preparing your slides…'}
                 </span>
               </div>
+            ) : isDone ? (
+              // Deck is fully assembled — render every slide stacked, like the standalone editor.
+              <>
+                <div ref={el => { slideRefs.current[0] = el }}>
+                  <CoverBlock
+                    title={MOCK_DECK.title}
+                    subtitle={MOCK_DECK.subtitle}
+                    author={MOCK_DECK.author}
+                    coverColor={MOCK_DECK.coverColor}
+                  />
+                </div>
+                {sections.map((section, i) => (
+                  <div key={section.id} ref={el => { slideRefs.current[i + 1] = el }}>
+                    <ContentSection
+                      section={section}
+                      isActive={activeIndex === i + 1}
+                      onClick={() => setActiveIndex(i + 1)}
+                      onInsertBefore={() => handleInsertSectionAt(i)}
+                    />
+                  </div>
+                ))}
+                <div style={{ height: 60 }} />
+              </>
             ) : activeIndex === 0 ? (
+              // Streaming — show only the slide currently being written
               <CoverBlock
                 title={MOCK_DECK.title}
                 subtitle={MOCK_DECK.subtitle}
@@ -168,7 +227,12 @@ export function PreviewPane({ previewState, revealedSlides, isWorking }: Preview
           {isDone && <BottomToolbar />}
         </div>
 
-        {isDone && <InsertPanel />}
+        {isDone && (
+          <>
+            <ResizeHandle isResizing={isResizingInsert} onPointerDown={handleInsertResizeStart} />
+            <InsertPanel width={insertWidth} />
+          </>
+        )}
       </div>
     </div>
   )

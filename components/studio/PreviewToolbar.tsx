@@ -49,9 +49,10 @@ export function PreviewToolbar() {
             color: active === key ? 'var(--accent)' : 'var(--text-muted)',
             fontSize: 12, fontWeight: 500, cursor: 'pointer',
             fontFamily: 'var(--font-body)', position: 'relative',
+            whiteSpace: 'nowrap', flexShrink: 0,
           }}
         >
-          <Icon size={13} />
+          <Icon size={13} style={{ flexShrink: 0 }} />
           {label}
           {key === 'edit' && (
             <span style={{
@@ -75,11 +76,12 @@ export function PreviewToolbar() {
             color: 'var(--text-muted)',
             fontSize: 12, fontWeight: 500, cursor: 'pointer',
             fontFamily: 'var(--font-body)',
+            whiteSpace: 'nowrap', flexShrink: 0,
           }}
           onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = 'var(--text)')}
           onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = 'var(--text-muted)')}
         >
-          <Icon size={13} />
+          <Icon size={13} style={{ flexShrink: 0 }} />
           {label}
         </button>
       ))}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { buildScript, ChatItem, ChatItemPatch, ScriptStep } from './studioScript'
+import { buildScript, ChatItem, ChatItemPatch, OutlineSection, ScriptStep } from './studioScript'
 
 export type PreviewState = 'idle' | 'preparing' | 'thumbs' | 'done'
 
@@ -19,6 +19,7 @@ export function useStudioSession(initialPrompt: string) {
   const [revealedSlides, setRevealedSlides] = useState<number[]>([])
   const [isWorking, setIsWorking] = useState(true)
   const [clarifyPending, setClarifyPending] = useState<{ id: string; question: string; options: string[] } | null>(null)
+  const [outlinePending, setOutlinePending] = useState<{ id: string; sections: OutlineSection[] } | null>(null)
 
   const scriptRef = useRef<ScriptStep[]>(buildScript())
   const indexRef = useRef(0)
@@ -34,7 +35,7 @@ export function useStudioSession(initialPrompt: string) {
     } else if (step.kind === 'reveal-slide') {
       setRevealedSlides(prev => (prev.includes(step.index) ? prev : [...prev, step.index]))
     }
-    // 'clarify' steps are handled directly in scheduleNext, not here.
+    // 'clarify' and 'outline' steps are handled directly in scheduleNext, not here.
   }, [])
 
   const scheduleNext = useCallback(() => {
@@ -50,6 +51,14 @@ export function useStudioSession(initialPrompt: string) {
       // Block: push the clarify item and wait for answerClarify()
       setItems(prev => [...prev, { id: step.id, type: 'clarify', question: step.question, options: step.options }])
       setClarifyPending({ id: step.id, question: step.question, options: step.options })
+      setIsWorking(false)
+      return
+    }
+
+    if (step.kind === 'outline') {
+      // Block: push the outline card and wait for approveOutline()
+      setItems(prev => [...prev, { id: step.id, type: 'outline', sections: step.sections }])
+      setOutlinePending({ id: step.id, sections: step.sections })
       setIsWorking(false)
       return
     }
@@ -75,13 +84,46 @@ export function useStudioSession(initialPrompt: string) {
     setItems(prev => prev.map(it => (it.id === clarifyPending.id ? { ...it, answered: answer } : it)))
     setItems(prev => [
       ...prev,
-      { id: nextId('agent'), type: 'agent', text: `Locking in "${answer}". I'll structure the storyline and start building the slides now.` },
+      { id: nextId('agent'), type: 'agent', text: `Locking in "${answer}". I'll draft a storyline for you to review before building the slides.` },
     ])
     setClarifyPending(null)
     setIsWorking(true)
     indexRef.current += 1
     scheduleNext()
   }, [clarifyPending, scheduleNext])
+
+  const approveOutline = useCallback(() => {
+    if (!outlinePending) return
+    setItems(prev => prev.map(it => (it.id === outlinePending.id ? { ...it, approved: true } : it)))
+    setItems(prev => [
+      ...prev,
+      { id: nextId('agent'), type: 'agent', text: "Great — building your slides now." },
+    ])
+    setOutlinePending(null)
+    setIsWorking(true)
+    indexRef.current += 1
+    scheduleNext()
+  }, [outlinePending, scheduleNext])
+
+  // Prototype-only stub: re-shows the same outline after a brief "thinking" beat.
+  // Real regeneration isn't wired up — there's no backend to draft a new one.
+  const regenerateOutline = useCallback(() => {
+    if (!outlinePending) return
+    const chipId = nextId('tool')
+    setItems(prev => [
+      ...prev,
+      { id: chipId, type: 'tool', label: 'Revisiting outline', detail: 'Reconsidering section flow', status: 'running' },
+    ])
+    setIsWorking(true)
+    setTimeout(() => {
+      setItems(prev => prev.map(it => (it.id === chipId ? { ...it, status: 'done' } : it)))
+      setItems(prev => [
+        ...prev,
+        { id: nextId('agent'), type: 'agent', text: "Kept the same structure — it already covers your brief well. (Live regeneration isn't wired up in this prototype.)" },
+      ])
+      setIsWorking(false)
+    }, 1100)
+  }, [outlinePending])
 
   const sendFollowUp = useCallback((text: string) => {
     if (!text.trim()) return
@@ -104,7 +146,10 @@ export function useStudioSession(initialPrompt: string) {
     revealedSlides,
     isWorking,
     clarifyPending,
+    outlinePending,
     answerClarify,
+    approveOutline,
+    regenerateOutline,
     sendFollowUp,
     updateItem,
   }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Sparkles, Briefcase, Palette, RectangleHorizontal, Compass, Wand2 } from 'lucide-react'
 import { Composer } from './Composer'
 import { SUGGESTED_PROMPTS } from '@/lib/fixtures'
@@ -22,8 +22,16 @@ interface StudioLandingProps {
 export function StudioLanding({ onSubmit }: StudioLandingProps) {
   const [mode, setMode] = useState<'professional' | 'creative'>('professional')
   const [toggles, setToggles] = useState<Record<string, boolean>>({ autoRatio: false, guideMode: false })
+  const [promptValue, setPromptValue] = useState('')
+  const composerRef = useRef<HTMLDivElement>(null)
 
   const toggle = (key: string) => setToggles(prev => ({ ...prev, [key]: !prev[key] }))
+
+  // Template click only fills the composer — the user still has to hit Send to start.
+  const fillFromTemplate = (prompt: string) => {
+    setPromptValue(prompt)
+    composerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
 
   return (
     <div
@@ -111,8 +119,14 @@ export function StudioLanding({ onSubmit }: StudioLandingProps) {
       </div>
 
       {/* Composer */}
-      <div style={{ width: '100%', maxWidth: 660, marginBottom: 40 }}>
-        <Composer onSubmit={onSubmit} placeholder="Enter your presentation topic and requirements…" variant="hero" />
+      <div ref={composerRef} style={{ width: '100%', maxWidth: 660, marginBottom: 40 }}>
+        <Composer
+          onSubmit={onSubmit}
+          value={promptValue}
+          onChange={setPromptValue}
+          placeholder="Enter your presentation topic and requirements…"
+          variant="hero"
+        />
       </div>
 
       {/* Templates */}
@@ -127,7 +141,7 @@ export function StudioLanding({ onSubmit }: StudioLandingProps) {
           {SUGGESTED_PROMPTS.map((prompt, i) => (
             <button
               key={i}
-              onClick={() => onSubmit(prompt)}
+              onClick={() => fillFromTemplate(prompt)}
               style={{
                 textAlign: 'left',
                 padding: '14px 16px',

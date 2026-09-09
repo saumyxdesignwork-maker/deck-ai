@@ -9,11 +9,13 @@ interface ChatPaneProps {
   items: ChatItem[]
   isWorking: boolean
   onAnswerClarify: (answer: string) => void
+  onApproveOutline: () => void
+  onRegenerateOutline: () => void
   onSendFollowUp: (text: string) => void
   width: number
 }
 
-export function ChatPane({ items, isWorking, onAnswerClarify, onSendFollowUp, width }: ChatPaneProps) {
+export function ChatPane({ items, isWorking, onAnswerClarify, onApproveOutline, onRegenerateOutline, onSendFollowUp, width }: ChatPaneProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -28,6 +30,7 @@ export function ChatPane({ items, isWorking, onAnswerClarify, onSendFollowUp, wi
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
+        background: 'var(--surface-panel, var(--surface))',
       }}
     >
       <div
@@ -42,7 +45,13 @@ export function ChatPane({ items, isWorking, onAnswerClarify, onSendFollowUp, wi
         }}
       >
         {items.map(item => (
-          <ChatItemView key={item.id} item={item} onAnswerClarify={onAnswerClarify} />
+          <ChatItemView
+            key={item.id}
+            item={item}
+            onAnswerClarify={onAnswerClarify}
+            onApproveOutline={onApproveOutline}
+            onRegenerateOutline={onRegenerateOutline}
+          />
         ))}
         {isWorking && (
           <div style={{ display: 'flex', gap: 4 }}>

@@ -26,10 +26,19 @@ interface ComposerProps {
   placeholder?: string
   variant?: 'hero' | 'session'
   disabled?: boolean
+  /** Controlled input — pass both to let a parent (e.g. a template click) fill the field. */
+  value?: string
+  onChange?: (value: string) => void
 }
 
-export function Composer({ onSubmit, placeholder = 'Enter your slides request here', variant = 'session', disabled }: ComposerProps) {
-  const [value, setValue] = useState('')
+export function Composer({ onSubmit, placeholder = 'Enter your slides request here', variant = 'session', disabled, value: controlledValue, onChange: controlledOnChange }: ComposerProps) {
+  const [internalValue, setInternalValue] = useState('')
+  const isControlled = controlledValue !== undefined
+  const value = isControlled ? controlledValue : internalValue
+  const setValue = (v: string) => {
+    if (isControlled) controlledOnChange?.(v)
+    else setInternalValue(v)
+  }
   const [model, setModel] = useState<'Standard' | 'Ultra'>('Standard')
   const [attachOpen, setAttachOpen] = useState(false)
   const attachRef = useRef<HTMLDivElement>(null)

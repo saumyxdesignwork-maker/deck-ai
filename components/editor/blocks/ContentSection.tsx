@@ -167,9 +167,10 @@ interface ContentSectionProps {
   section: DeckSection
   isActive: boolean
   onClick: () => void
+  onInsertBefore?: () => void
 }
 
-export function ContentSection({ section, isActive, onClick }: ContentSectionProps) {
+export function ContentSection({ section, isActive, onClick, onInsertBefore }: ContentSectionProps) {
   const [hovered, setHovered] = useState(false)
 
   return (
@@ -191,7 +192,8 @@ export function ContentSection({ section, isActive, onClick }: ContentSectionPro
       >
         <div style={{ flex: 1, height: 1, background: 'var(--divider)' }} />
         <button
-          onClick={e => e.stopPropagation()}
+          onClick={e => { e.stopPropagation(); onInsertBefore?.() }}
+          title="Insert a new slide here"
           style={{
             width: 22,
             height: 22,
