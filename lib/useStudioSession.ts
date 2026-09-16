@@ -11,6 +11,20 @@ function nextId(prefix: string) {
   return `${prefix}-${uid}`
 }
 
+// Chat items can be nested one level inside a 'group' (chain-of-thought
+// container) — these helpers find/patch/append by id regardless of nesting.
+function patchItemRecursive(item: ChatItem, id: string, patch: ChatItemPatch): ChatItem {
+  if (item.id === id) return { ...item, ...patch } as ChatItem
+  if (item.type === 'group') {
+    return { ...item, children: item.children.map(child => patchItemRecursive(child, id, patch)) }
+  }
+  return item
+}
+
+function pushToGroup(items: ChatItem[], groupId: string, child: ChatItem): ChatItem[] {
+  return items.map(it => (it.id === groupId && it.type === 'group' ? { ...it, children: [...it.children, child] } : it))
+}
+
 export function useStudioSession(initialPrompt: string) {
   const [items, setItems] = useState<ChatItem[]>([
     { id: nextId('user'), type: 'user', text: initialPrompt },
@@ -29,7 +43,9 @@ export function useStudioSession(initialPrompt: string) {
     if (step.kind === 'chat') {
       setItems(prev => [...prev, step.item])
     } else if (step.kind === 'update') {
-      setItems(prev => prev.map(it => (it.id === step.id ? ({ ...it, ...step.patch } as ChatItem) : it)))
+      setItems(prev => prev.map(it => patchItemRecursive(it, step.id, step.patch)))
+    } else if (step.kind === 'group-push') {
+      setItems(prev => pushToGroup(prev, step.groupId, step.item))
     } else if (step.kind === 'preview') {
       setPreviewState(step.state)
     } else if (step.kind === 'reveal-slide') {
@@ -137,7 +153,7 @@ export function useStudioSession(initialPrompt: string) {
   }, [])
 
   const updateItem = useCallback((id: string, patch: ChatItemPatch) => {
-    setItems(prev => prev.map(it => (it.id === id ? ({ ...it, ...patch } as ChatItem) : it)))
+    setItems(prev => prev.map(it => patchItemRecursive(it, id, patch)))
   }, [])
 
   return {

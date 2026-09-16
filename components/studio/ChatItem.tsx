@@ -3,10 +3,11 @@
 import { Copy, ThumbsUp, ThumbsDown, MoreHorizontal } from 'lucide-react'
 import { ChatItem as ChatItemType } from '@/lib/studioScript'
 import { ToolChip } from './ToolChip'
-import { ThinkingDots } from './ThinkingDots'
 import { TaskChecklist } from './TaskChecklist'
 import { ClarifyCard } from './ClarifyCard'
 import { OutlineCard } from './OutlineCard'
+import { ReasoningText } from './ReasoningText'
+import { ChainOfThoughtBlock } from './ChainOfThoughtBlock'
 
 interface ChatItemProps {
   item: ChatItemType
@@ -47,8 +48,11 @@ export function ChatItemView({ item, onAnswerClarify }: ChatItemProps) {
     case 'verify':
       return <ToolChip label={item.label} detail={item.detail} status={item.status} variant="verify" />
 
-    case 'thinking':
-      return <ThinkingDots />
+    case 'reasoning':
+      return <ReasoningText text={item.text} />
+
+    case 'group':
+      return <ChainOfThoughtBlock label={item.label} steps={item.children} />
 
     case 'checklist':
       return <TaskChecklist title={item.title} tasks={item.tasks} />

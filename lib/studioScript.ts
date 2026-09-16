@@ -19,7 +19,8 @@ export type ChatItem =
   | { id: string; type: 'user'; text: string }
   | { id: string; type: 'agent'; text: string }
   | { id: string; type: 'tool'; label: string; detail: string; status: 'running' | 'done' }
-  | { id: string; type: 'thinking' }
+  | { id: string; type: 'reasoning'; text: string }
+  | { id: string; type: 'group'; label: string; children: ChatItem[] }
   | { id: string; type: 'clarify'; question: string; options: string[]; answered?: string }
   | { id: string; type: 'checklist'; title: string; tasks: ChecklistTask[] }
   | { id: string; type: 'outline'; sections: OutlineSection[]; approved?: boolean }
@@ -31,10 +32,18 @@ export type ChatItemPatch = Partial<Omit<ChatItem, 'id' | 'type'>>
 export type ScriptStep =
   | { kind: 'chat'; delay: number; item: ChatItem }
   | { kind: 'update'; delay: number; id: string; patch: ChatItemPatch }
+  | { kind: 'group-push'; delay: number; groupId: string; item: ChatItem }
   | { kind: 'clarify'; delay: number; id: string; question: string; options: string[] }
   | { kind: 'outline'; delay: number; id: string; sections: OutlineSection[] }
   | { kind: 'preview'; delay: number; state: 'preparing' | 'thumbs' | 'done' }
   | { kind: 'reveal-slide'; delay: number; index: number }
+
+const REASONING_INTENT = `Let me think through this brief before drafting a storyline:
+
+1. Parsed the request for audience, tone, and primary goal signals
+2. The goal isn't fully specified — it could be an investor pitch, an internal update, or something else entirely
+3. Guessing wrong here would send the whole storyline in the wrong direction
+4. I'll ask one quick clarifying question to lock the goal before drafting sections`
 
 // The outline shown for review before slide generation begins —
 // reuses the same section titles/bullets the Classic wizard's storyline uses.
@@ -74,35 +83,44 @@ export function buildScript(): ScriptStep[] {
     },
   })
 
+  // ── Understanding the brief — collapsible chain-of-thought group ────────
   steps.push({
-    kind: 'chat',
-    delay: 650,
+    kind: 'chat', delay: 400,
+    item: { id: 'group-analyze', type: 'group', label: 'Understanding your brief', children: [] },
+  })
+  steps.push({
+    kind: 'group-push', delay: 400, groupId: 'group-analyze',
     item: { id: 'tool-analyze', type: 'tool', label: 'Analyzing request', detail: 'Parsing prompt intent and tone', status: 'running' },
   })
   steps.push({ kind: 'update', delay: 900, id: 'tool-analyze', patch: { status: 'done' } })
-
-  steps.push({ kind: 'chat', delay: 500, item: { id: 'thinking-1', type: 'thinking' } })
+  steps.push({
+    kind: 'group-push', delay: 400, groupId: 'group-analyze',
+    item: { id: 'reasoning-1', type: 'reasoning', text: REASONING_INTENT },
+  })
 
   // ── Clarifying question (blocks) ─────────────────────────────────────
   steps.push({
     kind: 'clarify',
-    delay: 700,
+    delay: 1400,
     id: 'clarify-goal',
     question: CLARIFY_QUESTION,
     options: CLARIFY_OPTIONS,
   })
 
   // ── Resumes here after answerClarify() ───────────────────────────────
+  // ── Structuring the storyline — collapsible chain-of-thought group ──────
   steps.push({
-    kind: 'chat',
-    delay: 600,
+    kind: 'chat', delay: 600,
+    item: { id: 'group-storyline', type: 'group', label: 'Structuring the storyline', children: [] },
+  })
+  steps.push({
+    kind: 'group-push', delay: 0, groupId: 'group-storyline',
     item: { id: 'tool-structure', type: 'tool', label: 'Structuring outline', detail: 'Drafting section flow and narrative arc', status: 'running' },
   })
   steps.push({ kind: 'update', delay: 1000, id: 'tool-structure', patch: { status: 'done' } })
 
   steps.push({
-    kind: 'chat',
-    delay: 500,
+    kind: 'group-push', delay: 400, groupId: 'group-storyline',
     item: {
       id: 'checklist-1',
       type: 'checklist',
@@ -154,9 +172,18 @@ export function buildScript(): ScriptStep[] {
   steps.push({ kind: 'preview', delay: 400, state: 'preparing' })
   steps.push({ kind: 'preview', delay: 600, state: 'thumbs' })
 
+  // ── Writing the slides — collapsible chain-of-thought group ─────────────
+  // Each "Writing slide N" chip stands in for a separate sub-agent/tool
+  // call producing that slide — grouped under one trigger like a real
+  // multi-agent trace instead of a flat list of chips.
+  steps.push({
+    kind: 'chat', delay: 0,
+    item: { id: 'group-slides', type: 'group', label: 'Writing your slides', children: [] },
+  })
+
   // Cover slide
   steps.push({
-    kind: 'chat', delay: 500,
+    kind: 'group-push', delay: 500, groupId: 'group-slides',
     item: { id: 'tool-slide-cover', type: 'tool', label: 'Writing slide 1', detail: 'Cover', status: 'running' },
   })
   steps.push({ kind: 'update', delay: 500, id: 'tool-slide-cover', patch: { status: 'done' } })
@@ -166,7 +193,7 @@ export function buildScript(): ScriptStep[] {
   MOCK_DECK.sections.forEach((section, i) => {
     const toolId = `tool-slide-${i + 1}`
     steps.push({
-      kind: 'chat', delay: 500,
+      kind: 'group-push', delay: 500, groupId: 'group-slides',
       item: { id: toolId, type: 'tool', label: `Writing slide ${i + 2}`, detail: section.title, status: 'running' },
     })
     steps.push({ kind: 'update', delay: 500, id: toolId, patch: { status: 'done' } })
@@ -175,7 +202,7 @@ export function buildScript(): ScriptStep[] {
 
   // ── Verify + wrap up ──────────────────────────────────────────────────
   steps.push({
-    kind: 'chat', delay: 500,
+    kind: 'group-push', delay: 500, groupId: 'group-slides',
     item: { id: 'verify-layout', type: 'verify', label: 'Check slide layout', detail: `Layout-check all ${TOTAL_SLIDES} slides`, status: 'running' },
   })
   steps.push({ kind: 'update', delay: 900, id: 'verify-layout', patch: { status: 'done' } })
