@@ -4,7 +4,7 @@
     {
       "name": "DeckAI Dev",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--", "--port", "3301"],
+      "runtimeArgs": ["--prefix", "Decks_AI_app", "run", "dev", "--", "--port", "3301"],
       "port": 3301
     }
   ]
