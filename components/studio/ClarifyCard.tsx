@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Circle, CircleDot } from 'lucide-react'
+import { Circle } from 'lucide-react'
 
 interface ClarifyCardProps {
   question: string
@@ -82,11 +82,17 @@ export function ClarifyCard({ question, options, answered, onSubmit }: ClarifyCa
                 }}
               >
                 {opt}
-                {isSelected ? (
-                  <CircleDot size={14} style={{ color: 'var(--accent)', flexShrink: 0 }} />
-                ) : (
-                  <Circle size={14} style={{ color: 'var(--border)', flexShrink: 0 }} />
-                )}
+                <span style={{ position: 'relative', width: 14, height: 14, flexShrink: 0 }}>
+                  <Circle size={14} style={{ color: isSelected ? 'var(--accent)' : 'var(--border)' }} />
+                  {isSelected && (
+                    <Circle
+                      size={6}
+                      fill="var(--accent)"
+                      stroke="none"
+                      style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
+                    />
+                  )}
+                </span>
               </button>
             )
           })}
