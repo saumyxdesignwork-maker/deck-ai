@@ -32,44 +32,15 @@ export function ControlsPanel() {
     <div
       style={{
         position: 'fixed',
-        top: 20,
-        left: 20,
+        bottom: 20,
+        right: 20,
         zIndex: 50,
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'flex-start',
+        alignItems: 'flex-end',
         gap: 8,
       }}
     >
-      {/* Toggle pill */}
-      <button
-        onClick={() => setOpen(!open)}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-          padding: '6px 12px',
-          borderRadius: 'var(--r-pill)',
-          border: '1px solid var(--border)',
-          background: 'var(--surface)',
-          boxShadow: 'var(--sh-2)',
-          cursor: 'pointer',
-          fontSize: 12,
-          fontWeight: 500,
-          color: 'var(--text)',
-          transition: 'box-shadow 0.15s',
-          fontFamily: 'var(--font-body)',
-          backdropFilter: isGlassPanel ? 'var(--backdrop-blur)' : undefined,
-          WebkitBackdropFilter: isGlassPanel ? 'var(--backdrop-blur)' : undefined,
-        }}
-        onMouseEnter={e => (e.currentTarget.style.boxShadow = 'var(--sh-3)')}
-        onMouseLeave={e => (e.currentTarget.style.boxShadow = 'var(--sh-2)')}
-      >
-        <SwatchBook size={14} style={{ color: 'var(--accent)' }} />
-        <span>Style</span>
-        {open ? <ChevronUp size={12} style={{ color: 'var(--text-muted)' }} /> : <ChevronDown size={12} style={{ color: 'var(--text-muted)' }} />}
-      </button>
-
       {/* Expanded panel */}
       {open && (
         <div
@@ -264,6 +235,35 @@ export function ControlsPanel() {
           )}
         </div>
       )}
+
+      {/* Toggle pill */}
+      <button
+        onClick={() => setOpen(!open)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          padding: '6px 12px',
+          borderRadius: 'var(--r-pill)',
+          border: '1px solid var(--border)',
+          background: 'var(--surface)',
+          boxShadow: 'var(--sh-2)',
+          cursor: 'pointer',
+          fontSize: 12,
+          fontWeight: 500,
+          color: 'var(--text)',
+          transition: 'box-shadow 0.15s',
+          fontFamily: 'var(--font-body)',
+          backdropFilter: isGlassPanel ? 'var(--backdrop-blur)' : undefined,
+          WebkitBackdropFilter: isGlassPanel ? 'var(--backdrop-blur)' : undefined,
+        }}
+        onMouseEnter={e => (e.currentTarget.style.boxShadow = 'var(--sh-3)')}
+        onMouseLeave={e => (e.currentTarget.style.boxShadow = 'var(--sh-2)')}
+      >
+        <SwatchBook size={14} style={{ color: 'var(--accent)' }} />
+        <span>Style</span>
+        {open ? <ChevronDown size={12} style={{ color: 'var(--text-muted)' }} /> : <ChevronUp size={12} style={{ color: 'var(--text-muted)' }} />}
+      </button>
     </div>
   )
 }
