@@ -32,8 +32,14 @@ export interface SessionState {
   deck?: DeckData
 }
 
-const SESSION_TTL_MS = 30 * 60 * 1000 // 30 minutes
-const SWEEP_INTERVAL_MS = 5 * 60 * 1000
+// Generous on purpose — this is a single-user dev tool and a SessionState is
+// a few small JS objects (no images: those live on disk, only URLs are held
+// here), so there's no real memory pressure to trade off against. A user
+// reading a generated storyline, stepping away, or just chatting slowly
+// should not come back to "session expired". Was 30 minutes; that was too
+// tight against normal pacing and produced a confusing dead end.
+const SESSION_TTL_MS = 4 * 60 * 60 * 1000 // 4 hours
+const SWEEP_INTERVAL_MS = 15 * 60 * 1000
 
 const sessions = new Map<string, SessionState>()
 

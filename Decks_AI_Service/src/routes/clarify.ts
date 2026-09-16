@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { getSession } from '../session/store.js'
 import { runClarify } from '../pipeline/pipeline.js'
 import { toLine } from '../pipeline/events.js'
-import { logError } from '../lib/log.js'
+import { log, logError } from '../lib/log.js'
 
 const BodySchema = z.object({ sessionId: z.string().min(1), answer: z.string().min(1) })
 
@@ -16,6 +16,7 @@ clarifyRoute.post('/clarify', async c => {
 
   const state = getSession(body.data.sessionId)
   if (!state) {
+    log('route.clarify', 'session not found', { sessionId: body.data.sessionId })
     c.header('Content-Type', 'application/x-ndjson; charset=utf-8')
     return stream(c, async s => {
       await s.write(toLine({ t: 'error', message: 'Session expired or not found — please start a new deck.', code: 'SESSION_NOT_FOUND' }))

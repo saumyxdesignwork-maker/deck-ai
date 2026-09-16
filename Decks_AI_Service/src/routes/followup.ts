@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { getSession } from '../session/store.js'
 import { runFollowup } from '../pipeline/pipeline.js'
 import { toLine } from '../pipeline/events.js'
-import { logError } from '../lib/log.js'
+import { log, logError } from '../lib/log.js'
 
 const BodySchema = z.object({ sessionId: z.string().min(1), text: z.string().min(1) })
 
@@ -19,6 +19,7 @@ followupRoute.post('/followup', async c => {
   c.header('Cache-Control', 'no-cache, no-transform')
 
   if (!state) {
+    log('route.followup', 'session not found', { sessionId: body.data.sessionId })
     return stream(c, async s => {
       await s.write(toLine({ t: 'error', message: 'Session expired or not found — please start a new deck.', code: 'SESSION_NOT_FOUND' }))
     })

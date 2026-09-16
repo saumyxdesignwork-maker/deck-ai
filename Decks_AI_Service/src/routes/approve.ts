@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { getSession } from '../session/store.js'
 import { runApprove } from '../pipeline/pipeline.js'
 import { toLine } from '../pipeline/events.js'
-import { logError } from '../lib/log.js'
+import { log, logError } from '../lib/log.js'
 
 const BodySchema = z.object({ sessionId: z.string().min(1) })
 
@@ -19,12 +19,14 @@ approveRoute.post('/approve', async c => {
   c.header('Cache-Control', 'no-cache, no-transform')
 
   if (!state) {
+    log('route.approve', 'session not found', { sessionId: body.data.sessionId })
     return stream(c, async s => {
       await s.write(toLine({ t: 'error', message: 'Session expired or not found — please start a new deck.', code: 'SESSION_NOT_FOUND' }))
     })
   }
 
   if (!state.approvedStoryline) {
+    log('route.approve', 'no storyline to approve', { sessionId: body.data.sessionId })
     return stream(c, async s => {
       await s.write(toLine({ t: 'error', message: 'No storyline to approve yet.', code: 'NO_STORYLINE' }))
     })

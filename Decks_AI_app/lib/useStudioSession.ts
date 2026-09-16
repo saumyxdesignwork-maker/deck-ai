@@ -9,6 +9,11 @@ import { CURRENT_USER } from './identity'
 
 export type PreviewState = 'idle' | 'preparing' | 'thumbs' | 'done'
 
+// Error codes that end the session with nothing left to resume — these get
+// a visible chat message. Everything else (*_FALLBACK codes from a degraded
+// model call) is a soft error the pipeline already recovered from.
+const HARD_ERROR_CODES = new Set(['SESSION_NOT_FOUND', 'NO_STORYLINE', 'PIPELINE_ERROR'])
+
 let uid = 0
 function nextId(prefix: string) {
   uid += 1
@@ -74,11 +79,28 @@ export function useStudioSession(initialPrompt: string) {
         setDeck(event.deck)
         break
       case 'error':
-        // Soft errors (e.g. a model fallback) are logged, not shown as a
-        // dead end — the pipeline already degrades to a scaffold and keeps
-        // streaming. A hard failure simply ends the stream with isWorking
-        // cleared below, which reads as "stopped" rather than crashing.
         console.error(`[decks-ai-service] ${event.code}: ${event.message}`)
+        // Soft errors (a model fallback) are logged only — the pipeline
+        // already degrades to a scaffold and keeps streaming, so surfacing
+        // them as a chat message would just be noise. Hard/terminal errors
+        // (the session is gone or the request failed outright) end the
+        // stream with nothing left to resume, so they need a visible
+        // message — otherwise the UI just goes quiet with no explanation.
+        if (HARD_ERROR_CODES.has(event.code)) {
+          setClarifyPending(null)
+          setOutlinePending(null)
+          setItems(prev => [
+            ...prev,
+            {
+              id: nextId('agent'),
+              type: 'agent',
+              text:
+                event.code === 'SESSION_NOT_FOUND'
+                  ? "This session has expired (it's been a while since we last talked). Please start a new deck to continue."
+                  : "Something went wrong on my end. Please try again, or start a new deck if the problem continues.",
+            },
+          ])
+        }
         break
       case 'done':
         break
