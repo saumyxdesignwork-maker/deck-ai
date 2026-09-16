@@ -17,6 +17,10 @@ export interface Block {
   type: 'heading' | 'paragraph' | 'card-group' | 'image' | 'callout' | 'quote'
   content: string
   cards?: { icon: string; title: string; value: string }[]
+  /** Real generated asset URL from Decks_AI_Service (Flux/Recraft), when
+   * available. `content` stays the caption/placeholder text either way. */
+  imageUrl?: string
+  alt?: string
 }
 
 export interface DeckSection {

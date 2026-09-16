@@ -1,0 +1,24 @@
+{
+  "name": "decks-ai-service",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Backend service for DeckAI — 3-tier OpenRouter pipeline (Orchestrator / Copywriter / Designer) powering the Studio deck-generation flow.",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "smoke": "tsx src/scripts/smoke.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.7",
+    "dotenv": "^16.4.7",
+    "hono": "^4.6.14",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

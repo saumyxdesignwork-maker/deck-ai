@@ -70,10 +70,11 @@ export function StudioSession({ initialPrompt, onBackToLanding }: StudioSessionP
           <PreviewPane
             previewState={session.previewState}
             revealedSlides={session.revealedSlides}
+            deck={session.deck}
             isWorking={session.isWorking}
             outlinePending={session.outlinePending}
             onApproveOutline={session.approveOutline}
-            onRegenerateOutline={session.regenerateOutline}
+            onRegenerateOutline={() => session.regenerateOutline()}
           />
         </div>
       </div>

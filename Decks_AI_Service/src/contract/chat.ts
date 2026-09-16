@@ -1,8 +1,4 @@
-// Shared chat-transcript types for the Studio conversational flow. These
-// used to also hold a scripted mock timeline (buildScript/ScriptStep) that
-// replayed static fixtures with setTimeout — that's gone now that
-// useStudioSession.ts streams real events from Decks_AI_Service. This file
-// mirrors Decks_AI_Service/src/contract/chat.ts; keep them in sync by hand.
+// Mirrors Decks_AI_app/lib/studioScript.ts — keep these two files in sync by hand.
 
 export interface ChecklistTask {
   label: string

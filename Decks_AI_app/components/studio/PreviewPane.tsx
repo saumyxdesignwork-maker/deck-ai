@@ -11,7 +11,7 @@ import { PreviewToolbar } from './PreviewToolbar'
 import { SlideThumbRail } from './SlideThumbRail'
 import { OutlineReviewPanel } from './OutlineReviewPanel'
 import { ResizeHandle } from '@/components/shared/ResizeHandle'
-import { MOCK_DECK, DeckSection, Block } from '@/lib/fixtures'
+import { MOCK_DECK, DeckData, DeckSection, Block } from '@/lib/fixtures'
 import { OutlineSection } from '@/lib/studioScript'
 import { PreviewState } from '@/lib/useStudioSession'
 import { useResizableWidth } from '@/lib/useResizableWidth'
@@ -23,6 +23,7 @@ const DEFAULT_INSERT_WIDTH = 276
 interface PreviewPaneProps {
   previewState: PreviewState
   revealedSlides: number[]
+  deck: DeckData | null
   isWorking: boolean
   outlinePending: { id: string; sections: OutlineSection[] } | null
   onApproveOutline: () => void
@@ -54,10 +55,8 @@ function makeDefaultSection(): DeckSection {
   }
 }
 
-export function PreviewPane({ previewState, revealedSlides, isWorking, outlinePending, onApproveOutline, onRegenerateOutline }: PreviewPaneProps) {
-  const [sections, setSections] = useState<DeckSection[]>(() =>
-    MOCK_DECK.sections.map(s => ({ ...s, blocks: [...s.blocks] }))
-  )
+export function PreviewPane({ previewState, revealedSlides, deck, isWorking, outlinePending, onApproveOutline, onRegenerateOutline }: PreviewPaneProps) {
+  const [sections, setSections] = useState<DeckSection[]>([])
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const [autoFollow, setAutoFollow] = useState(true)
   const [isDragOver, setIsDragOver] = useState(false)
@@ -67,6 +66,12 @@ export function PreviewPane({ previewState, revealedSlides, isWorking, outlinePe
 
   const isDone = previewState === 'done'
   const slideRefs = useRef<Array<HTMLDivElement | null>>([])
+
+  // Seed local (editable) sections from the real generated deck as soon as
+  // it arrives over the stream — replaces the old MOCK_DECK.sections seed.
+  useEffect(() => {
+    if (deck) setSections(deck.sections.map(s => ({ ...s, blocks: [...s.blocks] })))
+  }, [deck])
 
   // Follow the newest revealed slide while streaming (single-slide preview)
   useEffect(() => {
@@ -122,7 +127,7 @@ export function PreviewPane({ previewState, revealedSlides, isWorking, outlinePe
       >
         <PanelLeft size={14} style={{ color: 'var(--text-muted)' }} />
         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font-body)', flex: 1 }}>
-          {MOCK_DECK.title}
+          {deck?.title ?? MOCK_DECK.title}
         </span>
         {isDone ? (
           <>
@@ -140,7 +145,7 @@ export function PreviewPane({ previewState, revealedSlides, isWorking, outlinePe
       {/* Body */}
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>
         {previewState !== 'idle' && (
-          <SlideThumbRail revealedSlides={revealedSlides} activeIndex={activeIndex} onSelect={handleSelect} />
+          <SlideThumbRail deck={deck} revealedSlides={revealedSlides} activeIndex={activeIndex} onSelect={handleSelect} />
         )}
 
         {/* Canvas */}
@@ -203,10 +208,10 @@ export function PreviewPane({ previewState, revealedSlides, isWorking, outlinePe
               <>
                 <div ref={el => { slideRefs.current[0] = el }}>
                   <CoverBlock
-                    title={MOCK_DECK.title}
-                    subtitle={MOCK_DECK.subtitle}
-                    author={MOCK_DECK.author}
-                    coverColor={MOCK_DECK.coverColor}
+                    title={deck?.title ?? MOCK_DECK.title}
+                    subtitle={deck?.subtitle ?? MOCK_DECK.subtitle}
+                    author={deck?.author ?? MOCK_DECK.author}
+                    coverColor={deck?.coverColor ?? MOCK_DECK.coverColor}
                   />
                 </div>
                 {sections.map((section, i) => (
@@ -224,10 +229,10 @@ export function PreviewPane({ previewState, revealedSlides, isWorking, outlinePe
             ) : activeIndex === 0 ? (
               // Streaming — show only the slide currently being written
               <CoverBlock
-                title={MOCK_DECK.title}
-                subtitle={MOCK_DECK.subtitle}
-                author={MOCK_DECK.author}
-                coverColor={MOCK_DECK.coverColor}
+                title={deck?.title ?? MOCK_DECK.title}
+                subtitle={deck?.subtitle ?? MOCK_DECK.subtitle}
+                author={deck?.author ?? MOCK_DECK.author}
+                coverColor={deck?.coverColor ?? MOCK_DECK.coverColor}
               />
             ) : activeIndex !== null ? (
               <ContentSection
@@ -251,7 +256,7 @@ export function PreviewPane({ previewState, revealedSlides, isWorking, outlinePe
 
       {isPresenting && (
         <PresentationMode
-          deckTitle={MOCK_DECK.title}
+          deckTitle={deck?.title ?? MOCK_DECK.title}
           sections={sections}
           onClose={() => setIsPresenting(false)}
         />

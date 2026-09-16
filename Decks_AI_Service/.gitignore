@@ -10,3 +10,5 @@ build
 __pycache__
 *.pyc
 .venv
+assets/*
+!assets/.gitkeep

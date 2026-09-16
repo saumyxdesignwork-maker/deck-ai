@@ -90,6 +90,23 @@ function CalloutBlock({ block }: { block: Block }) {
 }
 
 function ImageBlock({ block }: { block: Block }) {
+  if (block.imageUrl) {
+    return (
+      <img
+        src={block.imageUrl}
+        alt={block.alt ?? block.content}
+        style={{
+          width: '100%',
+          height: 180,
+          borderRadius: 'var(--r-md)',
+          objectFit: 'cover',
+          marginBottom: 12,
+          display: 'block',
+        }}
+      />
+    )
+  }
+
   return (
     <div
       style={{

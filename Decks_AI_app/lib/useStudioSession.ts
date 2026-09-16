@@ -1,7 +1,11 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { buildScript, ChatItem, ChatItemPatch, OutlineSection, ScriptStep } from './studioScript'
+import { ChatItem, ChatItemPatch, OutlineSection } from './studioScript'
+import { DeckData } from './fixtures'
+import { StreamEvent } from './streamEvents'
+import { fetchStream, DeckServiceError } from './deckStream'
+import { CURRENT_USER } from './identity'
 
 export type PreviewState = 'idle' | 'preparing' | 'thumbs' | 'done'
 
@@ -31,126 +35,126 @@ export function useStudioSession(initialPrompt: string) {
   ])
   const [previewState, setPreviewState] = useState<PreviewState>('idle')
   const [revealedSlides, setRevealedSlides] = useState<number[]>([])
+  const [deck, setDeck] = useState<DeckData | null>(null)
   const [isWorking, setIsWorking] = useState(true)
   const [clarifyPending, setClarifyPending] = useState<{ id: string; question: string; options: string[] } | null>(null)
   const [outlinePending, setOutlinePending] = useState<{ id: string; sections: OutlineSection[] } | null>(null)
 
-  const scriptRef = useRef<ScriptStep[]>(buildScript())
-  const indexRef = useRef(0)
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const sessionIdRef = useRef<string | null>(null)
 
-  const applyStep = useCallback((step: ScriptStep) => {
-    if (step.kind === 'chat') {
-      setItems(prev => [...prev, step.item])
-    } else if (step.kind === 'update') {
-      setItems(prev => prev.map(it => patchItemRecursive(it, step.id, step.patch)))
-    } else if (step.kind === 'group-push') {
-      setItems(prev => pushToGroup(prev, step.groupId, step.item))
-    } else if (step.kind === 'preview') {
-      setPreviewState(step.state)
-    } else if (step.kind === 'reveal-slide') {
-      setRevealedSlides(prev => (prev.includes(step.index) ? prev : [...prev, step.index]))
+  const applyEvent = useCallback((event: StreamEvent) => {
+    switch (event.t) {
+      case 'session':
+        sessionIdRef.current = event.sessionId
+        break
+      case 'chat':
+        setItems(prev => [...prev, event.item])
+        break
+      case 'update':
+        setItems(prev => prev.map(it => patchItemRecursive(it, event.id, event.patch)))
+        break
+      case 'group-push':
+        setItems(prev => pushToGroup(prev, event.groupId, event.item))
+        break
+      case 'clarify':
+        setItems(prev => [...prev, { id: event.id, type: 'clarify', question: event.question, options: event.options }])
+        setClarifyPending({ id: event.id, question: event.question, options: event.options })
+        break
+      case 'outline':
+        setItems(prev => [...prev, { id: event.id, type: 'outline', sections: event.sections }])
+        setOutlinePending({ id: event.id, sections: event.sections })
+        break
+      case 'preview':
+        setPreviewState(event.state)
+        break
+      case 'reveal-slide':
+        setRevealedSlides(prev => (prev.includes(event.index) ? prev : [...prev, event.index]))
+        break
+      case 'deck':
+        setDeck(event.deck)
+        break
+      case 'error':
+        // Soft errors (e.g. a model fallback) are logged, not shown as a
+        // dead end — the pipeline already degrades to a scaffold and keeps
+        // streaming. A hard failure simply ends the stream with isWorking
+        // cleared below, which reads as "stopped" rather than crashing.
+        console.error(`[decks-ai-service] ${event.code}: ${event.message}`)
+        break
+      case 'done':
+        break
     }
-    // 'clarify' and 'outline' steps are handled directly in scheduleNext, not here.
   }, [])
 
-  const scheduleNext = useCallback(() => {
-    const script = scriptRef.current
-    const step = script[indexRef.current]
+  const runStream = useCallback(
+    async (path: string, body: unknown) => {
+      setIsWorking(true)
+      try {
+        await fetchStream<StreamEvent>(path, body, applyEvent)
+      } catch (err) {
+        const message = err instanceof DeckServiceError ? err.message : 'Could not reach Decks AI Service — is it running?'
+        console.error(message, err)
+        setItems(prev => [...prev, { id: nextId('agent'), type: 'agent', text: "I couldn't reach the deck-generation service. Please check it's running and try again." }])
+      } finally {
+        setIsWorking(false)
+      }
+    },
+    [applyEvent],
+  )
 
-    if (!step) {
-      setIsWorking(false)
-      return
-    }
-
-    if (step.kind === 'clarify') {
-      // Block: push the clarify item and wait for answerClarify()
-      setItems(prev => [...prev, { id: step.id, type: 'clarify', question: step.question, options: step.options }])
-      setClarifyPending({ id: step.id, question: step.question, options: step.options })
-      setIsWorking(false)
-      return
-    }
-
-    if (step.kind === 'outline') {
-      // Block: push the outline card and wait for approveOutline()
-      setItems(prev => [...prev, { id: step.id, type: 'outline', sections: step.sections }])
-      setOutlinePending({ id: step.id, sections: step.sections })
-      setIsWorking(false)
-      return
-    }
-
-    timeoutRef.current = setTimeout(() => {
-      applyStep(step)
-      indexRef.current += 1
-      scheduleNext()
-    }, step.delay)
-  }, [applyStep])
+  const hasStartedRef = useRef(false)
 
   useEffect(() => {
-    setIsWorking(true)
-    scheduleNext()
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current)
-    }
+    // React Strict Mode double-invokes effects in dev — without this guard
+    // the mount effect would fire /generate twice, producing two backend
+    // sessions with colliding chat-item ids (and double OpenRouter spend).
+    if (hasStartedRef.current) return
+    hasStartedRef.current = true
+    runStream('/generate', { prompt: initialPrompt, user: CURRENT_USER })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const answerClarify = useCallback((answer: string) => {
-    if (!clarifyPending) return
-    setItems(prev => prev.map(it => (it.id === clarifyPending.id ? { ...it, answered: answer } : it)))
-    setItems(prev => [
-      ...prev,
-      { id: nextId('agent'), type: 'agent', text: `Locking in "${answer}". I'll draft a storyline for you to review before building the slides.` },
-    ])
-    setClarifyPending(null)
-    setIsWorking(true)
-    indexRef.current += 1
-    scheduleNext()
-  }, [clarifyPending, scheduleNext])
+  const answerClarify = useCallback(
+    (answer: string) => {
+      if (!clarifyPending) return
+      setItems(prev => prev.map(it => (it.id === clarifyPending.id ? { ...it, answered: answer } : it)))
+      setItems(prev => [
+        ...prev,
+        { id: nextId('agent'), type: 'agent', text: `Locking in "${answer}". I'll draft a storyline for you to review before building the slides.` },
+      ])
+      setClarifyPending(null)
+      runStream('/clarify', { sessionId: sessionIdRef.current, answer })
+    },
+    [clarifyPending, runStream],
+  )
 
   const approveOutline = useCallback(() => {
     if (!outlinePending) return
     setItems(prev => prev.map(it => (it.id === outlinePending.id ? { ...it, approved: true } : it)))
     setItems(prev => [
       ...prev,
-      { id: nextId('agent'), type: 'agent', text: "Great — building your slides now." },
+      { id: nextId('agent'), type: 'agent', text: 'Great — building your slides now.' },
     ])
     setOutlinePending(null)
-    setIsWorking(true)
-    indexRef.current += 1
-    scheduleNext()
-  }, [outlinePending, scheduleNext])
+    runStream('/approve', { sessionId: sessionIdRef.current })
+  }, [outlinePending, runStream])
 
-  // Prototype-only stub: re-shows the same outline after a brief "thinking" beat.
-  // Real regeneration isn't wired up — there's no backend to draft a new one.
-  const regenerateOutline = useCallback(() => {
-    if (!outlinePending) return
-    const chipId = nextId('tool')
-    setItems(prev => [
-      ...prev,
-      { id: chipId, type: 'tool', label: 'Revisiting outline', detail: 'Reconsidering section flow', status: 'running' },
-    ])
-    setIsWorking(true)
-    setTimeout(() => {
-      setItems(prev => prev.map(it => (it.id === chipId ? { ...it, status: 'done' } : it)))
-      setItems(prev => [
-        ...prev,
-        { id: nextId('agent'), type: 'agent', text: "Kept the same structure — it already covers your brief well. (Live regeneration isn't wired up in this prototype.)" },
-      ])
-      setIsWorking(false)
-    }, 1100)
-  }, [outlinePending])
+  const regenerateOutline = useCallback(
+    (notes?: string) => {
+      if (!outlinePending) return
+      setOutlinePending(null)
+      runStream('/regenerate', { sessionId: sessionIdRef.current, notes })
+    },
+    [outlinePending, runStream],
+  )
 
-  const sendFollowUp = useCallback((text: string) => {
-    if (!text.trim()) return
-    setItems(prev => [...prev, { id: nextId('user'), type: 'user', text }])
-    setIsWorking(true)
-    const ackId = nextId('agent')
-    setTimeout(() => {
-      setItems(prev => [...prev, { id: ackId, type: 'agent', text: "Got it — I've noted that. (This is a prototype; live refinement isn't wired up yet.)" }])
-      setIsWorking(false)
-    }, 900)
-  }, [])
+  const sendFollowUp = useCallback(
+    (text: string) => {
+      if (!text.trim()) return
+      setItems(prev => [...prev, { id: nextId('user'), type: 'user', text }])
+      runStream('/followup', { sessionId: sessionIdRef.current, text })
+    },
+    [runStream],
+  )
 
   const updateItem = useCallback((id: string, patch: ChatItemPatch) => {
     setItems(prev => prev.map(it => patchItemRecursive(it, id, patch)))
@@ -160,6 +164,7 @@ export function useStudioSession(initialPrompt: string) {
     items,
     previewState,
     revealedSlides,
+    deck,
     isWorking,
     clarifyPending,
     outlinePending,

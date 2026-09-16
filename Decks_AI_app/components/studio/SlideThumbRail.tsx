@@ -1,26 +1,29 @@
 'use client'
 
-import { MOCK_DECK } from '@/lib/fixtures'
-import { TOTAL_SLIDES } from '@/lib/studioScript'
+import { DeckData } from '@/lib/fixtures'
 
 interface SlideThumbRailProps {
+  deck: DeckData | null
   revealedSlides: number[]
   activeIndex: number | null
   onSelect: (index: number) => void
 }
 
-function slideTitle(index: number) {
-  if (index === 0) return 'Cover'
-  return MOCK_DECK.sections[index - 1]?.title ?? ''
-}
+export function SlideThumbRail({ deck, revealedSlides, activeIndex, onSelect }: SlideThumbRailProps) {
+  const totalSlides = deck ? 1 + deck.sections.length : 0
+  const slots = Array.from({ length: totalSlides }, (_, i) => i)
 
-function slideColor(index: number) {
-  if (index === 0) return MOCK_DECK.coverColor
-  return MOCK_DECK.sections[index - 1]?.thumbnailColor ?? 'var(--surface-muted)'
-}
+  function slideTitle(index: number) {
+    if (!deck) return ''
+    if (index === 0) return 'Cover'
+    return deck.sections[index - 1]?.title ?? ''
+  }
 
-export function SlideThumbRail({ revealedSlides, activeIndex, onSelect }: SlideThumbRailProps) {
-  const slots = Array.from({ length: TOTAL_SLIDES }, (_, i) => i)
+  function slideColor(index: number) {
+    if (!deck) return 'var(--surface-muted)'
+    if (index === 0) return deck.coverColor
+    return deck.sections[index - 1]?.thumbnailColor ?? 'var(--surface-muted)'
+  }
 
   return (
     <div
