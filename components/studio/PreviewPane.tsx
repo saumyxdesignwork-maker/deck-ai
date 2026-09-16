@@ -6,6 +6,7 @@ import { CoverBlock } from '@/components/editor/blocks/CoverBlock'
 import { ContentSection } from '@/components/editor/blocks/ContentSection'
 import { InsertPanel } from '@/components/editor/InsertPanel'
 import { BottomToolbar } from '@/components/editor/BottomToolbar'
+import { PresentationMode } from '@/components/editor/PresentationMode'
 import { PreviewToolbar } from './PreviewToolbar'
 import { SlideThumbRail } from './SlideThumbRail'
 import { OutlineReviewPanel } from './OutlineReviewPanel'
@@ -60,6 +61,7 @@ export function PreviewPane({ previewState, revealedSlides, isWorking, outlinePe
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const [autoFollow, setAutoFollow] = useState(true)
   const [isDragOver, setIsDragOver] = useState(false)
+  const [isPresenting, setIsPresenting] = useState(false)
   const { width: insertWidth, isResizing: isResizingInsert, handlePointerDown: handleInsertResizeStart } =
     useResizableWidth(DEFAULT_INSERT_WIDTH, MIN_INSERT_WIDTH, MAX_INSERT_WIDTH, /* invert */ true)
 
@@ -124,7 +126,7 @@ export function PreviewPane({ previewState, revealedSlides, isWorking, outlinePe
         </span>
         {isDone ? (
           <>
-            <button style={miniBtnStyle}><Play size={12} fill="currentColor" /> Present</button>
+            <button style={miniBtnStyle} onClick={() => setIsPresenting(true)}><Play size={12} fill="currentColor" /> Present</button>
             <button style={miniBtnStyle}><Download size={12} /> Export</button>
           </>
         ) : (
@@ -246,6 +248,14 @@ export function PreviewPane({ previewState, revealedSlides, isWorking, outlinePe
           </>
         )}
       </div>
+
+      {isPresenting && (
+        <PresentationMode
+          deckTitle={MOCK_DECK.title}
+          sections={sections}
+          onClose={() => setIsPresenting(false)}
+        />
+      )}
     </div>
   )
 }
