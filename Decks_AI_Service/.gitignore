@@ -1,0 +1,12 @@
+# Secrets — never commit, never deploy.
+.env
+.env.*
+!.env.example
+
+# dependencies / build output (once this backend has a package.json)
+node_modules
+dist
+build
+__pycache__
+*.pyc
+.venv
