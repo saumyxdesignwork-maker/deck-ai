@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+import { logger } from 'hono/logger'
 import { config } from './config/env.js'
 import { logError } from './lib/log.js'
 import { healthRoute } from './routes/health.js'
@@ -11,6 +12,8 @@ import { followupRoute } from './routes/followup.js'
 import { assetsRoute } from './routes/assets.js'
 
 export const app = new Hono()
+
+app.use('*', logger())
 
 // CORS must run before routes. The frontend origin is configurable via
 // CORS_ORIGIN — never wildcard here since streaming responses carry
