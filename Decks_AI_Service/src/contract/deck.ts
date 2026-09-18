@@ -2,6 +2,7 @@
 // (The two repos aren't an npm workspace, so types can't be shared directly.)
 
 export type LayoutType = 'statement' | 'key-points' | 'heading-media' | 'media-text' | 'bento' | 'data'
+export type AspectRatio = '16:9' | '4:3'
 
 export interface BlockCard {
   icon: string
@@ -33,4 +34,7 @@ export interface DeckData {
   author: string
   coverColor: string
   sections: DeckSection[]
+  /** Echoes the ratio the user picked in Studio's "Auto Ratio" control —
+   * also fed to the Designer tier's image generation so images match. */
+  aspectRatio: AspectRatio
 }

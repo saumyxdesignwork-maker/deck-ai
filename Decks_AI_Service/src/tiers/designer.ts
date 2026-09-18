@@ -8,7 +8,7 @@ import { logError, log } from '../lib/log.js'
 import { newId } from '../lib/ids.js'
 import type { DeckSkeleton } from './copywriter.js'
 import type { OrchestratorResult } from './orchestrator.js'
-import type { DeckSection } from '../contract/deck.js'
+import type { AspectRatio, DeckSection } from '../contract/deck.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ASSETS_DIR = path.join(__dirname, '..', '..', 'assets')
@@ -96,6 +96,7 @@ async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 export async function generateAndAssignImages(
   sections: DeckSection[],
   directive: OrchestratorResult['designDirective'] | undefined,
+  aspectRatio: AspectRatio,
   onProgress?: (label: string, status: 'running' | 'done' | 'failed') => void,
 ): Promise<void> {
   if (!config.imagesEnabled || config.maxImagesPerDeck <= 0) return
@@ -123,7 +124,7 @@ export async function generateAndAssignImages(
             model,
             prompt,
             n: 1,
-            aspect_ratio: '16:9',
+            aspect_ratio: aspectRatio,
             output_format: useRecraft ? 'svg' : 'png',
           }),
           IMAGE_TIMEOUT_MS,

@@ -1,6 +1,6 @@
 'use client'
 
-import { DeckData, DeckSection, Block } from '@/lib/fixtures'
+import { AspectRatio, DeckData, DeckSection, Block, aspectRatioCss } from '@/lib/fixtures'
 
 interface SlideThumbRailProps {
   deck: DeckData | null
@@ -9,23 +9,25 @@ interface SlideThumbRailProps {
   onSelect: (index: number) => void
 }
 
-// Thumbnails are drawn at a fixed "design" size, then scaled down via CSS
+// Thumbnails are drawn at a fixed "design" width, then scaled down via CSS
 // transform to fit the thumbnail box exactly — the standard way editors
 // (Slides, PowerPoint, Keynote) render a true miniature of the slide
-// instead of a flat color swatch. This ties the mini-content's design size
-// to the rail's own fixed 96px width (see the outer <div> below): 80px of
-// usable width (96 - 16px padding) at 16:10 → 80×50, scaled from 400×250.
+// instead of a flat color swatch. Height follows the deck's own chosen
+// aspect ratio so the thumbnail's shape always matches the real slide's.
 const DESIGN_WIDTH = 400
-const DESIGN_HEIGHT = 250
 const THUMB_WIDTH = 80
 const SCALE = THUMB_WIDTH / DESIGN_WIDTH
 
-function MiniCover({ deck }: { deck: DeckData }) {
+function designHeight(ratio: AspectRatio | undefined): number {
+  return ratio === '4:3' ? DESIGN_WIDTH * (3 / 4) : DESIGN_WIDTH * (9 / 16)
+}
+
+function MiniCover({ deck, height }: { deck: DeckData; height: number }) {
   return (
     <div
       style={{
         width: DESIGN_WIDTH,
-        height: DESIGN_HEIGHT,
+        height,
         boxSizing: 'border-box',
         background: deck.coverColor,
         borderRadius: 16,
@@ -142,12 +144,12 @@ function miniBlock(block: Block, key: string) {
   }
 }
 
-function MiniSection({ section }: { section: DeckSection }) {
+function MiniSection({ section, height }: { section: DeckSection; height: number }) {
   return (
     <div
       style={{
         width: DESIGN_WIDTH,
-        height: DESIGN_HEIGHT,
+        height,
         boxSizing: 'border-box',
         background: 'var(--surface)',
         border: '1px solid var(--border)',
@@ -164,6 +166,7 @@ function MiniSection({ section }: { section: DeckSection }) {
 export function SlideThumbRail({ deck, revealedSlides, activeIndex, onSelect }: SlideThumbRailProps) {
   const totalSlides = deck ? 1 + deck.sections.length : 0
   const slots = Array.from({ length: totalSlides }, (_, i) => i)
+  const height = designHeight(deck?.aspectRatio)
 
   function slideTitle(index: number) {
     if (!deck) return ''
@@ -196,7 +199,7 @@ export function SlideThumbRail({ deck, revealedSlides, activeIndex, onSelect }: 
             style={{
               position: 'relative',
               width: '100%',
-              aspectRatio: '16 / 10',
+              aspectRatio: aspectRatioCss(deck?.aspectRatio),
               borderRadius: 'var(--r-sm)',
               border: '1.5px solid',
               borderColor: isActive ? 'var(--accent)' : 'var(--border)',
@@ -209,8 +212,8 @@ export function SlideThumbRail({ deck, revealedSlides, activeIndex, onSelect }: 
           >
             {revealed && deck && (
               <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: 'inherit' }}>
-                <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT, transform: `scale(${SCALE})`, transformOrigin: 'top left', pointerEvents: 'none' }}>
-                  {i === 0 ? <MiniCover deck={deck} /> : <MiniSection section={deck.sections[i - 1]} />}
+                <div style={{ width: DESIGN_WIDTH, height, transform: `scale(${SCALE})`, transformOrigin: 'top left', pointerEvents: 'none' }}>
+                  {i === 0 ? <MiniCover deck={deck} height={height} /> : <MiniSection section={deck.sections[i - 1]} height={height} />}
                 </div>
               </div>
             )}

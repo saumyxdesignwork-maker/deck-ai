@@ -6,6 +6,7 @@ import { useTheme } from '@/components/controls/ThemeProvider'
 import { useCreate } from '@/lib/createContext'
 import { StudioLanding } from '@/components/studio/StudioLanding'
 import { StudioSession } from '@/components/studio/StudioSession'
+import { AspectRatio } from '@/lib/fixtures'
 
 type Phase = 'landing' | 'session'
 
@@ -14,6 +15,7 @@ export default function StudioPage() {
   const { setInput } = useCreate()
   const [phase, setPhase] = useState<Phase>('landing')
   const [prompt, setPrompt] = useState('')
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9')
 
   // Keep the Controls "Create Flow" pill in sync if this route is reached directly.
   useEffect(() => {
@@ -21,9 +23,10 @@ export default function StudioPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const handleSubmit = (text: string) => {
+  const handleSubmit = (text: string, ratio: AspectRatio) => {
     setInput(text)
     setPrompt(text)
+    setAspectRatio(ratio)
     setPhase('session')
   }
 
@@ -35,7 +38,7 @@ export default function StudioPage() {
   if (phase === 'session') {
     return (
       <>
-        <StudioSession initialPrompt={prompt} onBackToLanding={handleBackToLanding} />
+        <StudioSession initialPrompt={prompt} aspectRatio={aspectRatio} onBackToLanding={handleBackToLanding} />
         <ControlsPanel />
       </>
     )

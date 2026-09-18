@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ChatItem, ChatItemPatch, OutlineSection } from './studioScript'
-import { DeckData } from './fixtures'
+import { AspectRatio, DeckData } from './fixtures'
 import { StreamEvent } from './streamEvents'
 import { fetchStream, DeckServiceError } from './deckStream'
 import { CURRENT_USER } from './identity'
@@ -34,7 +34,7 @@ function pushToGroup(items: ChatItem[], groupId: string, child: ChatItem): ChatI
   return items.map(it => (it.id === groupId && it.type === 'group' ? { ...it, children: [...it.children, child] } : it))
 }
 
-export function useStudioSession(initialPrompt: string) {
+export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio) {
   const [items, setItems] = useState<ChatItem[]>([
     { id: nextId('user'), type: 'user', text: initialPrompt },
   ])
@@ -131,7 +131,7 @@ export function useStudioSession(initialPrompt: string) {
     // sessions with colliding chat-item ids (and double OpenRouter spend).
     if (hasStartedRef.current) return
     hasStartedRef.current = true
-    runStream('/generate', { prompt: initialPrompt, user: CURRENT_USER })
+    runStream('/generate', { prompt: initialPrompt, user: CURRENT_USER, aspectRatio })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

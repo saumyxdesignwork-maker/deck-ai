@@ -1,30 +1,29 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { Sparkles, Briefcase, Palette, RectangleHorizontal, Wand2 } from 'lucide-react'
+import { Sparkles, Briefcase, Palette, RectangleHorizontal, Square, Wand2 } from 'lucide-react'
 import { Composer } from './Composer'
-import { SUGGESTED_PROMPTS } from '@/lib/fixtures'
+import { SUGGESTED_PROMPTS, AspectRatio } from '@/lib/fixtures'
 
 const MODE_PILLS = [
   { key: 'professional', icon: Briefcase, label: 'Professional' },
   { key: 'creative', icon: Palette, label: 'Creative' },
 ] as const
 
-const TOGGLE_PILLS = [
-  { key: 'autoRatio', icon: RectangleHorizontal, label: 'Auto Ratio' },
-] as const
+const RATIO_OPTIONS = [
+  { key: '16:9' as AspectRatio, icon: RectangleHorizontal, label: '16:9' },
+  { key: '4:3' as AspectRatio, icon: Square, label: '4:3' },
+]
 
 interface StudioLandingProps {
-  onSubmit: (prompt: string) => void
+  onSubmit: (prompt: string, aspectRatio: AspectRatio) => void
 }
 
 export function StudioLanding({ onSubmit }: StudioLandingProps) {
   const [mode, setMode] = useState<'professional' | 'creative'>('professional')
-  const [toggles, setToggles] = useState<Record<string, boolean>>({ autoRatio: false })
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9')
   const [promptValue, setPromptValue] = useState('')
   const composerRef = useRef<HTMLDivElement>(null)
-
-  const toggle = (key: string) => setToggles(prev => ({ ...prev, [key]: !prev[key] }))
 
   // Template click only fills the composer — the user still has to hit Send to start.
   const fillFromTemplate = (prompt: string) => {
@@ -96,17 +95,18 @@ export function StudioLanding({ onSubmit }: StudioLandingProps) {
           </button>
         ))}
         <span style={{ width: 1, height: 18, background: 'var(--divider)' }} />
-        {TOGGLE_PILLS.map(({ key, icon: Icon, label }) => (
+        {RATIO_OPTIONS.map(({ key, icon: Icon, label }) => (
           <button
             key={key}
-            onClick={() => toggle(key)}
+            onClick={() => setAspectRatio(key)}
+            title={`Generate every slide in ${label}`}
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '7px 14px', borderRadius: 'var(--r-pill)',
               border: '1px solid',
-              borderColor: toggles[key] ? 'var(--accent)' : 'var(--border)',
-              background: toggles[key] ? 'var(--accent-soft)' : 'var(--surface-muted)',
-              color: toggles[key] ? 'var(--accent)' : 'var(--text)',
+              borderColor: aspectRatio === key ? 'var(--accent)' : 'var(--border)',
+              background: aspectRatio === key ? 'var(--accent-soft)' : 'var(--surface-muted)',
+              color: aspectRatio === key ? 'var(--accent)' : 'var(--text)',
               fontSize: 13, fontWeight: 500, cursor: 'pointer',
               fontFamily: 'var(--font-body)',
             }}
@@ -120,7 +120,7 @@ export function StudioLanding({ onSubmit }: StudioLandingProps) {
       {/* Composer */}
       <div ref={composerRef} style={{ width: '100%', maxWidth: 660, marginBottom: 40 }}>
         <Composer
-          onSubmit={onSubmit}
+          onSubmit={text => onSubmit(text, aspectRatio)}
           value={promptValue}
           onChange={setPromptValue}
           placeholder="Enter your presentation topic and requirements…"

@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react'
 import { useStudioSession } from '@/lib/useStudioSession'
 import { useResizableWidth } from '@/lib/useResizableWidth'
 import { ResizeHandle } from '@/components/shared/ResizeHandle'
+import { AspectRatio } from '@/lib/fixtures'
 import { ChatPane } from './ChatPane'
 import { PreviewPane } from './PreviewPane'
 
@@ -13,11 +14,12 @@ const DEFAULT_CHAT_WIDTH = 380
 
 interface StudioSessionProps {
   initialPrompt: string
+  aspectRatio: AspectRatio
   onBackToLanding: () => void
 }
 
-export function StudioSession({ initialPrompt, onBackToLanding }: StudioSessionProps) {
-  const session = useStudioSession(initialPrompt)
+export function StudioSession({ initialPrompt, aspectRatio, onBackToLanding }: StudioSessionProps) {
+  const session = useStudioSession(initialPrompt, aspectRatio)
   const { width: chatWidth, isResizing, handlePointerDown } =
     useResizableWidth(DEFAULT_CHAT_WIDTH, MIN_CHAT_WIDTH, MAX_CHAT_WIDTH)
 

@@ -212,6 +212,7 @@ export function PreviewPane({ previewState, revealedSlides, deck, isWorking, out
                     subtitle={deck?.subtitle ?? MOCK_DECK.subtitle}
                     author={deck?.author ?? MOCK_DECK.author}
                     coverColor={deck?.coverColor ?? MOCK_DECK.coverColor}
+                    aspectRatio={deck?.aspectRatio}
                   />
                 </div>
                 {sections.map((section, i) => (
@@ -221,6 +222,7 @@ export function PreviewPane({ previewState, revealedSlides, deck, isWorking, out
                       isActive={activeIndex === i + 1}
                       onClick={() => setActiveIndex(i + 1)}
                       onInsertBefore={() => handleInsertSectionAt(i)}
+                      aspectRatio={deck?.aspectRatio}
                     />
                   </div>
                 ))}
@@ -233,12 +235,14 @@ export function PreviewPane({ previewState, revealedSlides, deck, isWorking, out
                 subtitle={deck?.subtitle ?? MOCK_DECK.subtitle}
                 author={deck?.author ?? MOCK_DECK.author}
                 coverColor={deck?.coverColor ?? MOCK_DECK.coverColor}
+                aspectRatio={deck?.aspectRatio}
               />
             ) : activeIndex !== null ? (
               <ContentSection
                 section={sections[activeIndex - 1]}
                 isActive
                 onClick={() => {}}
+                aspectRatio={deck?.aspectRatio}
               />
             ) : null}
           </div>
@@ -257,8 +261,12 @@ export function PreviewPane({ previewState, revealedSlides, deck, isWorking, out
       {isPresenting && (
         <PresentationMode
           deckTitle={deck?.title ?? MOCK_DECK.title}
+          subtitle={deck?.subtitle ?? MOCK_DECK.subtitle}
+          author={deck?.author ?? MOCK_DECK.author}
+          coverColor={deck?.coverColor ?? MOCK_DECK.coverColor}
           sections={sections}
           onClose={() => setIsPresenting(false)}
+          aspectRatio={deck?.aspectRatio}
         />
       )}
     </div>

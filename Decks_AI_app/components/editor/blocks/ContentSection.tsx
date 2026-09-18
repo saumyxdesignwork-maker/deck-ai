@@ -1,6 +1,6 @@
 'use client'
 
-import { DeckSection, Block } from '@/lib/fixtures'
+import { DeckSection, Block, AspectRatio, aspectRatioCss } from '@/lib/fixtures'
 import { Plus } from 'lucide-react'
 import { useState } from 'react'
 
@@ -185,9 +185,13 @@ interface ContentSectionProps {
   isActive: boolean
   onClick: () => void
   onInsertBefore?: () => void
+  /** Locks the slide's shape (defaults to 16:9). Content that doesn't fit
+   * scrolls within the box rather than pushing it taller or bleeding
+   * outside its bounds. */
+  aspectRatio?: AspectRatio
 }
 
-export function ContentSection({ section, isActive, onClick, onInsertBefore }: ContentSectionProps) {
+export function ContentSection({ section, isActive, onClick, onInsertBefore, aspectRatio }: ContentSectionProps) {
   const [hovered, setHovered] = useState(false)
 
   return (
@@ -240,6 +244,9 @@ export function ContentSection({ section, isActive, onClick, onInsertBefore }: C
           marginBottom: 6,
           transition: 'border-color 0.15s',
           cursor: 'text',
+          aspectRatio: aspectRatioCss(aspectRatio),
+          overflow: 'auto',
+          boxSizing: 'border-box',
         }}
       >
         {section.blocks.map(renderBlock)}

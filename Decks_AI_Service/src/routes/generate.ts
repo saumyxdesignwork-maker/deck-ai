@@ -15,6 +15,7 @@ const BodySchema = z.object({
     designation: z.string().optional(),
   }),
   preferences: z.record(z.string(), z.unknown()).optional(),
+  aspectRatio: z.enum(['16:9', '4:3']).default('16:9'),
 })
 
 export const generateRoute = new Hono()
@@ -24,7 +25,7 @@ generateRoute.post('/generate', async c => {
   if (!body.success) return c.json({ error: 'Invalid request body', issues: body.error.issues }, 400)
 
   const sessionId = newId('session')
-  const state = createSession(sessionId, body.data.prompt, body.data.user)
+  const state = createSession(sessionId, body.data.prompt, body.data.user, body.data.aspectRatio)
 
   c.header('Content-Type', 'application/x-ndjson; charset=utf-8')
   c.header('Cache-Control', 'no-cache, no-transform')

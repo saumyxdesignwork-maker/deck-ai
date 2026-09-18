@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { X, ChevronLeft, ChevronRight, Minimize2 } from 'lucide-react'
-import { DeckSection, Block, MOCK_DECK } from '@/lib/fixtures'
+import { DeckSection, Block, AspectRatio, aspectRatioCss } from '@/lib/fixtures'
 
 interface Slide {
   id: string
@@ -14,15 +14,21 @@ interface Slide {
   section?: DeckSection
 }
 
-function buildSlides(deckTitle: string, sections: DeckSection[]): Slide[] {
+interface CoverInfo {
+  subtitle: string
+  author: string
+  color: string
+}
+
+function buildSlides(deckTitle: string, sections: DeckSection[], cover: CoverInfo): Slide[] {
   return [
     {
       id: 'cover',
       type: 'cover',
       title: deckTitle,
-      subtitle: MOCK_DECK.subtitle,
-      author: MOCK_DECK.author,
-      color: MOCK_DECK.coverColor,
+      subtitle: cover.subtitle,
+      author: cover.author,
+      color: cover.color,
     },
     ...sections.map(s => ({ id: s.id, type: 'section' as const, title: s.title, section: s })),
   ]
@@ -68,12 +74,16 @@ function renderBlockPreview(block: Block) {
 
 interface PresentationModeProps {
   deckTitle: string
+  subtitle: string
+  author: string
+  coverColor: string
   sections: DeckSection[]
   onClose: () => void
+  aspectRatio?: AspectRatio
 }
 
-export function PresentationMode({ deckTitle, sections, onClose }: PresentationModeProps) {
-  const slides = buildSlides(deckTitle, sections)
+export function PresentationMode({ deckTitle, subtitle, author, coverColor, sections, onClose, aspectRatio }: PresentationModeProps) {
+  const slides = buildSlides(deckTitle, sections, { subtitle, author, color: coverColor })
   const [current, setCurrent] = useState(0)
   const [controlsVisible, setControlsVisible] = useState(true)
   const [hideTimer, setHideTimer] = useState<ReturnType<typeof setTimeout> | null>(null)
@@ -202,7 +212,9 @@ export function PresentationMode({ deckTitle, sections, onClose }: PresentationM
                 background: slide.color,
                 borderRadius: 'var(--r-xl)',
                 padding: '60px 64px',
-                minHeight: 440,
+                aspectRatio: aspectRatioCss(aspectRatio),
+                overflow: 'hidden',
+                boxSizing: 'border-box',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'flex-end',
@@ -234,7 +246,9 @@ export function PresentationMode({ deckTitle, sections, onClose }: PresentationM
                 border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: 'var(--r-xl)',
                 padding: '52px 60px',
-                minHeight: 440,
+                aspectRatio: aspectRatioCss(aspectRatio),
+                overflow: 'auto',
+                boxSizing: 'border-box',
                 boxShadow: '0 40px 100px rgba(0,0,0,0.5)',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',

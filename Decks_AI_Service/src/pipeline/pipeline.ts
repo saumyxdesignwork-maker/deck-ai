@@ -111,7 +111,7 @@ export async function runApprove(state: SessionState, emit: Emit): Promise<void>
     // Images generate concurrently (bounded by MAX_IMAGES_PER_DECK) — a
     // single chip covers the whole batch rather than one per image, since
     // generateAndAssignImages resolves them together, not incrementally.
-    await generateAndAssignImages(sections, state.designDirective)
+    await generateAndAssignImages(sections, state.designDirective, state.aspectRatio)
     await emit({ t: 'update', id: imgToolId, patch: { status: 'done' } })
   }
 
@@ -121,6 +121,7 @@ export async function runApprove(state: SessionState, emit: Emit): Promise<void>
     author: state.user.name,
     coverColor,
     sections,
+    aspectRatio: state.aspectRatio,
   }
   state.deck = deck
 

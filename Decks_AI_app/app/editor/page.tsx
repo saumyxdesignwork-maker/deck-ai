@@ -201,6 +201,9 @@ export default function EditorPage() {
       {isPresenting && (
         <PresentationMode
           deckTitle={deckTitle}
+          subtitle={MOCK_DECK.subtitle}
+          author={MOCK_DECK.author}
+          coverColor={MOCK_DECK.coverColor}
           sections={sections}
           onClose={() => setIsPresenting(false)}
         />

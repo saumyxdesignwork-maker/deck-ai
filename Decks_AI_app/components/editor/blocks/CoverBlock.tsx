@@ -1,15 +1,20 @@
 'use client'
 
 import { useState } from 'react'
+import { AspectRatio, aspectRatioCss } from '@/lib/fixtures'
 
 interface CoverBlockProps {
   title: string
   subtitle: string
   author: string
   coverColor: string
+  /** Locks the slide's shape (defaults to 16:9 for callers that predate
+   * this, e.g. Classic's MOCK_DECK) — content is clipped to fit, never
+   * allowed to push the slide taller than its ratio. */
+  aspectRatio?: AspectRatio
 }
 
-export function CoverBlock({ title, subtitle, author, coverColor }: CoverBlockProps) {
+export function CoverBlock({ title, subtitle, author, coverColor, aspectRatio }: CoverBlockProps) {
   const [editTitle, setEditTitle] = useState(title)
   const [editSubtitle, setEditSubtitle] = useState(subtitle)
 
@@ -22,7 +27,7 @@ export function CoverBlock({ title, subtitle, author, coverColor }: CoverBlockPr
         marginBottom: 12,
         position: 'relative',
         overflow: 'hidden',
-        minHeight: 300,
+        aspectRatio: aspectRatioCss(aspectRatio),
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'flex-end',
@@ -75,6 +80,9 @@ export function CoverBlock({ title, subtitle, author, coverColor }: CoverBlockPr
             lineHeight: 1.2,
             marginBottom: 12,
             padding: 0,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
           }}
           placeholder="Deck title"
         />
@@ -91,6 +99,9 @@ export function CoverBlock({ title, subtitle, author, coverColor }: CoverBlockPr
             fontSize: 15,
             color: 'rgba(255,255,255,0.8)',
             padding: 0,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
             marginBottom: 24,
           }}
           placeholder="Subtitle…"

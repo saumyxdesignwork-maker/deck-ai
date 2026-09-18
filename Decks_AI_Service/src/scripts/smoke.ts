@@ -69,7 +69,7 @@ async function main() {
   }
 
   console.log('\n2. Running the full pipeline for a canned prompt...')
-  const state = createSession('smoke-session', SAMPLE_PROMPT, { name: 'Smoke Test' })
+  const state = createSession('smoke-session', SAMPLE_PROMPT, { name: 'Smoke Test' }, '16:9')
 
   const events: StreamEvent[] = []
   const emit = async (e: StreamEvent) => {

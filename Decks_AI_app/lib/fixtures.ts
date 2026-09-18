@@ -1,4 +1,12 @@
 export type LayoutType = 'statement' | 'key-points' | 'heading-media' | 'media-text' | 'bento' | 'data'
+export type AspectRatio = '16:9' | '4:3'
+
+/** CSS `aspect-ratio` value for a given slide ratio — the single source of
+ * truth every slide-shaped container (cover, section, thumbnail, present
+ * mode) reads from so a deck's ratio choice is honored everywhere. */
+export function aspectRatioCss(ratio: AspectRatio | undefined): string {
+  return ratio === '4:3' ? '4 / 3' : '16 / 9'
+}
 
 export interface StorylineBullet {
   id: string
@@ -37,6 +45,10 @@ export interface DeckData {
   author: string
   coverColor: string
   sections: DeckSection[]
+  /** Chosen at generation time (Studio's "Auto Ratio" picker) — every
+   * slide's canvas is locked to this shape. Defaults to '16:9' for decks
+   * that predate this field (e.g. Classic's MOCK_DECK). */
+  aspectRatio?: AspectRatio
 }
 
 // ─── Mock storyline (generated from prompt) ───
