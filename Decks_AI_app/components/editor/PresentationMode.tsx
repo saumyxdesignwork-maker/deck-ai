@@ -34,35 +34,44 @@ function buildSlides(deckTitle: string, sections: DeckSection[], cover: CoverInf
   ]
 }
 
+// Presentation mode always renders on its own fixed dark backdrop,
+// regardless of the site's active VL1/VL2/VL3 theme — so these colors are
+// hardcoded for legibility on dark, never the `--text`/`--accent` theme
+// variables (those are tuned for light surfaces and were the cause of
+// dark-text-on-dark-panel illegibility here before).
+const PRESENT_TEXT = 'rgba(255,255,255,0.94)'
+const PRESENT_TEXT_MUTED = 'rgba(255,255,255,0.72)'
+const PRESENT_ACCENT = '#F2A65A'
+
 function renderBlockPreview(block: Block) {
   switch (block.type) {
     case 'heading':
       return (
-        <h2 key={block.id} style={{ fontFamily: 'var(--font-heading)', fontSize: 28, fontWeight: 700, color: 'var(--text)', marginBottom: 12, lineHeight: 1.2 }}>
+        <h2 key={block.id} style={{ fontFamily: 'var(--font-heading)', fontSize: 34, fontWeight: 700, color: PRESENT_TEXT, marginBottom: 16, lineHeight: 1.2 }}>
           {block.content}
         </h2>
       )
     case 'paragraph':
       return (
-        <p key={block.id} style={{ fontFamily: 'var(--font-body)', fontSize: 16, color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: 16 }}>
+        <p key={block.id} style={{ fontFamily: 'var(--font-body)', fontSize: 19, color: PRESENT_TEXT_MUTED, lineHeight: 1.65, marginBottom: 18 }}>
           {block.content}
         </p>
       )
     case 'callout':
       return (
-        <div key={block.id} style={{ borderLeft: '3px solid var(--accent)', paddingLeft: 16, paddingTop: 10, paddingBottom: 10, marginBottom: 16, background: 'var(--accent-soft)', borderRadius: '0 var(--r-sm) var(--r-sm) 0' }}>
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: 15, color: 'var(--accent)', fontWeight: 500, margin: 0 }}>{block.content}</p>
+        <div key={block.id} style={{ borderLeft: `3px solid ${PRESENT_ACCENT}`, paddingLeft: 18, paddingTop: 12, paddingBottom: 12, marginBottom: 18, background: 'rgba(242,166,90,0.12)', borderRadius: '0 var(--r-sm) var(--r-sm) 0' }}>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 17, color: PRESENT_ACCENT, fontWeight: 500, margin: 0 }}>{block.content}</p>
         </div>
       )
     case 'card-group':
       if (!block.cards) return null
       return (
-        <div key={block.id} style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(block.cards.length, 3)}, 1fr)`, gap: 12, marginBottom: 16 }}>
+        <div key={block.id} style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(block.cards.length, 3)}, 1fr)`, gap: 14, marginBottom: 18 }}>
           {block.cards.map((card, i) => (
-            <div key={i} style={{ padding: 16, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', borderRadius: 'var(--r-md)' }}>
-              <div style={{ fontSize: 20, marginBottom: 6 }}>{card.icon}</div>
-              <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.7)', marginBottom: 4 }}>{card.title}</div>
-              <div style={{ fontSize: 20, fontWeight: 700, color: 'white' }}>{card.value}</div>
+            <div key={i} style={{ padding: 18, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 'var(--r-md)' }}>
+              <div style={{ fontSize: 22, marginBottom: 8 }}>{card.icon}</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: PRESENT_TEXT_MUTED, marginBottom: 4 }}>{card.title}</div>
+              <div style={{ fontSize: 22, fontWeight: 700, color: PRESENT_TEXT }}>{card.value}</div>
             </div>
           ))}
         </div>
@@ -84,6 +93,11 @@ interface PresentationModeProps {
 
 export function PresentationMode({ deckTitle, subtitle, author, coverColor, sections, onClose, aspectRatio }: PresentationModeProps) {
   const slides = buildSlides(deckTitle, sections, { subtitle, author, color: coverColor })
+  // Numeric form of the same ratio aspectRatioCss() renders as CSS — used to
+  // size the slide as large as possible without exceeding the viewport in
+  // either dimension (a real "fill the screen" present view, not a small
+  // fixed-width card floating in the middle of it).
+  const ratioNum = aspectRatio === '4:3' ? 4 / 3 : 16 / 9
   const [current, setCurrent] = useState(0)
   const [controlsVisible, setControlsVisible] = useState(true)
   const [hideTimer, setHideTimer] = useState<ReturnType<typeof setTimeout> | null>(null)
@@ -184,7 +198,9 @@ export function PresentationMode({ deckTitle, subtitle, author, coverColor, sect
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '80px 60px',
+          padding: '32px',
+          boxSizing: 'border-box',
+          overflow: 'hidden',
         }}
         onClick={e => {
           // Click right half to advance, left half to go back
@@ -197,9 +213,13 @@ export function PresentationMode({ deckTitle, subtitle, author, coverColor, sect
           className="animate-fade-in"
           key={slide.id}
           style={{
-            width: '100%',
-            maxWidth: 860,
-            minHeight: 480,
+            // Fills as much of the viewport as possible while honoring the
+            // deck's aspect ratio exactly — whichever dimension (width or
+            // height) is the tighter constraint wins, so the slide is
+            // always maximally large without ever being cropped or
+            // letterboxed unevenly.
+            width: `min(100%, calc((100vh - 64px) * ${ratioNum}))`,
+            aspectRatio: aspectRatioCss(aspectRatio),
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
