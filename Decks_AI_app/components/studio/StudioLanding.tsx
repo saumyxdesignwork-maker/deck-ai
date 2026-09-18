@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { Sparkles, Briefcase, Palette, RectangleHorizontal, Compass, Wand2 } from 'lucide-react'
+import { Sparkles, Briefcase, Palette, RectangleHorizontal, Wand2 } from 'lucide-react'
 import { Composer } from './Composer'
 import { SUGGESTED_PROMPTS } from '@/lib/fixtures'
 
@@ -12,7 +12,6 @@ const MODE_PILLS = [
 
 const TOGGLE_PILLS = [
   { key: 'autoRatio', icon: RectangleHorizontal, label: 'Auto Ratio' },
-  { key: 'guideMode', icon: Compass, label: 'Guide Mode' },
 ] as const
 
 interface StudioLandingProps {
@@ -21,7 +20,7 @@ interface StudioLandingProps {
 
 export function StudioLanding({ onSubmit }: StudioLandingProps) {
   const [mode, setMode] = useState<'professional' | 'creative'>('professional')
-  const [toggles, setToggles] = useState<Record<string, boolean>>({ autoRatio: false, guideMode: false })
+  const [toggles, setToggles] = useState<Record<string, boolean>>({ autoRatio: false })
   const [promptValue, setPromptValue] = useState('')
   const composerRef = useRef<HTMLDivElement>(null)
 
