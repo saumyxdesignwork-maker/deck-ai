@@ -1,12 +1,164 @@
 'use client'
 
-import { DeckData } from '@/lib/fixtures'
+import { DeckData, DeckSection, Block } from '@/lib/fixtures'
 
 interface SlideThumbRailProps {
   deck: DeckData | null
   revealedSlides: number[]
   activeIndex: number | null
   onSelect: (index: number) => void
+}
+
+// Thumbnails are drawn at a fixed "design" size, then scaled down via CSS
+// transform to fit the thumbnail box exactly — the standard way editors
+// (Slides, PowerPoint, Keynote) render a true miniature of the slide
+// instead of a flat color swatch. This ties the mini-content's design size
+// to the rail's own fixed 96px width (see the outer <div> below): 80px of
+// usable width (96 - 16px padding) at 16:10 → 80×50, scaled from 400×250.
+const DESIGN_WIDTH = 400
+const DESIGN_HEIGHT = 250
+const THUMB_WIDTH = 80
+const SCALE = THUMB_WIDTH / DESIGN_WIDTH
+
+function MiniCover({ deck }: { deck: DeckData }) {
+  return (
+    <div
+      style={{
+        width: DESIGN_WIDTH,
+        height: DESIGN_HEIGHT,
+        boxSizing: 'border-box',
+        background: deck.coverColor,
+        borderRadius: 16,
+        padding: '40px 36px',
+        position: 'relative',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'flex-end',
+      }}
+    >
+      <div
+        style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%, rgba(0,0,0,0.2) 100%)',
+        }}
+      />
+      <div style={{ position: 'relative', zIndex: 1, overflow: 'hidden' }}>
+        <div
+          style={{
+            fontFamily: 'var(--font-heading)', fontSize: 30, fontWeight: 700,
+            color: 'white', lineHeight: 1.2, marginBottom: 10,
+            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+          }}
+        >
+          {deck.title}
+        </div>
+        <div
+          style={{
+            fontFamily: 'var(--font-body)', fontSize: 15, color: 'rgba(255,255,255,0.75)',
+            marginBottom: 20, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}
+        >
+          {deck.subtitle}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(255,255,255,0.25)', flexShrink: 0 }} />
+          <div style={{ width: 70, height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.45)' }} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function miniBlock(block: Block, key: string) {
+  switch (block.type) {
+    case 'heading':
+      return (
+        <div
+          key={key}
+          style={{
+            fontFamily: 'var(--font-heading)', fontSize: 20, fontWeight: 700,
+            color: 'var(--text)', lineHeight: 1.25, marginBottom: 10,
+            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+          }}
+        >
+          {block.content}
+        </div>
+      )
+    case 'paragraph':
+      return (
+        <div
+          key={key}
+          style={{
+            fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5,
+            marginBottom: 10,
+            display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+          }}
+        >
+          {block.content}
+        </div>
+      )
+    case 'callout':
+      return (
+        <div
+          key={key}
+          style={{
+            borderLeft: '3px solid var(--accent)', paddingLeft: 10,
+            marginBottom: 10, background: 'var(--accent-soft)', borderRadius: '0 4px 4px 0',
+            fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--accent)', fontWeight: 500,
+            lineHeight: 1.4, padding: '6px 10px',
+            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+          }}
+        >
+          {block.content}
+        </div>
+      )
+    case 'image':
+      return block.imageUrl ? (
+        <img
+          key={key}
+          src={block.imageUrl}
+          alt=""
+          draggable={false}
+          style={{ width: '100%', height: 90, objectFit: 'cover', borderRadius: 10, marginBottom: 10, display: 'block' }}
+        />
+      ) : (
+        <div key={key} style={{ height: 90, borderRadius: 10, background: 'var(--surface-muted)', border: '1px dashed var(--border)', marginBottom: 10 }} />
+      )
+    case 'card-group':
+      if (!block.cards?.length) return null
+      return (
+        <div key={key} style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(block.cards.length, 3)}, 1fr)`, gap: 6, marginBottom: 10 }}>
+          {block.cards.slice(0, 3).map((card, i) => (
+            <div key={i} style={{ padding: '8px 8px', borderRadius: 8, background: 'var(--surface-muted)', border: '1px solid var(--border)' }}>
+              <div style={{ fontSize: 12 }}>{card.icon}</div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text)', marginTop: 2 }}>{card.value}</div>
+            </div>
+          ))}
+        </div>
+      )
+    default:
+      return null
+  }
+}
+
+function MiniSection({ section }: { section: DeckSection }) {
+  return (
+    <div
+      style={{
+        width: DESIGN_WIDTH,
+        height: DESIGN_HEIGHT,
+        boxSizing: 'border-box',
+        background: 'var(--surface)',
+        border: '1px solid var(--border)',
+        borderRadius: 16,
+        padding: '26px 30px',
+        overflow: 'hidden',
+      }}
+    >
+      {section.blocks.slice(0, 3).map((block, i) => miniBlock(block, `${section.id}-${i}`))}
+    </div>
+  )
 }
 
 export function SlideThumbRail({ deck, revealedSlides, activeIndex, onSelect }: SlideThumbRailProps) {
@@ -17,12 +169,6 @@ export function SlideThumbRail({ deck, revealedSlides, activeIndex, onSelect }: 
     if (!deck) return ''
     if (index === 0) return 'Cover'
     return deck.sections[index - 1]?.title ?? ''
-  }
-
-  function slideColor(index: number) {
-    if (!deck) return 'var(--surface-muted)'
-    if (index === 0) return deck.coverColor
-    return deck.sections[index - 1]?.thumbnailColor ?? 'var(--surface-muted)'
   }
 
   return (
@@ -54,19 +200,29 @@ export function SlideThumbRail({ deck, revealedSlides, activeIndex, onSelect }: 
               borderRadius: 'var(--r-sm)',
               border: '1.5px solid',
               borderColor: isActive ? 'var(--accent)' : 'var(--border)',
-              background: revealed ? slideColor(i) : 'var(--surface-muted)',
+              background: revealed ? 'var(--surface)' : 'var(--surface-muted)',
               cursor: revealed ? 'pointer' : 'default',
               padding: 0,
               overflow: 'hidden',
               transition: 'border-color 0.12s',
             }}
           >
+            {revealed && deck && (
+              <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: 'inherit' }}>
+                <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT, transform: `scale(${SCALE})`, transformOrigin: 'top left', pointerEvents: 'none' }}>
+                  {i === 0 ? <MiniCover deck={deck} /> : <MiniSection section={deck.sections[i - 1]} />}
+                </div>
+              </div>
+            )}
             <span
               style={{
                 position: 'absolute',
                 top: 3, left: 4,
+                padding: revealed ? '0 3px' : 0,
+                borderRadius: 3,
+                background: revealed ? 'rgba(0,0,0,0.5)' : 'transparent',
                 fontSize: 9, fontWeight: 700,
-                color: revealed ? 'rgba(255,255,255,0.85)' : 'var(--text-disabled)',
+                color: revealed ? 'rgba(255,255,255,0.9)' : 'var(--text-disabled)',
               }}
             >
               {i + 1}
