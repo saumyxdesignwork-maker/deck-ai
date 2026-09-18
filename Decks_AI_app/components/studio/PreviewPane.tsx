@@ -26,7 +26,7 @@ interface PreviewPaneProps {
   deck: DeckData | null
   isWorking: boolean
   outlinePending: { id: string; sections: OutlineSection[] } | null
-  onApproveOutline: () => void
+  onApproveOutline: (sections: OutlineSection[]) => void
   onRegenerateOutline: () => void
 }
 

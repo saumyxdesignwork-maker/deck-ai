@@ -1,5 +1,7 @@
 // Mirrors Decks_AI_app/lib/studioScript.ts — keep these two files in sync by hand.
 
+import type { LayoutType } from './deck.js'
+
 export interface ChecklistTask {
   label: string
   done: boolean
@@ -8,6 +10,10 @@ export interface ChecklistTask {
 export interface OutlineSection {
   title: string
   bullets: string[]
+  /** Set when the user explicitly picked a layout in the outline review UI
+   * (mirrors Classic's storyline editor). When present, expandDeck honors
+   * it instead of letting the model choose. */
+  layout?: LayoutType
 }
 
 export type ChatItem =

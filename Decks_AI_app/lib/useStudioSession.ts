@@ -149,16 +149,22 @@ export function useStudioSession(initialPrompt: string) {
     [clarifyPending, runStream],
   )
 
-  const approveOutline = useCallback(() => {
-    if (!outlinePending) return
-    setItems(prev => prev.map(it => (it.id === outlinePending.id ? { ...it, approved: true } : it)))
-    setItems(prev => [
-      ...prev,
-      { id: nextId('agent'), type: 'agent', text: 'Great — building your slides now.' },
-    ])
-    setOutlinePending(null)
-    runStream('/approve', { sessionId: sessionIdRef.current })
-  }, [outlinePending, runStream])
+  const approveOutline = useCallback(
+    (editedSections?: OutlineSection[]) => {
+      if (!outlinePending) return
+      setItems(prev => prev.map(it => (it.id === outlinePending.id ? { ...it, approved: true } : it)))
+      setItems(prev => [
+        ...prev,
+        { id: nextId('agent'), type: 'agent', text: 'Great — building your slides now.' },
+      ])
+      setOutlinePending(null)
+      // editedSections carries whatever the user left in the outline review
+      // card (title/bullet/layout edits, reordering) — the backend uses
+      // these instead of its original draft when present.
+      runStream('/approve', { sessionId: sessionIdRef.current, sections: editedSections })
+    },
+    [outlinePending, runStream],
+  )
 
   const regenerateOutline = useCallback(
     (notes?: string) => {

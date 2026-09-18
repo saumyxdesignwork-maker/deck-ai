@@ -6,7 +6,23 @@ import { runApprove } from '../pipeline/pipeline.js'
 import { toLine } from '../pipeline/events.js'
 import { log, logError } from '../lib/log.js'
 
-const BodySchema = z.object({ sessionId: z.string().min(1) })
+const BodySchema = z.object({
+  sessionId: z.string().min(1),
+  // The user's edited storyline from the outline review UI (titles,
+  // bullets, and optionally a per-section layout choice) — when present,
+  // this replaces the drafted approvedStoryline before expansion, so the
+  // built deck matches what was actually approved, edits included.
+  sections: z
+    .array(
+      z.object({
+        title: z.string().min(1),
+        bullets: z.array(z.string()).min(1),
+        layout: z.enum(['statement', 'key-points', 'heading-media', 'media-text', 'bento', 'data']).optional(),
+      }),
+    )
+    .min(1)
+    .optional(),
+})
 
 export const approveRoute = new Hono()
 
@@ -23,6 +39,10 @@ approveRoute.post('/approve', async c => {
     return stream(c, async s => {
       await s.write(toLine({ t: 'error', message: 'Session expired or not found — please start a new deck.', code: 'SESSION_NOT_FOUND' }))
     })
+  }
+
+  if (body.data.sections) {
+    state.approvedStoryline = body.data.sections
   }
 
   if (!state.approvedStoryline) {

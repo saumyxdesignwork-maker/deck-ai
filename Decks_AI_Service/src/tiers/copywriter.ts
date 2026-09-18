@@ -182,7 +182,7 @@ function fallbackDeck(state: SessionState): DeckSkeleton {
     subtitle: state.copyDirective?.audienceGoal ?? 'Generated with DeckAI',
     sections: storyline.map((s, i) => ({
       title: s.title,
-      layout: LAYOUTS[i % LAYOUTS.length],
+      layout: s.layout ?? LAYOUTS[i % LAYOUTS.length],
       blocks: [
         { id: '', type: 'heading', content: s.title },
         ...s.bullets.map(b => ({ id: '', type: 'paragraph' as const, content: b })),
@@ -200,10 +200,10 @@ function fallbackDeck(state: SessionState): DeckSkeleton {
 export async function expandDeck(state: SessionState): Promise<{ deck: DeckSkeleton; usedFallback: boolean }> {
   const storyline = state.approvedStoryline ?? []
 
-  const system = `You are the copywriter for an AI deck-generation product. You are given a storyline the user has ALREADY APPROVED — you must expand it into rendered slide blocks WITHOUT changing section titles, order, or count. For each section, produce 2-4 blocks using ONLY these block types: "heading" (the section title, once), "paragraph" (prose expanding a bullet), "callout" (one key stat or quote, short), "card-group" (2-4 short cards with an emoji icon, a title, and a short value — use for comparisons/lists of items), "image" (a short one-line caption describing what the image should depict — do not describe pixels, just the subject). Choose one layout per section from: ${LAYOUTS.join(', ')}. Call the emit_deck tool — do not respond in prose.`
+  const system = `You are the copywriter for an AI deck-generation product. You are given a storyline the user has ALREADY APPROVED — you must expand it into rendered slide blocks WITHOUT changing section titles, order, or count. For each section, produce 2-4 blocks using ONLY these block types: "heading" (the section title, once), "paragraph" (prose expanding a bullet), "callout" (one key stat or quote, short), "card-group" (2-4 short cards with an emoji icon, a title, and a short value — use for comparisons/lists of items), "image" (a short one-line caption describing what the image should depict — do not describe pixels, just the subject). Choose one layout per section from: ${LAYOUTS.join(', ')} — unless a section already specifies "(layout: ...)", in which case you MUST use that exact layout. Call the emit_deck tool — do not respond in prose.`
 
   const user = `Deck topic: "${state.prompt}"\nApproved storyline (expand each section in this exact order):\n${storyline
-    .map((s, i) => `${i + 1}. ${s.title}\n   - ${s.bullets.join('\n   - ')}`)
+    .map((s, i) => `${i + 1}. ${s.title}${s.layout ? ` (layout: ${s.layout})` : ''}\n   - ${s.bullets.join('\n   - ')}`)
     .join('\n')}`
 
   try {
@@ -225,9 +225,12 @@ export async function expandDeck(state: SessionState): Promise<{ deck: DeckSkele
       deck: {
         title: result.title,
         subtitle: result.subtitle,
-        sections: result.sections.map(s => ({
+        sections: result.sections.map((s, i) => ({
           title: s.title,
-          layout: s.layout as LayoutType,
+          // A user-chosen layout always wins over the model's pick —
+          // the prompt asks for compliance but this guarantees it rather
+          // than trusting the model to follow instructions.
+          layout: storyline[i]?.layout ?? (s.layout as LayoutType),
           blocks: s.blocks.map(b => ({ id: '', type: b.type, content: b.content, cards: b.cards })),
         })),
       },
