@@ -5,6 +5,8 @@ import {
   Type, SquareStack, Image, BarChart3, StickyNote,
   Heading1, AlignLeft, Quote, Flame, Hash,
   GripVertical, ChevronDown, ChevronRight,
+  LayoutList, Columns2, Grid2x2, LayoutPanelTop,
+  Download, Printer, Copy, Archive,
 } from 'lucide-react'
 
 export const BLOCK_GROUPS = [
@@ -58,7 +60,33 @@ export const BLOCK_GROUPS = [
   },
 ]
 
-const TABS = ['Insert', 'Format', 'Style', 'Info'] as const
+const LAYOUTS = [
+  { icon: LayoutList,     label: 'Key Points',  id: 'key-points' },
+  { icon: Columns2,       label: 'Two Column',  id: 'two-col' },
+  { icon: Grid2x2,        label: 'Four Grid',   id: 'four-grid' },
+  { icon: Image,          label: 'Image Left',  id: 'image-left' },
+  { icon: Image,          label: 'Image Right', id: 'image-right' },
+  { icon: LayoutPanelTop, label: 'Full Width',  id: 'full-width' },
+]
+
+const REMIX_OPTIONS = [
+  { emoji: '✨', label: 'Rewrite',       desc: 'Rephrase this section' },
+  { emoji: '📋', label: 'Summarise',    desc: 'Condense key points' },
+  { emoji: '🔄', label: 'Make concise', desc: 'Remove filler content' },
+  { emoji: '💡', label: 'Add examples', desc: 'Illustrate with cases' },
+  { emoji: '📈', label: 'Add data',     desc: 'Insert stats & numbers' },
+  { emoji: '🎯', label: 'Sharpen CTA',  desc: 'Strengthen call-to-action' },
+]
+
+const MORE_ITEMS = [
+  { icon: Download, label: 'Export as PDF',  action: 'pdf' },
+  { icon: Download, label: 'Export as PPTX', action: 'pptx' },
+  { icon: Printer,  label: 'Print',          action: 'print' },
+  { icon: Copy,     label: 'Duplicate deck', action: 'duplicate' },
+  { icon: Archive,  label: 'Archive',        action: 'archive' },
+]
+
+const TABS = ['Insert', 'Layout', 'Remix', 'More'] as const
 
 interface InsertPanelProps {
   width?: number
@@ -68,6 +96,13 @@ export function InsertPanel({ width }: InsertPanelProps) {
   const [activeTab, setActiveTab] = useState<typeof TABS[number]>('Insert')
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(['Text', 'Cards']))
   const [dragging, setDragging] = useState<string | null>(null)
+  const [selectedLayout, setSelectedLayout] = useState('key-points')
+  const [remixLoading, setRemixLoading] = useState<string | null>(null)
+
+  const handleRemix = (label: string) => {
+    setRemixLoading(label)
+    setTimeout(() => setRemixLoading(null), 1800)
+  }
 
   const toggleGroup = (label: string) => {
     setExpandedGroups(prev => {
@@ -211,21 +246,103 @@ export function InsertPanel({ width }: InsertPanelProps) {
               </div>
             ))}
           </>
+        ) : activeTab === 'Layout' ? (
+          <div style={{ padding: '4px 14px' }}>
+            <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', padding: '0 0 10px', fontFamily: 'var(--font-body)' }}>
+              Choose a layout for the active section
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              {LAYOUTS.map(({ icon: Icon, label, id }) => (
+                <button
+                  key={id}
+                  onClick={() => setSelectedLayout(id)}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 6,
+                    padding: '12px 8px',
+                    borderRadius: 'var(--r-md)',
+                    border: '1.5px solid',
+                    borderColor: selectedLayout === id ? 'var(--accent)' : 'var(--border)',
+                    background: selectedLayout === id ? 'var(--accent-soft)' : 'var(--surface-muted)',
+                    cursor: 'pointer',
+                    transition: 'all 0.12s',
+                    fontFamily: 'var(--font-body)',
+                  }}
+                >
+                  <Icon size={18} style={{ color: selectedLayout === id ? 'var(--accent)' : 'var(--text-muted)' }} />
+                  <span style={{ fontSize: 11, fontWeight: 500, color: selectedLayout === id ? 'var(--accent)' : 'var(--text-muted)', textAlign: 'center', lineHeight: 1.2 }}>
+                    {label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : activeTab === 'Remix' ? (
+          <div style={{ padding: '4px 8px' }}>
+            <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', padding: '0 6px 8px', fontFamily: 'var(--font-body)' }}>
+              AI actions for the active section
+            </p>
+            {REMIX_OPTIONS.map(({ emoji, label, desc }) => (
+              <button
+                key={label}
+                onClick={() => handleRemix(label)}
+                disabled={remixLoading !== null}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  padding: '8px 8px',
+                  borderRadius: 'var(--r-sm)',
+                  border: 'none',
+                  background: remixLoading === label ? 'var(--accent-soft)' : 'transparent',
+                  cursor: remixLoading ? 'wait' : 'pointer',
+                  fontFamily: 'var(--font-body)',
+                  textAlign: 'left',
+                  transition: 'background 0.1s',
+                }}
+                onMouseEnter={e => { if (!remixLoading) (e.currentTarget as HTMLElement).style.background = 'var(--surface-muted)' }}
+                onMouseLeave={e => { if (!remixLoading) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+              >
+                <span style={{ fontSize: 18, width: 28, textAlign: 'center' }}>{emoji}</span>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: remixLoading === label ? 'var(--accent)' : 'var(--text)' }}>
+                    {remixLoading === label ? 'Rewriting…' : label}
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{desc}</div>
+                </div>
+              </button>
+            ))}
+          </div>
         ) : (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: '80%',
-              color: 'var(--text-muted)',
-              fontSize: 12,
-              flexDirection: 'column',
-              gap: 8,
-            }}
-          >
-            <span style={{ fontSize: 24 }}>🔜</span>
-            <span>{activeTab} panel coming soon</span>
+          <div style={{ padding: '4px 8px' }}>
+            {MORE_ITEMS.map(({ icon: Icon, label, action }) => (
+              <button
+                key={action}
+                onClick={() => { if (action === 'print') window.print() }}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  padding: '8px 8px',
+                  borderRadius: 'var(--r-sm)',
+                  border: 'none',
+                  background: 'transparent',
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-body)',
+                  textAlign: 'left',
+                  transition: 'background 0.1s',
+                }}
+                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'var(--surface-muted)')}
+                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
+              >
+                <Icon size={15} style={{ color: 'var(--text-muted)' }} />
+                <span style={{ fontSize: 13, color: 'var(--text)' }}>{label}</span>
+              </button>
+            ))}
           </div>
         )}
       </div>

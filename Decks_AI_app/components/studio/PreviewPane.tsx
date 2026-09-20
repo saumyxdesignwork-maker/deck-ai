@@ -5,7 +5,6 @@ import { BookOpen, History, FolderOpen, Play, Download, PanelLeft } from 'lucide
 import { CoverBlock } from '@/components/editor/blocks/CoverBlock'
 import { ContentSection } from '@/components/editor/blocks/ContentSection'
 import { InsertPanel } from '@/components/editor/InsertPanel'
-import { BottomToolbar } from '@/components/editor/BottomToolbar'
 import { PresentationMode } from '@/components/editor/PresentationMode'
 import { PreviewToolbar } from './PreviewToolbar'
 import { SlideThumbRail } from './SlideThumbRail'
@@ -175,7 +174,7 @@ export function PreviewPane({ previewState, revealedSlides, deck, isWorking, out
             style={{
               flex: 1,
               overflow: 'auto',
-              padding: isDone ? '56px 40px 96px' : showOutlineReview ? '0 40px 28px' : '28px 40px',
+              padding: isDone ? '56px 40px' : showOutlineReview ? '0 40px 28px' : '28px 40px',
               maxWidth: 820,
               width: '100%',
               margin: '0 auto',
@@ -246,8 +245,6 @@ export function PreviewPane({ previewState, revealedSlides, deck, isWorking, out
               />
             ) : null}
           </div>
-
-          {isDone && <BottomToolbar />}
         </div>
 
         {isDone && (

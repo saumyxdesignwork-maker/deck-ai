@@ -6,13 +6,11 @@ import { SectionNavigator } from '@/components/editor/SectionNavigator'
 import { CoverBlock } from '@/components/editor/blocks/CoverBlock'
 import { ContentSection } from '@/components/editor/blocks/ContentSection'
 import { InsertPanel } from '@/components/editor/InsertPanel'
-import { BottomToolbar } from '@/components/editor/BottomToolbar'
 import { PresentationMode } from '@/components/editor/PresentationMode'
 import { ControlsPanel } from '@/components/controls/ControlsPanel'
 import { ResizeHandle } from '@/components/shared/ResizeHandle'
 import { MOCK_DECK, DeckSection, Block } from '@/lib/fixtures'
 import { useCreate } from '@/lib/createContext'
-import { useTheme } from '@/components/controls/ThemeProvider'
 import { useResizableWidth } from '@/lib/useResizableWidth'
 
 const MIN_INSERT_WIDTH = 220
@@ -21,8 +19,6 @@ const DEFAULT_INSERT_WIDTH = 276
 
 export default function EditorPage() {
   const { deckTitle, setDeckTitle } = useCreate()
-  const { vl } = useTheme()
-  const isVL3 = vl === '3'
   const [sections, setSections] = useState<DeckSection[]>(MOCK_DECK.sections)
   const [activeSectionId, setActiveSectionId] = useState('cover')
   const [isPresenting, setIsPresenting] = useState(false)
@@ -122,7 +118,7 @@ export default function EditorPage() {
           flexDirection: 'column',
           overflow: 'hidden',
           background: 'var(--bg-canvas)',
-          position: 'relative', // anchors the floating BottomToolbar in VL3
+          position: 'relative',
         }}
       >
         <div
@@ -134,7 +130,7 @@ export default function EditorPage() {
           style={{
             flex: 1,
             overflow: 'auto',
-            padding: isVL3 ? '28px 40px 96px' : '28px 40px', // extra bottom pad for floating toolbar
+            padding: '28px 40px',
             maxWidth: 820,
             width: '100%',
             margin: '0 auto',
@@ -166,9 +162,6 @@ export default function EditorPage() {
 
           <div style={{ height: 60 }} />
         </div>
-
-        {/* Bottom toolbar — floating in VL3, docked in VL1/VL2 */}
-        <BottomToolbar />
       </div>
 
       {/* Insert panel */}
