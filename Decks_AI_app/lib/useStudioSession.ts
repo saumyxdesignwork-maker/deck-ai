@@ -46,6 +46,7 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
   const [outlinePending, setOutlinePending] = useState<{ id: string; sections: OutlineSection[] } | null>(null)
   const [verifyFlags, setVerifyFlags] = useState<VerifyFlag[]>([])
   const [isVerifying, setIsVerifying] = useState(false)
+  const [isRewriting, setIsRewriting] = useState(false)
 
   const sessionIdRef = useRef<string | null>(null)
 
@@ -203,6 +204,20 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
     }
   }, [deck, isVerifying])
 
+  const rewriteBlock = useCallback(async (text: string, instruction: string, sectionTitle?: string): Promise<string | null> => {
+    setIsRewriting(true)
+    try {
+      const res = await postJson<{ text: string }>('/rewrite', { sessionId: sessionIdRef.current, text, instruction, sectionTitle })
+      return res.text
+    } catch (err) {
+      const message = err instanceof DeckServiceError ? err.message : 'Could not reach Decks AI Service — is it running?'
+      console.error(message, err)
+      return null
+    } finally {
+      setIsRewriting(false)
+    }
+  }, [])
+
   const updateItem = useCallback((id: string, patch: ChatItemPatch) => {
     setItems(prev => prev.map(it => patchItemRecursive(it, id, patch)))
   }, [])
@@ -217,11 +232,13 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
     outlinePending,
     verifyFlags,
     isVerifying,
+    isRewriting,
     answerClarify,
     approveOutline,
     regenerateOutline,
     sendFollowUp,
     verifyContent,
+    rewriteBlock,
     updateItem,
   }
 }

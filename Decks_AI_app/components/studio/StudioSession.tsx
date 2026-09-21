@@ -80,6 +80,8 @@ export function StudioSession({ initialPrompt, aspectRatio, onBackToLanding }: S
             verifyFlags={session.verifyFlags}
             isVerifying={session.isVerifying}
             onVerify={session.verifyContent}
+            isRewriting={session.isRewriting}
+            onRewriteBlock={session.rewriteBlock}
           />
         </div>
       </div>

@@ -30,6 +30,8 @@ interface PreviewPaneProps {
   verifyFlags: VerifyFlag[]
   isVerifying: boolean
   onVerify: () => void
+  isRewriting: boolean
+  onRewriteBlock: (text: string, instruction: string, sectionTitle?: string) => Promise<string | null>
 }
 
 // Mirrors app/editor/page.tsx's makeBlock/makeDefaultSection — kept local so Studio stays additive.
@@ -57,7 +59,7 @@ function makeDefaultSection(): DeckSection {
   }
 }
 
-export function PreviewPane({ previewState, revealedSlides, deck, isWorking, outlinePending, onApproveOutline, onRegenerateOutline, verifyFlags, isVerifying, onVerify }: PreviewPaneProps) {
+export function PreviewPane({ previewState, revealedSlides, deck, isWorking, outlinePending, onApproveOutline, onRegenerateOutline, verifyFlags, isVerifying, onVerify, isRewriting, onRewriteBlock }: PreviewPaneProps) {
   const [sections, setSections] = useState<DeckSection[]>([])
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const [autoFollow, setAutoFollow] = useState(true)
@@ -140,6 +142,18 @@ export function PreviewPane({ previewState, revealedSlides, deck, isWorking, out
     )
     setSelectedBlockIds(new Set())
   }, [selectedBlockIds])
+
+  const handleRewriteBlock = useCallback(
+    async (sectionIdx: number, blockId: string, instruction: string) => {
+      const section = sections[sectionIdx]
+      const block = section?.blocks.find(b => b.id === blockId)
+      if (!block) return
+      const newText = await onRewriteBlock(block.content, instruction, section.title)
+      if (newText === null) return
+      setSections(prev => prev.map((s, i) => (i !== sectionIdx ? s : { ...s, blocks: s.blocks.map(b => (b.id === blockId ? { ...b, content: newText } : b)) })))
+    },
+    [sections, onRewriteBlock],
+  )
 
   const flagCountBySection = new Map<string, number>()
   for (const flag of verifyFlags) {
@@ -294,6 +308,8 @@ export function PreviewPane({ previewState, revealedSlides, deck, isWorking, out
                       onToggleBlockSelect={handleToggleBlockSelect}
                       onClearSelection={handleClearSelection}
                       flagCount={flagCountBySection.get(section.id) ?? 0}
+                      onRewriteBlock={(blockId, instruction) => handleRewriteBlock(i, blockId, instruction)}
+                      isRewriting={isRewriting}
                     />
                   </div>
                 ))}

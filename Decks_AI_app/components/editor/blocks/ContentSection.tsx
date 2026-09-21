@@ -3,6 +3,7 @@
 import { DeckSection, Block, AspectRatio, aspectRatioCss } from '@/lib/fixtures'
 import { Plus, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
+import { AIEditPopover } from './AIEditPopover'
 
 function HeadingBlock({ block }: { block: Block }) {
   const [val, setVal] = useState(block.content)
@@ -203,9 +204,13 @@ interface ContentSectionProps {
   /** Content-verification issues found for this section (see PreviewToolbar's
    * "Verify content") — shown as a small warning badge, not inline per block. */
   flagCount?: number
+  /** AI text-edit popover — shown under the single selected block (see
+   * AIEditPopover). Not offered for card-group blocks (no single text field). */
+  onRewriteBlock?: (blockId: string, instruction: string) => void
+  isRewriting?: boolean
 }
 
-export function ContentSection({ section, isActive, onClick, onInsertBefore, aspectRatio, onDropBlock, mode = 'edit', selectedBlockIds, onToggleBlockSelect, onClearSelection, flagCount = 0 }: ContentSectionProps) {
+export function ContentSection({ section, isActive, onClick, onInsertBefore, aspectRatio, onDropBlock, mode = 'edit', selectedBlockIds, onToggleBlockSelect, onClearSelection, flagCount = 0, onRewriteBlock, isRewriting = false }: ContentSectionProps) {
   const [hovered, setHovered] = useState(false)
   const [dragOver, setDragOver] = useState(false)
 
@@ -298,28 +303,42 @@ export function ContentSection({ section, isActive, onClick, onInsertBefore, asp
             {flagCount}
           </div>
         )}
-        {section.blocks.map(block => (
-          <div key={block.id} style={{ position: 'relative' }}>
-            {renderBlock(block)}
-            {mode === 'select' && (
-              <div
-                onClick={e => {
-                  e.stopPropagation()
-                  onToggleBlockSelect?.(block.id, e.shiftKey || e.metaKey || e.ctrlKey)
-                }}
-                style={{
-                  position: 'absolute',
-                  inset: -4,
-                  cursor: 'pointer',
-                  borderRadius: 'var(--r-sm)',
-                  background: selectedBlockIds?.has(block.id) ? 'var(--accent-soft)' : 'transparent',
-                  outline: selectedBlockIds?.has(block.id) ? '2px solid var(--accent)' : '2px solid transparent',
-                  transition: 'all 0.1s',
-                }}
-              />
-            )}
-          </div>
-        ))}
+        {section.blocks.map(block => {
+          const isSelected = selectedBlockIds?.has(block.id) ?? false
+          const showEditPopover = mode === 'select' && isSelected && selectedBlockIds?.size === 1 && block.type !== 'card-group'
+          return (
+            // Keyed on content too — a block edited by AI (rewriteBlock) needs
+            // the uncontrolled input/textarea below to remount and pick up the
+            // new value, since it only reads its `block.content` prop once.
+            <div key={`${block.id}:${block.content}`} style={{ position: 'relative' }}>
+              {renderBlock(block)}
+              {mode === 'select' && (
+                <div
+                  onClick={e => {
+                    e.stopPropagation()
+                    onToggleBlockSelect?.(block.id, e.shiftKey || e.metaKey || e.ctrlKey)
+                  }}
+                  style={{
+                    position: 'absolute',
+                    inset: -4,
+                    cursor: 'pointer',
+                    borderRadius: 'var(--r-sm)',
+                    background: isSelected ? 'var(--accent-soft)' : 'transparent',
+                    outline: isSelected ? '2px solid var(--accent)' : '2px solid transparent',
+                    transition: 'all 0.1s',
+                  }}
+                />
+              )}
+              {showEditPopover && (
+                <AIEditPopover
+                  isLoading={isRewriting}
+                  onCancel={() => onClearSelection?.()}
+                  onSubmit={instruction => onRewriteBlock?.(block.id, instruction)}
+                />
+              )}
+            </div>
+          )
+        })}
       </div>
     </div>
   )
