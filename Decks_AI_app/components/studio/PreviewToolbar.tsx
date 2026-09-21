@@ -1,18 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { MousePointer2, Pencil, PenSquare, ShieldCheck, LayoutGrid, Sparkles } from 'lucide-react'
+import { MousePointer2, PenSquare, ShieldCheck } from 'lucide-react'
 
 const TOOLS = [
   { key: 'select', icon: MousePointer2, label: 'Select' },
-  { key: 'draw',   icon: Pencil,        label: 'Draw' },
   { key: 'edit',   icon: PenSquare,     label: 'Edit' },
 ] as const
 
 const ACTIONS = [
   { key: 'verify', icon: ShieldCheck, label: 'Verify content' },
-  { key: 'layout', icon: LayoutGrid,  label: 'Fix Layout' },
-  { key: 'polish', icon: Sparkles,    label: 'Polish Content' },
 ] as const
 
 export function PreviewToolbar() {
