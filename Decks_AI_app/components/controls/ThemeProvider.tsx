@@ -19,7 +19,7 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue>({
   vl: '1',
-  font: 'a',
+  font: 'b',
   bgImg: 'Bg-image.webp',
   flow: 'classic',
   setVL: () => {},
@@ -37,14 +37,14 @@ function applyBgVar(img: string) {
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [vl, setVLState] = useState<VL>('1')
-  const [font, setFontState] = useState<FontPreset>('a')
+  const [font, setFontState] = useState<FontPreset>('b')
   const [bgImg, setBgImgState] = useState<string>(DEFAULT_BG)
   const [flow, setFlowState] = useState<Flow>('classic')
 
   // Hydrate from localStorage on mount
   useEffect(() => {
     const savedVL   = (localStorage.getItem('deckai-vl')   as VL)         || '1'
-    const savedFont = (localStorage.getItem('deckai-font') as FontPreset)  || 'a'
+    const savedFont = (localStorage.getItem('deckai-font') as FontPreset)  || 'b'
     const savedBg   = localStorage.getItem('deckai-bg')                    || DEFAULT_BG
     const savedFlow = (localStorage.getItem('deckai-flow') as Flow)        || 'classic'
 

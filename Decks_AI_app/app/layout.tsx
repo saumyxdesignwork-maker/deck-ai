@@ -18,7 +18,7 @@ export default function RootLayout({
     <html
       lang="en"
       data-vl="1"
-      data-font="a"
+      data-font="b"
       data-flow="classic"
       className={`${hedvigSerif.variable} ${hedvigSans.variable} ${geist.variable} ${instrumentSerif.variable}`}
       suppressHydrationWarning
