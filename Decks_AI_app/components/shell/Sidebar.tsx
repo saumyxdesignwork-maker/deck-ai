@@ -3,15 +3,16 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutGrid, Clock, Folder,
+  LayoutGrid, Clock, Star, Folder, LayoutTemplate,
   Plus, Sparkles,
 } from 'lucide-react'
 
-// Shared with Me / Favorites / Archived / Templates are hidden for now —
-// no backing data or routes behind them yet.
+// Shared with Me / Archived are hidden for now — no backing data or
+// routes behind them yet.
 const NAV_ITEMS = [
   { icon: LayoutGrid, label: 'All Decks', href: '#' },
   { icon: Clock, label: 'Recent', href: '#' },
+  { icon: Star, label: 'Favorites', href: '#' },
 ]
 
 const FOLDER_ITEMS = [
@@ -121,6 +122,29 @@ export function Sidebar() {
             {label}
           </a>
         ))}
+
+        {/* Templates */}
+        <a
+          href="#"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 9,
+            padding: '7px 10px',
+            borderRadius: 'var(--r-sm)',
+            color: 'var(--text)',
+            fontSize: 13,
+            fontWeight: 400,
+            textDecoration: 'none',
+            transition: 'background 0.12s',
+            cursor: 'pointer',
+          }}
+          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'var(--surface-muted)')}
+          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
+        >
+          <LayoutTemplate size={16} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+          Templates
+        </a>
 
         {/* Folders section */}
         <div style={{ padding: '12px 10px 4px', fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
