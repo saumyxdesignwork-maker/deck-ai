@@ -1,10 +1,10 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ChatItem, ChatItemPatch, ClarifyQuestion, OutlineSection } from './studioScript'
+import { ChatItem, ChatItemPatch, ClarifyQuestion, OutlineSection, VerifyFlag } from './studioScript'
 import { AspectRatio, DeckData } from './fixtures'
 import { StreamEvent } from './streamEvents'
-import { fetchStream, DeckServiceError } from './deckStream'
+import { fetchStream, postJson, DeckServiceError } from './deckStream'
 import { CURRENT_USER } from './identity'
 
 export type PreviewState = 'idle' | 'preparing' | 'thumbs' | 'done'
@@ -44,6 +44,8 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
   const [isWorking, setIsWorking] = useState(true)
   const [clarifyPending, setClarifyPending] = useState<{ id: string; questions: ClarifyQuestion[] } | null>(null)
   const [outlinePending, setOutlinePending] = useState<{ id: string; sections: OutlineSection[] } | null>(null)
+  const [verifyFlags, setVerifyFlags] = useState<VerifyFlag[]>([])
+  const [isVerifying, setIsVerifying] = useState(false)
 
   const sessionIdRef = useRef<string | null>(null)
 
@@ -184,6 +186,23 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
     [runStream],
   )
 
+  const verifyContent = useCallback(async () => {
+    if (!deck || isVerifying) return
+    setIsVerifying(true)
+    try {
+      const res = await postJson<{ flags: Omit<VerifyFlag, 'sectionTitle'>[] }>('/verify', { sessionId: sessionIdRef.current })
+      const flags = res.flags.map(f => ({ ...f, sectionTitle: deck.sections.find(s => s.id === f.sectionId)?.title ?? 'Untitled section' }))
+      setVerifyFlags(flags)
+      setItems(prev => [...prev, { id: nextId('verify-report'), type: 'verify-report', flags }])
+    } catch (err) {
+      const message = err instanceof DeckServiceError ? err.message : 'Could not reach Decks AI Service — is it running?'
+      console.error(message, err)
+      setItems(prev => [...prev, { id: nextId('agent'), type: 'agent', text: "I couldn't verify the deck's content. Please check the service is running and try again." }])
+    } finally {
+      setIsVerifying(false)
+    }
+  }, [deck, isVerifying])
+
   const updateItem = useCallback((id: string, patch: ChatItemPatch) => {
     setItems(prev => prev.map(it => patchItemRecursive(it, id, patch)))
   }, [])
@@ -196,10 +215,13 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
     isWorking,
     clarifyPending,
     outlinePending,
+    verifyFlags,
+    isVerifying,
     answerClarify,
     approveOutline,
     regenerateOutline,
     sendFollowUp,
+    verifyContent,
     updateItem,
   }
 }

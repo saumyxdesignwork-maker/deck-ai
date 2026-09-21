@@ -43,3 +43,17 @@ export async function fetchStream<TEvent>(path: string, body: unknown, onEvent: 
     onEvent(JSON.parse(buffer) as TEvent)
   }
 }
+
+/** Plain request/response JSON call — for routes with no gates or
+ * intermediate progress worth streaming (e.g. /verify). */
+export async function postJson<TResponse>(path: string, body: unknown): Promise<TResponse> {
+  const res = await fetch(`${SERVICE_BASE_URL}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) {
+    throw new DeckServiceError(`Decks AI Service request to ${path} failed with status ${res.status}`)
+  }
+  return res.json() as Promise<TResponse>
+}

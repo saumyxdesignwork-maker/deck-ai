@@ -1,7 +1,7 @@
 'use client'
 
 import { DeckSection, Block, AspectRatio, aspectRatioCss } from '@/lib/fixtures'
-import { Plus } from 'lucide-react'
+import { Plus, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 
 function HeadingBlock({ block }: { block: Block }) {
@@ -171,11 +171,11 @@ function CardGroupBlock({ block }: { block: Block }) {
 
 function renderBlock(block: Block) {
   switch (block.type) {
-    case 'heading':    return <HeadingBlock    key={block.id} block={block} />
-    case 'paragraph':  return <ParagraphBlock  key={block.id} block={block} />
-    case 'callout':    return <CalloutBlock    key={block.id} block={block} />
-    case 'image':      return <ImageBlock      key={block.id} block={block} />
-    case 'card-group': return <CardGroupBlock  key={block.id} block={block} />
+    case 'heading':    return <HeadingBlock    block={block} />
+    case 'paragraph':  return <ParagraphBlock  block={block} />
+    case 'callout':    return <CalloutBlock    block={block} />
+    case 'image':      return <ImageBlock      block={block} />
+    case 'card-group': return <CardGroupBlock  block={block} />
     default:           return null
   }
 }
@@ -192,15 +192,26 @@ interface ContentSectionProps {
   /** Called with the dropped block type when an Insert-panel item is
    * dropped directly onto THIS slide's card — not the canvas at large. */
   onDropBlock?: (blockType: string) => void
+  /** 'select' overlays each block with a click target for multi-select
+   * instead of the normal text-editing interaction. Defaults to 'edit'. */
+  mode?: 'select' | 'edit'
+  selectedBlockIds?: Set<string>
+  onToggleBlockSelect?: (blockId: string, additive: boolean) => void
+  /** Clicking the card background (not a block) while in select mode clears
+   * the current selection, mirroring how selection tools usually work. */
+  onClearSelection?: () => void
+  /** Content-verification issues found for this section (see PreviewToolbar's
+   * "Verify content") — shown as a small warning badge, not inline per block. */
+  flagCount?: number
 }
 
-export function ContentSection({ section, isActive, onClick, onInsertBefore, aspectRatio, onDropBlock }: ContentSectionProps) {
+export function ContentSection({ section, isActive, onClick, onInsertBefore, aspectRatio, onDropBlock, mode = 'edit', selectedBlockIds, onToggleBlockSelect, onClearSelection, flagCount = 0 }: ContentSectionProps) {
   const [hovered, setHovered] = useState(false)
   const [dragOver, setDragOver] = useState(false)
 
   return (
     <div
-      onClick={onClick}
+      onClick={() => { onClick(); if (mode === 'select') onClearSelection?.() }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -258,21 +269,57 @@ export function ContentSection({ section, isActive, onClick, onInsertBefore, asp
           if (blockType) onDropBlock(blockType)
         }}
         style={{
+          position: 'relative',
           background: 'var(--surface)',
           borderRadius: 'var(--r-xl)',
           padding: '36px 44px',
           border: '1.5px solid',
-          borderColor: dragOver ? 'var(--accent)' : isActive ? 'var(--accent)' : 'var(--border)',
+          borderColor: dragOver ? 'var(--accent)' : flagCount > 0 ? '#E8963C' : isActive ? 'var(--accent)' : 'var(--border)',
           borderStyle: dragOver ? 'dashed' : 'solid',
           marginBottom: 6,
           transition: 'border-color 0.15s',
-          cursor: 'text',
+          cursor: mode === 'select' ? 'default' : 'text',
           aspectRatio: aspectRatioCss(aspectRatio),
           overflow: 'auto',
           boxSizing: 'border-box',
         }}
       >
-        {section.blocks.map(renderBlock)}
+        {flagCount > 0 && (
+          <div
+            title={`${flagCount} content issue${flagCount > 1 ? 's' : ''} — see Verify content in chat`}
+            style={{
+              position: 'absolute', top: 10, right: 10, zIndex: 1,
+              display: 'flex', alignItems: 'center', gap: 4,
+              padding: '3px 8px', borderRadius: 'var(--r-pill)',
+              background: '#E8963C', color: 'white', fontSize: 11, fontWeight: 600,
+            }}
+          >
+            <TriangleAlert size={11} />
+            {flagCount}
+          </div>
+        )}
+        {section.blocks.map(block => (
+          <div key={block.id} style={{ position: 'relative' }}>
+            {renderBlock(block)}
+            {mode === 'select' && (
+              <div
+                onClick={e => {
+                  e.stopPropagation()
+                  onToggleBlockSelect?.(block.id, e.shiftKey || e.metaKey || e.ctrlKey)
+                }}
+                style={{
+                  position: 'absolute',
+                  inset: -4,
+                  cursor: 'pointer',
+                  borderRadius: 'var(--r-sm)',
+                  background: selectedBlockIds?.has(block.id) ? 'var(--accent-soft)' : 'transparent',
+                  outline: selectedBlockIds?.has(block.id) ? '2px solid var(--accent)' : '2px solid transparent',
+                  transition: 'all 0.1s',
+                }}
+              />
+            )}
+          </div>
+        ))}
       </div>
     </div>
   )

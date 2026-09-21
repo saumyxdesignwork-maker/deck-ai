@@ -77,6 +77,9 @@ export function StudioSession({ initialPrompt, aspectRatio, onBackToLanding }: S
             outlinePending={session.outlinePending}
             onApproveOutline={session.approveOutline}
             onRegenerateOutline={() => session.regenerateOutline()}
+            verifyFlags={session.verifyFlags}
+            isVerifying={session.isVerifying}
+            onVerify={session.verifyContent}
           />
         </div>
       </div>

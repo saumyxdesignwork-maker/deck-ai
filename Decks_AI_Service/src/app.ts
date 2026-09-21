@@ -9,6 +9,7 @@ import { clarifyRoute } from './routes/clarify.js'
 import { approveRoute } from './routes/approve.js'
 import { regenerateRoute } from './routes/regenerate.js'
 import { followupRoute } from './routes/followup.js'
+import { verifyRoute } from './routes/verify.js'
 import { assetsRoute } from './routes/assets.js'
 
 export const app = new Hono()
@@ -32,6 +33,7 @@ app.route('/', clarifyRoute)
 app.route('/', approveRoute)
 app.route('/', regenerateRoute)
 app.route('/', followupRoute)
+app.route('/', verifyRoute)
 app.route('/', assetsRoute)
 
 app.onError((err, c) => {

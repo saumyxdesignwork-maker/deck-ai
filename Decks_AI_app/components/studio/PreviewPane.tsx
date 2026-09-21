@@ -1,17 +1,17 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { BookOpen, History, FolderOpen, Play, Download, PanelLeft } from 'lucide-react'
+import { BookOpen, History, FolderOpen, Play, Download, PanelLeft, Trash2, Copy, X } from 'lucide-react'
 import { CoverBlock } from '@/components/editor/blocks/CoverBlock'
 import { ContentSection } from '@/components/editor/blocks/ContentSection'
 import { InsertPanel } from '@/components/editor/InsertPanel'
 import { PresentationMode } from '@/components/editor/PresentationMode'
-import { PreviewToolbar } from './PreviewToolbar'
+import { PreviewToolbar, CanvasMode } from './PreviewToolbar'
 import { SlideThumbRail } from './SlideThumbRail'
 import { OutlineReviewPanel } from './OutlineReviewPanel'
 import { ResizeHandle } from '@/components/shared/ResizeHandle'
 import { MOCK_DECK, DeckData, DeckSection, Block } from '@/lib/fixtures'
-import { OutlineSection } from '@/lib/studioScript'
+import { OutlineSection, VerifyFlag } from '@/lib/studioScript'
 import { PreviewState } from '@/lib/useStudioSession'
 import { useResizableWidth } from '@/lib/useResizableWidth'
 
@@ -27,6 +27,9 @@ interface PreviewPaneProps {
   outlinePending: { id: string; sections: OutlineSection[] } | null
   onApproveOutline: (sections: OutlineSection[]) => void
   onRegenerateOutline: () => void
+  verifyFlags: VerifyFlag[]
+  isVerifying: boolean
+  onVerify: () => void
 }
 
 // Mirrors app/editor/page.tsx's makeBlock/makeDefaultSection — kept local so Studio stays additive.
@@ -54,11 +57,13 @@ function makeDefaultSection(): DeckSection {
   }
 }
 
-export function PreviewPane({ previewState, revealedSlides, deck, isWorking, outlinePending, onApproveOutline, onRegenerateOutline }: PreviewPaneProps) {
+export function PreviewPane({ previewState, revealedSlides, deck, isWorking, outlinePending, onApproveOutline, onRegenerateOutline, verifyFlags, isVerifying, onVerify }: PreviewPaneProps) {
   const [sections, setSections] = useState<DeckSection[]>([])
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const [autoFollow, setAutoFollow] = useState(true)
   const [isPresenting, setIsPresenting] = useState(false)
+  const [canvasMode, setCanvasMode] = useState<CanvasMode>('edit')
+  const [selectedBlockIds, setSelectedBlockIds] = useState<Set<string>>(new Set())
   const { width: insertWidth, isResizing: isResizingInsert, handlePointerDown: handleInsertResizeStart } =
     useResizableWidth(DEFAULT_INSERT_WIDTH, MIN_INSERT_WIDTH, MAX_INSERT_WIDTH, /* invert */ true)
 
@@ -103,6 +108,44 @@ export function PreviewPane({ previewState, revealedSlides, deck, isWorking, out
     })
   }, [])
 
+  const handleModeChange = useCallback((mode: CanvasMode) => {
+    setCanvasMode(mode)
+    setSelectedBlockIds(new Set())
+  }, [])
+
+  const handleToggleBlockSelect = useCallback((blockId: string, additive: boolean) => {
+    setSelectedBlockIds(prev => {
+      const next = additive ? new Set(prev) : new Set<string>()
+      if (prev.has(blockId) && additive) next.delete(blockId)
+      else next.add(blockId)
+      return next
+    })
+  }, [])
+
+  const handleClearSelection = useCallback(() => setSelectedBlockIds(new Set()), [])
+
+  const handleDeleteSelected = useCallback(() => {
+    setSections(prev => prev.map(s => ({ ...s, blocks: s.blocks.filter(b => !selectedBlockIds.has(b.id)) })))
+    setSelectedBlockIds(new Set())
+  }, [selectedBlockIds])
+
+  const handleDuplicateSelected = useCallback(() => {
+    setSections(prev =>
+      prev.map(s => {
+        const toDuplicate = s.blocks.filter(b => selectedBlockIds.has(b.id))
+        if (!toDuplicate.length) return s
+        const duplicates = toDuplicate.map(b => ({ ...b, id: `bl-${Date.now()}-${Math.random().toString(36).slice(2)}` }))
+        return { ...s, blocks: [...s.blocks, ...duplicates] }
+      }),
+    )
+    setSelectedBlockIds(new Set())
+  }, [selectedBlockIds])
+
+  const flagCountBySection = new Map<string, number>()
+  for (const flag of verifyFlags) {
+    flagCountBySection.set(flag.sectionId, (flagCountBySection.get(flag.sectionId) ?? 0) + 1)
+  }
+
   const showOutlineReview = !!outlinePending
   const showPlaceholder = !showOutlineReview && (previewState === 'idle' || previewState === 'preparing' || activeIndex === null)
 
@@ -146,7 +189,40 @@ export function PreviewPane({ previewState, revealedSlides, deck, isWorking, out
 
         {/* Canvas */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative', background: 'var(--bg-canvas)' }}>
-          {isDone && <PreviewToolbar />}
+          {isDone && (
+            <PreviewToolbar
+              mode={canvasMode}
+              onModeChange={handleModeChange}
+              onVerify={onVerify}
+              isVerifying={isVerifying}
+              flagCount={verifyFlags.length ? verifyFlags.length : null}
+            />
+          )}
+
+          {isDone && canvasMode === 'select' && selectedBlockIds.size > 0 && (
+            <div
+              style={{
+                position: 'absolute', top: 60, left: '50%', transform: 'translateX(-50%)',
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '6px 8px 6px 14px', borderRadius: 'var(--r-pill)',
+                background: 'var(--surface)', border: '1px solid var(--border)',
+                boxShadow: 'var(--sh-2)', zIndex: 15,
+              }}
+            >
+              <span style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>
+                {selectedBlockIds.size} selected
+              </span>
+              <button onClick={handleDuplicateSelected} style={bulkBtnStyle} title="Duplicate">
+                <Copy size={13} />
+              </button>
+              <button onClick={handleDeleteSelected} style={{ ...bulkBtnStyle, color: '#E8515A' }} title="Delete">
+                <Trash2 size={13} />
+              </button>
+              <button onClick={handleClearSelection} style={bulkBtnStyle} title="Clear selection">
+                <X size={13} />
+              </button>
+            </div>
+          )}
 
           {!isDone && !showPlaceholder && !showOutlineReview && (
             <div
@@ -213,6 +289,11 @@ export function PreviewPane({ previewState, revealedSlides, deck, isWorking, out
                       onInsertBefore={() => handleInsertSectionAt(i)}
                       aspectRatio={deck?.aspectRatio}
                       onDropBlock={blockType => handleDropOnSection(i, blockType)}
+                      mode={canvasMode}
+                      selectedBlockIds={selectedBlockIds}
+                      onToggleBlockSelect={handleToggleBlockSelect}
+                      onClearSelection={handleClearSelection}
+                      flagCount={flagCountBySection.get(section.id) ?? 0}
                     />
                   </div>
                 ))}
@@ -259,6 +340,14 @@ export function PreviewPane({ previewState, revealedSlides, deck, isWorking, out
       )}
     </div>
   )
+}
+
+const bulkBtnStyle: React.CSSProperties = {
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
+  width: 26, height: 26,
+  borderRadius: '50%',
+  border: 'none', background: 'transparent',
+  color: 'var(--text-muted)', cursor: 'pointer',
 }
 
 const miniBtnStyle: React.CSSProperties = {

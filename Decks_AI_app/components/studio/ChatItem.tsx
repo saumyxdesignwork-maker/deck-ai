@@ -1,6 +1,6 @@
 'use client'
 
-import { Copy, ThumbsUp, ThumbsDown, MoreHorizontal } from 'lucide-react'
+import { Copy, ThumbsUp, ThumbsDown, MoreHorizontal, ShieldCheck, TriangleAlert, Info } from 'lucide-react'
 import { ChatItem as ChatItemType } from '@/lib/studioScript'
 import { ToolChip } from './ToolChip'
 import { TaskChecklist } from './TaskChecklist'
@@ -68,6 +68,41 @@ export function ChatItemView({ item, onAnswerClarify }: ChatItemProps) {
 
     case 'outline':
       return <OutlineCard sectionCount={item.sections.length} approved={item.approved} />
+
+    case 'verify-report':
+      return (
+        <div
+          style={{
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--r-lg)',
+            background: 'var(--surface)',
+            boxShadow: 'var(--sh-1)',
+            overflow: 'hidden',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px', borderBottom: item.flags.length ? '1px solid var(--divider)' : 'none' }}>
+            <ShieldCheck size={14} style={{ color: item.flags.length ? '#E8963C' : 'var(--accent)', flexShrink: 0 }} />
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font-body)' }}>
+              {item.flags.length ? `${item.flags.length} content issue${item.flags.length > 1 ? 's' : ''} found` : 'No content issues found'}
+            </span>
+          </div>
+          {item.flags.length > 0 && (
+            <div style={{ padding: '6px 8px' }}>
+              {item.flags.map((flag, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '7px 8px' }}>
+                  {flag.severity === 'warning'
+                    ? <TriangleAlert size={13} style={{ color: '#E8963C', flexShrink: 0, marginTop: 2 }} />
+                    : <Info size={13} style={{ color: 'var(--text-muted)', flexShrink: 0, marginTop: 2 }} />}
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font-body)' }}>{flag.sectionTitle}</div>
+                    <div style={{ fontSize: 12.5, color: 'var(--text-muted)', fontFamily: 'var(--font-body)', lineHeight: 1.5 }}>{flag.issue}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )
 
     case 'summary':
       return (
