@@ -22,7 +22,6 @@ export default function EditorPage() {
   const [sections, setSections] = useState<DeckSection[]>(MOCK_DECK.sections)
   const [activeSectionId, setActiveSectionId] = useState('cover')
   const [isPresenting, setIsPresenting] = useState(false)
-  const [isDragOver, setIsDragOver] = useState(false)
   const { width: insertWidth, isResizing: isResizingInsert, handlePointerDown: handleInsertResizeStart } =
     useResizableWidth(DEFAULT_INSERT_WIDTH, MIN_INSERT_WIDTH, MAX_INSERT_WIDTH, /* invert */ true)
 
@@ -52,22 +51,12 @@ export default function EditorPage() {
     }
   }
 
-  const handleCanvasDrop = useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault()
-      setIsDragOver(false)
-      const blockType = e.dataTransfer.getData('text/plain')
-      if (!blockType) return
-
-      setSections(prev =>
-        prev.map(s => {
-          if (s.id !== activeSectionId) return s
-          return { ...s, blocks: [...s.blocks, makeBlock(blockType)] }
-        })
-      )
-    },
-    [activeSectionId]
-  )
+  // Dropped directly onto a specific slide's card (see ContentSection's
+  // onDropBlock) — never onto the canvas at large, so the block always
+  // lands on the slide the user actually dropped it on.
+  const handleDropOnSection = useCallback((sectionId: string, blockType: string) => {
+    setSections(prev => prev.map(s => (s.id === sectionId ? { ...s, blocks: [...s.blocks, makeBlock(blockType)] } : s)))
+  }, [])
 
   const makeDefaultSection = (): DeckSection => ({
     id: `ds-${Date.now()}-${Math.random().toString(36).slice(2)}`,
@@ -122,11 +111,6 @@ export default function EditorPage() {
         }}
       >
         <div
-          onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; setIsDragOver(true) }}
-          onDragLeave={e => {
-            if (!e.currentTarget.contains(e.relatedTarget as Node)) setIsDragOver(false)
-          }}
-          onDrop={handleCanvasDrop}
           style={{
             flex: 1,
             overflow: 'auto',
@@ -135,10 +119,6 @@ export default function EditorPage() {
             width: '100%',
             margin: '0 auto',
             boxSizing: 'border-box',
-            outline: isDragOver ? '2px dashed var(--accent)' : 'none',
-            outlineOffset: -4,
-            borderRadius: 'var(--r-lg)',
-            transition: 'outline 0.12s',
           }}
         >
           {/* Cover block */}
@@ -157,6 +137,7 @@ export default function EditorPage() {
               isActive={activeSectionId === section.id}
               onClick={() => setActiveSectionId(section.id)}
               onInsertBefore={() => handleInsertSectionAt(i)}
+              onDropBlock={blockType => handleDropOnSection(section.id, blockType)}
             />
           ))}
 

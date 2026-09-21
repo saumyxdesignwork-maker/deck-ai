@@ -189,10 +189,14 @@ interface ContentSectionProps {
    * scrolls within the box rather than pushing it taller or bleeding
    * outside its bounds. */
   aspectRatio?: AspectRatio
+  /** Called with the dropped block type when an Insert-panel item is
+   * dropped directly onto THIS slide's card — not the canvas at large. */
+  onDropBlock?: (blockType: string) => void
 }
 
-export function ContentSection({ section, isActive, onClick, onInsertBefore, aspectRatio }: ContentSectionProps) {
+export function ContentSection({ section, isActive, onClick, onInsertBefore, aspectRatio, onDropBlock }: ContentSectionProps) {
   const [hovered, setHovered] = useState(false)
+  const [dragOver, setDragOver] = useState(false)
 
   return (
     <div
@@ -235,12 +239,31 @@ export function ContentSection({ section, isActive, onClick, onInsertBefore, asp
       </div>
 
       <div
+        onDragOver={e => {
+          if (!onDropBlock) return
+          e.preventDefault()
+          e.stopPropagation()
+          e.dataTransfer.dropEffect = 'copy'
+          setDragOver(true)
+        }}
+        onDragLeave={e => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOver(false)
+        }}
+        onDrop={e => {
+          if (!onDropBlock) return
+          e.preventDefault()
+          e.stopPropagation()
+          setDragOver(false)
+          const blockType = e.dataTransfer.getData('text/plain')
+          if (blockType) onDropBlock(blockType)
+        }}
         style={{
           background: 'var(--surface)',
           borderRadius: 'var(--r-xl)',
           padding: '36px 44px',
           border: '1.5px solid',
-          borderColor: isActive ? 'var(--accent)' : 'var(--border)',
+          borderColor: dragOver ? 'var(--accent)' : isActive ? 'var(--accent)' : 'var(--border)',
+          borderStyle: dragOver ? 'dashed' : 'solid',
           marginBottom: 6,
           transition: 'border-color 0.15s',
           cursor: 'text',

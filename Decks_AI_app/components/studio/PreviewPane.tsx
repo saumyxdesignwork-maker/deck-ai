@@ -58,7 +58,6 @@ export function PreviewPane({ previewState, revealedSlides, deck, isWorking, out
   const [sections, setSections] = useState<DeckSection[]>([])
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const [autoFollow, setAutoFollow] = useState(true)
-  const [isDragOver, setIsDragOver] = useState(false)
   const [isPresenting, setIsPresenting] = useState(false)
   const { width: insertWidth, isResizing: isResizingInsert, handlePointerDown: handleInsertResizeStart } =
     useResizableWidth(DEFAULT_INSERT_WIDTH, MIN_INSERT_WIDTH, MAX_INSERT_WIDTH, /* invert */ true)
@@ -87,14 +86,12 @@ export function PreviewPane({ previewState, revealedSlides, deck, isWorking, out
     slideRefs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }, [])
 
-  const handleCanvasDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault()
-    setIsDragOver(false)
-    const blockType = e.dataTransfer.getData('text/plain')
-    if (!blockType || activeIndex === null || activeIndex === 0) return
-    const sectionIdx = activeIndex - 1
+  // Dropped directly onto a specific slide's card (see ContentSection's
+  // onDropBlock) — never onto the canvas at large, so the block always
+  // lands on the slide the user actually dropped it on.
+  const handleDropOnSection = useCallback((sectionIdx: number, blockType: string) => {
     setSections(prev => prev.map((s, i) => (i === sectionIdx ? { ...s, blocks: [...s.blocks, makeBlock(blockType)] } : s)))
-  }, [activeIndex])
+  }, [])
 
   // Inserts a new slide immediately before the section at `index`
   const handleInsertSectionAt = useCallback((index: number) => {
@@ -168,9 +165,6 @@ export function PreviewPane({ previewState, revealedSlides, deck, isWorking, out
           )}
 
           <div
-            onDragOver={e => { if (isDone) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; setIsDragOver(true) } }}
-            onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setIsDragOver(false) }}
-            onDrop={handleCanvasDrop}
             style={{
               flex: 1,
               overflow: 'auto',
@@ -179,10 +173,6 @@ export function PreviewPane({ previewState, revealedSlides, deck, isWorking, out
               width: '100%',
               margin: '0 auto',
               boxSizing: 'border-box',
-              outline: isDragOver ? '2px dashed var(--accent)' : 'none',
-              outlineOffset: -4,
-              borderRadius: 'var(--r-lg)',
-              transition: 'outline 0.12s',
             }}
           >
             {showOutlineReview ? (
@@ -222,6 +212,7 @@ export function PreviewPane({ previewState, revealedSlides, deck, isWorking, out
                       onClick={() => setActiveIndex(i + 1)}
                       onInsertBefore={() => handleInsertSectionAt(i)}
                       aspectRatio={deck?.aspectRatio}
+                      onDropBlock={blockType => handleDropOnSection(i, blockType)}
                     />
                   </div>
                 ))}
