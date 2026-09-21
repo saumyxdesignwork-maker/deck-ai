@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ChatItem, ChatItemPatch, OutlineSection } from './studioScript'
+import { ChatItem, ChatItemPatch, ClarifyQuestion, OutlineSection } from './studioScript'
 import { AspectRatio, DeckData } from './fixtures'
 import { StreamEvent } from './streamEvents'
 import { fetchStream, DeckServiceError } from './deckStream'
@@ -42,7 +42,7 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
   const [revealedSlides, setRevealedSlides] = useState<number[]>([])
   const [deck, setDeck] = useState<DeckData | null>(null)
   const [isWorking, setIsWorking] = useState(true)
-  const [clarifyPending, setClarifyPending] = useState<{ id: string; question: string; options: string[] } | null>(null)
+  const [clarifyPending, setClarifyPending] = useState<{ id: string; questions: ClarifyQuestion[] } | null>(null)
   const [outlinePending, setOutlinePending] = useState<{ id: string; sections: OutlineSection[] } | null>(null)
 
   const sessionIdRef = useRef<string | null>(null)
@@ -62,8 +62,8 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
         setItems(prev => pushToGroup(prev, event.groupId, event.item))
         break
       case 'clarify':
-        setItems(prev => [...prev, { id: event.id, type: 'clarify', question: event.question, options: event.options }])
-        setClarifyPending({ id: event.id, question: event.question, options: event.options })
+        setItems(prev => [...prev, { id: event.id, type: 'clarify', questions: event.questions }])
+        setClarifyPending({ id: event.id, questions: event.questions })
         break
       case 'outline':
         setItems(prev => [...prev, { id: event.id, type: 'outline', sections: event.sections }])
@@ -136,15 +136,15 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
   }, [])
 
   const answerClarify = useCallback(
-    (answer: string) => {
+    (answers: string[]) => {
       if (!clarifyPending) return
-      setItems(prev => prev.map(it => (it.id === clarifyPending.id ? { ...it, answered: answer } : it)))
+      setItems(prev => prev.map(it => (it.id === clarifyPending.id ? { ...it, answered: answers } : it)))
       setItems(prev => [
         ...prev,
-        { id: nextId('agent'), type: 'agent', text: `Locking in "${answer}". I'll draft a storyline for you to review before building the slides.` },
+        { id: nextId('agent'), type: 'agent', text: `Locking in "${answers.join('", "')}". I'll draft a storyline for you to review before building the slides.` },
       ])
       setClarifyPending(null)
-      runStream('/clarify', { sessionId: sessionIdRef.current, answer })
+      runStream('/clarify', { sessionId: sessionIdRef.current, answers })
     },
     [clarifyPending, runStream],
   )

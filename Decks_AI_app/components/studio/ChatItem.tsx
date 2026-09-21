@@ -11,7 +11,7 @@ import { ChainOfThoughtBlock } from './ChainOfThoughtBlock'
 
 interface ChatItemProps {
   item: ChatItemType
-  onAnswerClarify: (answer: string) => void
+  onAnswerClarify: (answers: string[]) => void
 }
 
 export function ChatItemView({ item, onAnswerClarify }: ChatItemProps) {
@@ -60,8 +60,7 @@ export function ChatItemView({ item, onAnswerClarify }: ChatItemProps) {
     case 'clarify':
       return (
         <ClarifyCard
-          question={item.question}
-          options={item.options}
+          questions={item.questions}
           answered={item.answered}
           onSubmit={onAnswerClarify}
         />

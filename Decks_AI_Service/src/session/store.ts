@@ -27,7 +27,8 @@ export interface SessionState {
   history: ChatMessage[]
   copyDirective?: CopyDirective
   designDirective?: DesignDirective
-  clarifyAnswer?: string
+  /** One answer per question the Orchestrator asked, in the same order. */
+  clarifyAnswers?: string[]
   /** The approved storyline — authoritative input for the full-deck expansion,
    * so the built slides always match what the user approved. */
   approvedStoryline?: OutlineSection[]

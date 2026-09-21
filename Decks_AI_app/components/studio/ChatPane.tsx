@@ -8,7 +8,7 @@ import { Composer } from './Composer'
 interface ChatPaneProps {
   items: ChatItem[]
   isWorking: boolean
-  onAnswerClarify: (answer: string) => void
+  onAnswerClarify: (answers: string[]) => void
   onSendFollowUp: (text: string) => void
   width: number
 }

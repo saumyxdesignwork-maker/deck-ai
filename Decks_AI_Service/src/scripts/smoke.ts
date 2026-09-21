@@ -80,10 +80,10 @@ async function main() {
   await runGenerate(state, emit)
   const clarifyEvent = events.find(e => e.t === 'clarify')
   if (!clarifyEvent || clarifyEvent.t !== 'clarify') throw new Error('runGenerate did not produce a clarify gate')
-  console.log(`   ✅ generate → clarify: "${clarifyEvent.question}" (${Date.now() - t0}ms)`)
+  console.log(`   ✅ generate → clarify: ${clarifyEvent.questions.length} question(s), first "${clarifyEvent.questions[0].topic}" (${Date.now() - t0}ms)`)
 
   const t1 = Date.now()
-  await runClarify(state, clarifyEvent.options[0], emit)
+  await runClarify(state, clarifyEvent.questions.map(q => q.options[0]), emit)
   const outlineEvent = events.find(e => e.t === 'outline')
   if (!outlineEvent || outlineEvent.t !== 'outline') throw new Error('runClarify did not produce an outline gate')
   if (outlineEvent.sections.length < 1) throw new Error('outline has no sections')

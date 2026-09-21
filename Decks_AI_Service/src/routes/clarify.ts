@@ -6,7 +6,7 @@ import { runClarify } from '../pipeline/pipeline.js'
 import { toLine } from '../pipeline/events.js'
 import { log, logError } from '../lib/log.js'
 
-const BodySchema = z.object({ sessionId: z.string().min(1), answer: z.string().min(1) })
+const BodySchema = z.object({ sessionId: z.string().min(1), answers: z.array(z.string().min(1)).min(1) })
 
 export const clarifyRoute = new Hono()
 
@@ -31,7 +31,7 @@ clarifyRoute.post('/clarify', async c => {
       await s.write(toLine(event))
     }
     try {
-      await runClarify(state, body.data.answer, emit)
+      await runClarify(state, body.data.answers, emit)
     } catch (err) {
       logError('route.clarify', err)
       await emit({ t: 'error', message: 'Something went wrong drafting your storyline. Please try again.', code: 'PIPELINE_ERROR' })

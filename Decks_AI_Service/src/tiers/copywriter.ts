@@ -67,7 +67,8 @@ export async function draftStoryline(state: SessionState, notes?: string): Promi
 
   const system = `You are the copywriter for an AI deck-generation product. Draft a presentation storyline: a sequence of sections, each with a punchy title and 2-5 concise, high-impact bullet points. Write for ${directive?.audienceGoal ?? 'a general professional audience'} in a ${directive?.tone ?? 'clear, confident'} tone. Avoid repetitive phrasing across sections. Call the emit_storyline tool with your result — do not respond in prose.`
 
-  const userParts = [`Deck topic: "${state.prompt}"`, `Deck goal (from clarifying question): "${state.clarifyAnswer ?? 'unspecified'}"`, `Target section count: ${sectionCount}`]
+  const clarifyAnswers = state.clarifyAnswers?.join('; ') ?? 'unspecified'
+  const userParts = [`Deck topic: "${state.prompt}"`, `Answers to clarifying questions: "${clarifyAnswers}"`, `Target section count: ${sectionCount}`]
   if (notes) userParts.push(`Additional notes for this revision: ${notes}`)
 
   try {

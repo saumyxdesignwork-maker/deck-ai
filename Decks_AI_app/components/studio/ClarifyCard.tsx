@@ -1,18 +1,19 @@
 'use client'
 
 import { useState } from 'react'
-import { Circle } from 'lucide-react'
+import { Circle, ChevronLeft, ChevronRight, Paperclip } from 'lucide-react'
+import { ClarifyQuestion } from '@/lib/studioScript'
 
 interface ClarifyCardProps {
-  question: string
-  options: string[]
-  answered?: string
-  onSubmit: (answer: string) => void
+  questions: ClarifyQuestion[]
+  answered?: string[]
+  onSubmit: (answers: string[]) => void
 }
 
-export function ClarifyCard({ question, options, answered, onSubmit }: ClarifyCardProps) {
-  const [selected, setSelected] = useState<string | null>(null)
-  const [details, setDetails] = useState('')
+export function ClarifyCard({ questions, answered, onSubmit }: ClarifyCardProps) {
+  const [step, setStep] = useState(0)
+  const [answers, setAnswers] = useState<(string | null)[]>(() => questions.map(() => null))
+  const [details, setDetails] = useState<string[]>(() => questions.map(() => ''))
 
   // Already answered — render the compact Q/A echo bubble (matches reference)
   if (answered) {
@@ -29,16 +30,48 @@ export function ClarifyCard({ question, options, answered, onSubmit }: ClarifyCa
           lineHeight: 1.6,
         }}
       >
-        <div><strong>Q:</strong> {question}</div>
-        <div><strong>A:</strong> {answered}</div>
+        {questions.map((q, i) => (
+          <div key={q.topic}>
+            <div><strong>Q:</strong> {q.topic}</div>
+            <div><strong>A:</strong> {answered[i] ?? 'Skipped'}</div>
+          </div>
+        ))}
       </div>
     )
   }
 
-  const submit = () => {
-    const answer = selected ?? details.trim()
-    if (!answer) return
-    onSubmit(answer)
+  const total = questions.length
+  const isLast = step === total - 1
+  const question = questions[step]
+  const selected = answers[step]
+  const percent = Math.round(((step + 1) / total) * 100)
+
+  const setSelected = (opt: string) => {
+    setAnswers(prev => prev.map((a, i) => (i === step ? opt : a)))
+    setDetails(prev => prev.map((d, i) => (i === step ? '' : d)))
+  }
+
+  const setDetail = (val: string) => {
+    setDetails(prev => prev.map((d, i) => (i === step ? val : d)))
+    setAnswers(prev => prev.map((a, i) => (i === step ? null : a)))
+  }
+
+  const finalize = (finalAnswers: (string | null)[]) =>
+    onSubmit(finalAnswers.map((a, i) => a ?? details[i].trim() ?? 'Skipped'))
+
+  const currentAnswer = () => selected ?? details[step].trim()
+
+  const skip = () => {
+    const next = answers.map((a, i) => (i === step ? 'Skipped' : a))
+    setAnswers(next)
+    if (isLast) finalize(next)
+    else setStep(step + 1)
+  }
+
+  const advance = () => {
+    if (!currentAnswer()) return
+    if (isLast) finalize(answers)
+    else setStep(step + 1)
   }
 
   return (
@@ -51,15 +84,40 @@ export function ClarifyCard({ question, options, answered, onSubmit }: ClarifyCa
         overflow: 'hidden',
       }}
     >
-      <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--divider)' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '12px 16px',
+          borderBottom: '1px solid var(--divider)',
+        }}
+      >
         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font-body)' }}>
-          {question}
+          {question.topic}
         </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 11.5, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>{percent}%</span>
+          <button
+            onClick={() => setStep(s => Math.max(0, s - 1))}
+            disabled={step === 0}
+            style={navBtnStyle(step === 0)}
+          >
+            <ChevronLeft size={14} />
+          </button>
+          <button
+            onClick={() => setStep(s => Math.min(total - 1, s + 1))}
+            disabled={isLast || !currentAnswer()}
+            style={navBtnStyle(isLast || !currentAnswer())}
+          >
+            <ChevronRight size={14} />
+          </button>
+        </div>
       </div>
 
       <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-          {options.map(opt => {
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {question.options.map(opt => {
             const isSelected = selected === opt
             return (
               <button
@@ -67,13 +125,13 @@ export function ClarifyCard({ question, options, answered, onSubmit }: ClarifyCa
                 onClick={() => setSelected(opt)}
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '9px 12px',
-                  borderRadius: 'var(--r-sm)',
+                  padding: '11px 14px',
+                  borderRadius: 'var(--r-md)',
                   border: '1.5px solid',
                   borderColor: isSelected ? 'var(--accent)' : 'var(--border)',
                   background: isSelected ? 'var(--accent-soft)' : 'var(--surface-muted)',
                   color: isSelected ? 'var(--accent)' : 'var(--text)',
-                  fontSize: 12.5,
+                  fontSize: 13,
                   fontWeight: 500,
                   cursor: 'pointer',
                   textAlign: 'left',
@@ -98,51 +156,66 @@ export function ClarifyCard({ question, options, answered, onSubmit }: ClarifyCa
           })}
         </div>
 
-        <input
-          value={details}
-          onChange={e => { setDetails(e.target.value); setSelected(null) }}
-          placeholder="Additional details (optional)"
-          style={{
-            padding: '8px 12px',
-            borderRadius: 'var(--r-sm)',
-            border: '1px solid var(--border)',
-            background: 'var(--surface-muted)',
-            fontSize: 12.5,
-            color: 'var(--text)',
-            outline: 'none',
-            fontFamily: 'var(--font-body)',
-          }}
-        />
+        <div style={{ position: 'relative' }}>
+          <input
+            value={details[step]}
+            onChange={e => setDetail(e.target.value)}
+            placeholder="Additional details (optional)"
+            style={{
+              width: '100%',
+              padding: '8px 32px 8px 12px',
+              borderRadius: 'var(--r-sm)',
+              border: '1px solid var(--border)',
+              background: 'var(--surface-muted)',
+              fontSize: 12.5,
+              color: 'var(--text)',
+              outline: 'none',
+              fontFamily: 'var(--font-body)',
+              boxSizing: 'border-box',
+            }}
+          />
+          <Paperclip size={13} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+        </div>
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-          <button
-            onClick={() => onSubmit('Skipped')}
-            style={{
-              padding: '7px 14px', borderRadius: 'var(--r-pill)',
-              border: '1px solid var(--border)', background: 'transparent',
-              fontSize: 12.5, color: 'var(--text-muted)', cursor: 'pointer',
-              fontFamily: 'var(--font-body)',
-            }}
-          >
+          <button onClick={skip} style={skipBtnStyle}>
             Skip
           </button>
           <button
-            onClick={submit}
-            disabled={!selected && !details.trim()}
+            onClick={advance}
+            disabled={!currentAnswer()}
             style={{
               padding: '7px 16px', borderRadius: 'var(--r-pill)',
               border: 'none',
-              background: (selected || details.trim()) ? 'var(--primary)' : 'var(--surface-muted)',
-              color: (selected || details.trim()) ? 'var(--primary-fg)' : 'var(--text-disabled)',
+              background: currentAnswer() ? 'var(--primary)' : 'var(--surface-muted)',
+              color: currentAnswer() ? 'var(--primary-fg)' : 'var(--text-disabled)',
               fontSize: 12.5, fontWeight: 600,
-              cursor: (selected || details.trim()) ? 'pointer' : 'not-allowed',
+              cursor: currentAnswer() ? 'pointer' : 'not-allowed',
               fontFamily: 'var(--font-body)',
             }}
           >
-            Submit
+            {isLast ? 'Submit' : 'Next'}
           </button>
         </div>
       </div>
     </div>
   )
+}
+
+function navBtnStyle(disabled: boolean): React.CSSProperties {
+  return {
+    width: 22, height: 22, borderRadius: '50%',
+    border: '1px solid var(--border)', background: 'var(--surface-muted)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    color: disabled ? 'var(--text-disabled)' : 'var(--text)',
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    opacity: disabled ? 0.6 : 1,
+  }
+}
+
+const skipBtnStyle: React.CSSProperties = {
+  padding: '7px 14px', borderRadius: 'var(--r-pill)',
+  border: '1px solid var(--border)', background: 'transparent',
+  fontSize: 12.5, color: 'var(--text-muted)', cursor: 'pointer',
+  fontFamily: 'var(--font-body)',
 }

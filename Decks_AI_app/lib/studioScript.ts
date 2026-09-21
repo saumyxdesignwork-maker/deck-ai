@@ -11,6 +11,11 @@ export interface ChecklistTask {
   done: boolean
 }
 
+export interface ClarifyQuestion {
+  topic: string
+  options: string[]
+}
+
 export interface OutlineSection {
   title: string
   bullets: string[]
@@ -25,7 +30,7 @@ export type ChatItem =
   | { id: string; type: 'tool'; label: string; detail: string; status: 'running' | 'done' }
   | { id: string; type: 'reasoning'; text: string }
   | { id: string; type: 'group'; label: string; children: ChatItem[] }
-  | { id: string; type: 'clarify'; question: string; options: string[]; answered?: string }
+  | { id: string; type: 'clarify'; questions: ClarifyQuestion[]; answered?: string[] }
   | { id: string; type: 'checklist'; title: string; tasks: ChecklistTask[] }
   | { id: string; type: 'outline'; sections: OutlineSection[]; approved?: boolean }
   | { id: string; type: 'verify'; label: string; detail: string; status: 'running' | 'done' }

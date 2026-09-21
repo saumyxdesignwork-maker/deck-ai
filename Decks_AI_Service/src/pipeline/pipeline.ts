@@ -21,7 +21,7 @@ export async function runGenerate(state: SessionState, emit: Emit): Promise<void
     item: {
       id: newId('agent'),
       type: 'agent',
-      text: "I'll build this deck for you. Let me lock the direction with one quick question, draft a storyline for you to review, then generate the slides.",
+      text: "I'll build this deck for you. Let me lock the direction with a couple of quick questions, draft a storyline for you to review, then generate the slides.",
     },
   })
 
@@ -43,7 +43,7 @@ export async function runGenerate(state: SessionState, emit: Emit): Promise<void
   state.copyDirective = result.copyDirective
   state.designDirective = result.designDirective
 
-  await emit({ t: 'clarify', id: 'clarify-goal', question: result.clarifyQuestion, options: result.clarifyOptions })
+  await emit({ t: 'clarify', id: 'clarify-goal', questions: result.clarifyQuestions })
   // Stream ends here — the client resumes via POST /clarify.
 }
 
@@ -51,8 +51,8 @@ export async function runGenerate(state: SessionState, emit: Emit): Promise<void
  * Phase 2 — POST /clarify. Drafts the storyline and streams up to the
  * outline gate.
  */
-export async function runClarify(state: SessionState, answer: string, emit: Emit): Promise<void> {
-  state.clarifyAnswer = answer
+export async function runClarify(state: SessionState, answers: string[], emit: Emit): Promise<void> {
+  state.clarifyAnswers = answers
 
   const groupId = 'group-storyline'
   await emit({ t: 'chat', item: { id: groupId, type: 'group', label: 'Structuring the storyline', children: [] } })

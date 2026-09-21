@@ -1,4 +1,4 @@
-import type { ChatItem, ChatItemPatch, OutlineSection } from '../contract/chat.js'
+import type { ChatItem, ChatItemPatch, ClarifyQuestion, OutlineSection } from '../contract/chat.js'
 import type { DeckData } from '../contract/deck.js'
 
 /**
@@ -15,7 +15,7 @@ export type StreamEvent =
   | { t: 'chat'; item: ChatItem }
   | { t: 'update'; id: string; patch: ChatItemPatch }
   | { t: 'group-push'; groupId: string; item: ChatItem }
-  | { t: 'clarify'; id: string; question: string; options: string[] }
+  | { t: 'clarify'; id: string; questions: ClarifyQuestion[] }
   | { t: 'outline'; id: string; sections: OutlineSection[] }
   | { t: 'preview'; state: 'preparing' | 'thumbs' | 'done' }
   | { t: 'reveal-slide'; index: number }
