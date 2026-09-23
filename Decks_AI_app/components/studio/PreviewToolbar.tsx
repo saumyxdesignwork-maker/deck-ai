@@ -1,6 +1,6 @@
 'use client'
 
-import { MousePointer2, PenSquare, ShieldCheck, Loader2 } from 'lucide-react'
+import { MousePointer2, PenSquare, ShieldCheck, Loader2, Sparkles } from 'lucide-react'
 
 const TOOLS = [
   { key: 'select', icon: MousePointer2, label: 'Select' },
@@ -15,9 +15,10 @@ interface PreviewToolbarProps {
   onVerify: () => void
   isVerifying: boolean
   flagCount: number | null
+  onOpenAskAI: () => void
 }
 
-export function PreviewToolbar({ mode, onModeChange, onVerify, isVerifying, flagCount }: PreviewToolbarProps) {
+export function PreviewToolbar({ mode, onModeChange, onVerify, isVerifying, flagCount, onOpenAskAI }: PreviewToolbarProps) {
   return (
     <div
       style={{
@@ -86,6 +87,28 @@ export function PreviewToolbar({ mode, onModeChange, onVerify, isVerifying, flag
             {flagCount}
           </span>
         )}
+      </button>
+
+      <div style={{ width: 1, height: 16, background: 'var(--divider)', margin: '0 2px' }} />
+
+      <button
+        onClick={onOpenAskAI}
+        title="Ask AI (⌘⌘)"
+        style={{
+          display: 'flex', alignItems: 'center', gap: 5,
+          padding: '5px 10px',
+          borderRadius: 'var(--r-pill)',
+          border: 'none', background: 'transparent',
+          color: 'var(--text-muted)',
+          fontSize: 12, fontWeight: 500, cursor: 'pointer',
+          fontFamily: 'var(--font-body)',
+          whiteSpace: 'nowrap', flexShrink: 0,
+        }}
+        onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = 'var(--text)')}
+        onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = 'var(--text-muted)')}
+      >
+        <Sparkles size={13} style={{ flexShrink: 0 }} />
+        Ask AI
       </button>
     </div>
   )

@@ -94,6 +94,7 @@ export function StudioSession({ initialPrompt, aspectRatio, onBackToLanding }: S
             onBeginBlockEdit={session.beginBlockEdit}
             onUpdateBlockContent={session.updateBlockContent}
             onCommitBlockEdit={session.commitBlockEdit}
+            onSetSectionLayout={session.setSectionLayout}
           />
         </div>
       </div>

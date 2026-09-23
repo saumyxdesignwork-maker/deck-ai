@@ -9,8 +9,9 @@ import { PresentationMode } from '@/components/editor/PresentationMode'
 import { PreviewToolbar, CanvasMode } from './PreviewToolbar'
 import { SlideThumbRail } from './SlideThumbRail'
 import { OutlineReviewPanel } from './OutlineReviewPanel'
+import { AskAIOverlay } from './AskAIOverlay'
 import { ResizeHandle } from '@/components/shared/ResizeHandle'
-import { MOCK_DECK, DeckData } from '@/lib/fixtures'
+import { MOCK_DECK, DeckData, LayoutType } from '@/lib/fixtures'
 import { OutlineSection, VerifyFlag } from '@/lib/studioScript'
 import { PreviewState } from '@/lib/useStudioSession'
 import { useResizableWidth } from '@/lib/useResizableWidth'
@@ -44,6 +45,7 @@ interface PreviewPaneProps {
   onBeginBlockEdit: () => void
   onUpdateBlockContent: (blockId: string, text: string) => void
   onCommitBlockEdit: () => void
+  onSetSectionLayout: (sectionIdx: number, layout: LayoutType) => void
 }
 
 export function PreviewPane({
@@ -51,13 +53,16 @@ export function PreviewPane({
   verifyFlags, isVerifying, onVerify, isRewriting, onRewriteBlock,
   canUndo, canRedo, onUndo, onRedo,
   onInsertBlock, onInsertSection, onDeleteBlocks, onDuplicateBlocks, onApplyRewrite,
-  onBeginBlockEdit, onUpdateBlockContent, onCommitBlockEdit,
+  onBeginBlockEdit, onUpdateBlockContent, onCommitBlockEdit, onSetSectionLayout,
 }: PreviewPaneProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const [autoFollow, setAutoFollow] = useState(true)
   const [isPresenting, setIsPresenting] = useState(false)
   const [canvasMode, setCanvasMode] = useState<CanvasMode>('edit')
   const [selectedBlockIds, setSelectedBlockIds] = useState<Set<string>>(new Set())
+  const [isAskAIOpen, setIsAskAIOpen] = useState(false)
+  const [isRemixingSection, setIsRemixingSection] = useState(false)
+  const lastMetaPressRef = useRef(0)
   const { width: insertWidth, isResizing: isResizingInsert, handlePointerDown: handleInsertResizeStart } =
     useResizableWidth(DEFAULT_INSERT_WIDTH, MIN_INSERT_WIDTH, MAX_INSERT_WIDTH, /* invert */ true)
 
@@ -81,6 +86,29 @@ export function PreviewPane({
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [isDone, onUndo, onRedo])
+
+  // Ask AI — double-tap Cmd (⌘⌘) toggles the focused overlay. Only live
+  // once a first draft exists; ignored while typing so it never interrupts
+  // normal editing (a lone Cmd press never lands in a text field anyway,
+  // but this keeps the guard consistent with the undo/redo listener above).
+  useEffect(() => {
+    if (!isDone) return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key !== 'Meta' || e.repeat) return
+      const target = e.target as HTMLElement | null
+      const isTyping = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
+      if (isTyping) return
+      const now = Date.now()
+      if (now - lastMetaPressRef.current < 400) {
+        setIsAskAIOpen(open => !open)
+        lastMetaPressRef.current = 0
+      } else {
+        lastMetaPressRef.current = now
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [isDone])
 
   // Follow the newest revealed slide while streaming (single-slide preview)
   useEffect(() => {
@@ -133,6 +161,50 @@ export function PreviewPane({
       onApplyRewrite(blockId, newText)
     },
     [sections, onRewriteBlock, onApplyRewrite],
+  )
+
+  // The slide Ask AI targets — whichever slide was active when it opened.
+  // null for the cover (no editable blocks) or when nothing is active yet.
+  const activeSectionIdx = activeIndex !== null && activeIndex > 0 ? activeIndex - 1 : null
+  const activeSection = activeSectionIdx !== null ? sections[activeSectionIdx] ?? null : null
+
+  const handleAskAIInsertBlock = useCallback(
+    (blockType: string) => {
+      if (activeSectionIdx === null) return
+      onInsertBlock(activeSectionIdx, blockType)
+    },
+    [activeSectionIdx, onInsertBlock],
+  )
+
+  const handleAskAISetLayout = useCallback(
+    (layout: LayoutType) => {
+      if (activeSectionIdx === null) return
+      onSetSectionLayout(activeSectionIdx, layout)
+    },
+    [activeSectionIdx, onSetSectionLayout],
+  )
+
+  // "Remix this slide" has no dedicated backend intent yet — it fans the
+  // instruction out to /rewrite across every text-bearing block in the
+  // active section (heading/paragraph/callout), applying each result.
+  const handleAskAIRemixSection = useCallback(
+    async (instruction: string) => {
+      if (activeSectionIdx === null || !activeSection) return
+      const textBlocks = activeSection.blocks.filter(b => b.type === 'heading' || b.type === 'paragraph' || b.type === 'callout')
+      if (!textBlocks.length) return
+      setIsRemixingSection(true)
+      try {
+        await Promise.all(
+          textBlocks.map(async b => {
+            const newText = await onRewriteBlock(b.content, instruction, activeSection.title)
+            if (newText !== null) onApplyRewrite(b.id, newText)
+          }),
+        )
+      } finally {
+        setIsRemixingSection(false)
+      }
+    },
+    [activeSectionIdx, activeSection, onRewriteBlock, onApplyRewrite],
   )
 
   const flagCountBySection = new Map<string, number>()
@@ -190,6 +262,18 @@ export function PreviewPane({
               onVerify={onVerify}
               isVerifying={isVerifying}
               flagCount={verifyFlags.length ? verifyFlags.length : null}
+              onOpenAskAI={() => setIsAskAIOpen(true)}
+            />
+          )}
+
+          {isDone && isAskAIOpen && (
+            <AskAIOverlay
+              section={activeSection}
+              onClose={() => setIsAskAIOpen(false)}
+              onInsertBlock={handleAskAIInsertBlock}
+              onSetLayout={handleAskAISetLayout}
+              onRemixSection={handleAskAIRemixSection}
+              isRemixing={isRemixingSection}
             />
           )}
 
@@ -321,7 +405,7 @@ export function PreviewPane({
           </div>
         </div>
 
-        {isDone && (
+        {isDone && !isAskAIOpen && (
           <>
             <ResizeHandle isResizing={isResizingInsert} onPointerDown={handleInsertResizeStart} />
             <InsertPanel width={insertWidth} />
