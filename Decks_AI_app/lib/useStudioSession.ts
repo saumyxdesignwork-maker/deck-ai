@@ -6,6 +6,7 @@ import { AspectRatio, DeckData } from './fixtures'
 import { StreamEvent } from './streamEvents'
 import { fetchStream, postJson, DeckServiceError } from './deckStream'
 import { CURRENT_USER } from './identity'
+import { useDeckEditor } from './useDeckEditor'
 
 export type PreviewState = 'idle' | 'preparing' | 'thumbs' | 'done'
 
@@ -40,7 +41,8 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
   ])
   const [previewState, setPreviewState] = useState<PreviewState>('idle')
   const [revealedSlides, setRevealedSlides] = useState<number[]>([])
-  const [deck, setDeck] = useState<DeckData | null>(null)
+  const [streamedDeck, setStreamedDeck] = useState<DeckData | null>(null)
+  const [sessionId, setSessionId] = useState<string | null>(null)
   const [isWorking, setIsWorking] = useState(true)
   const [clarifyPending, setClarifyPending] = useState<{ id: string; questions: ClarifyQuestion[] } | null>(null)
   const [outlinePending, setOutlinePending] = useState<{ id: string; sections: OutlineSection[] } | null>(null)
@@ -48,12 +50,16 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
   const [isVerifying, setIsVerifying] = useState(false)
   const [isRewriting, setIsRewriting] = useState(false)
 
+  const isDone = previewState === 'done'
+  const deckEditor = useDeckEditor(streamedDeck, isDone, sessionId)
+
   const sessionIdRef = useRef<string | null>(null)
 
   const applyEvent = useCallback((event: StreamEvent) => {
     switch (event.t) {
       case 'session':
         sessionIdRef.current = event.sessionId
+        setSessionId(event.sessionId)
         break
       case 'chat':
         setItems(prev => [...prev, event.item])
@@ -79,7 +85,7 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
         setRevealedSlides(prev => (prev.includes(event.index) ? prev : [...prev, event.index]))
         break
       case 'deck':
-        setDeck(event.deck)
+        setStreamedDeck(event.deck)
         break
       case 'error':
         console.error(`[decks-ai-service] ${event.code}: ${event.message}`)
@@ -188,6 +194,7 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
   )
 
   const verifyContent = useCallback(async () => {
+    const deck = deckEditor.deck
     if (!deck || isVerifying) return
     setIsVerifying(true)
     try {
@@ -202,7 +209,7 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
     } finally {
       setIsVerifying(false)
     }
-  }, [deck, isVerifying])
+  }, [deckEditor.deck, isVerifying])
 
   const rewriteBlock = useCallback(async (text: string, instruction: string, sectionTitle?: string): Promise<string | null> => {
     setIsRewriting(true)
@@ -226,13 +233,26 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
     items,
     previewState,
     revealedSlides,
-    deck,
+    deck: deckEditor.deck,
     isWorking,
     clarifyPending,
     outlinePending,
     verifyFlags,
     isVerifying,
     isRewriting,
+    canUndo: deckEditor.canUndo,
+    canRedo: deckEditor.canRedo,
+    undo: deckEditor.undo,
+    redo: deckEditor.redo,
+    insertBlock: deckEditor.insertBlock,
+    insertSection: deckEditor.insertSection,
+    deleteBlocks: deckEditor.deleteBlocks,
+    duplicateBlocks: deckEditor.duplicateBlocks,
+    setSectionLayout: deckEditor.setSectionLayout,
+    applyRewrite: deckEditor.applyRewrite,
+    beginBlockEdit: deckEditor.beginBlockEdit,
+    updateBlockContent: deckEditor.updateBlockContent,
+    commitBlockEdit: deckEditor.commitBlockEdit,
     answerClarify,
     approveOutline,
     regenerateOutline,

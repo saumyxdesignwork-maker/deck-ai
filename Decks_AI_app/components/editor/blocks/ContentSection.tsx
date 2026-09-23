@@ -5,12 +5,19 @@ import { Plus, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import { AIEditPopover } from './AIEditPopover'
 
-function HeadingBlock({ block }: { block: Block }) {
-  const [val, setVal] = useState(block.content)
+interface BlockEditHandlers {
+  onChange: (text: string) => void
+  onFocus: () => void
+  onBlur: () => void
+}
+
+function HeadingBlock({ block, onChange, onFocus, onBlur }: { block: Block } & BlockEditHandlers) {
   return (
     <input
-      value={val}
-      onChange={e => setVal(e.target.value)}
+      value={block.content}
+      onChange={e => onChange(e.target.value)}
+      onFocus={onFocus}
+      onBlur={onBlur}
       style={{
         display: 'block',
         width: '100%',
@@ -29,12 +36,13 @@ function HeadingBlock({ block }: { block: Block }) {
   )
 }
 
-function ParagraphBlock({ block }: { block: Block }) {
-  const [val, setVal] = useState(block.content)
+function ParagraphBlock({ block, onChange, onFocus, onBlur }: { block: Block } & BlockEditHandlers) {
   return (
     <textarea
-      value={val}
-      onChange={e => setVal(e.target.value)}
+      value={block.content}
+      onChange={e => onChange(e.target.value)}
+      onFocus={onFocus}
+      onBlur={onBlur}
       rows={3}
       style={{
         display: 'block',
@@ -54,8 +62,7 @@ function ParagraphBlock({ block }: { block: Block }) {
   )
 }
 
-function CalloutBlock({ block }: { block: Block }) {
-  const [val, setVal] = useState(block.content)
+function CalloutBlock({ block, onChange, onFocus, onBlur }: { block: Block } & BlockEditHandlers) {
   return (
     <div
       style={{
@@ -69,8 +76,10 @@ function CalloutBlock({ block }: { block: Block }) {
       }}
     >
       <textarea
-        value={val}
-        onChange={e => setVal(e.target.value)}
+        value={block.content}
+        onChange={e => onChange(e.target.value)}
+        onFocus={onFocus}
+        onBlur={onBlur}
         rows={2}
         style={{
           width: '100%',
@@ -170,11 +179,11 @@ function CardGroupBlock({ block }: { block: Block }) {
   )
 }
 
-function renderBlock(block: Block) {
+function renderBlock(block: Block, handlers: BlockEditHandlers) {
   switch (block.type) {
-    case 'heading':    return <HeadingBlock    block={block} />
-    case 'paragraph':  return <ParagraphBlock  block={block} />
-    case 'callout':    return <CalloutBlock    block={block} />
+    case 'heading':    return <HeadingBlock    block={block} {...handlers} />
+    case 'paragraph':  return <ParagraphBlock  block={block} {...handlers} />
+    case 'callout':    return <CalloutBlock    block={block} {...handlers} />
     case 'image':      return <ImageBlock      block={block} />
     case 'card-group': return <CardGroupBlock  block={block} />
     default:           return null
@@ -208,9 +217,14 @@ interface ContentSectionProps {
    * AIEditPopover). Not offered for card-group blocks (no single text field). */
   onRewriteBlock?: (blockId: string, instruction: string) => void
   isRewriting?: boolean
+  /** Inline text editing — controlled off the authoritative deck (see
+   * lib/useDeckEditor.ts) so edits are captured, undoable, and never lost. */
+  onUpdateBlockContent?: (blockId: string, text: string) => void
+  onBeginBlockEdit?: () => void
+  onCommitBlockEdit?: () => void
 }
 
-export function ContentSection({ section, isActive, onClick, onInsertBefore, aspectRatio, onDropBlock, mode = 'edit', selectedBlockIds, onToggleBlockSelect, onClearSelection, flagCount = 0, onRewriteBlock, isRewriting = false }: ContentSectionProps) {
+export function ContentSection({ section, isActive, onClick, onInsertBefore, aspectRatio, onDropBlock, mode = 'edit', selectedBlockIds, onToggleBlockSelect, onClearSelection, flagCount = 0, onRewriteBlock, isRewriting = false, onUpdateBlockContent, onBeginBlockEdit, onCommitBlockEdit }: ContentSectionProps) {
   const [hovered, setHovered] = useState(false)
   const [dragOver, setDragOver] = useState(false)
 
@@ -307,11 +321,12 @@ export function ContentSection({ section, isActive, onClick, onInsertBefore, asp
           const isSelected = selectedBlockIds?.has(block.id) ?? false
           const showEditPopover = mode === 'select' && isSelected && selectedBlockIds?.size === 1 && block.type !== 'card-group'
           return (
-            // Keyed on content too — a block edited by AI (rewriteBlock) needs
-            // the uncontrolled input/textarea below to remount and pick up the
-            // new value, since it only reads its `block.content` prop once.
-            <div key={`${block.id}:${block.content}`} style={{ position: 'relative' }}>
-              {renderBlock(block)}
+            <div key={block.id} style={{ position: 'relative' }}>
+              {renderBlock(block, {
+                onChange: text => onUpdateBlockContent?.(block.id, text),
+                onFocus: () => onBeginBlockEdit?.(),
+                onBlur: () => onCommitBlockEdit?.(),
+              })}
               {mode === 'select' && (
                 <div
                   onClick={e => {

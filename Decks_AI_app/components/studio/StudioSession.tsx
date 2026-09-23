@@ -82,6 +82,18 @@ export function StudioSession({ initialPrompt, aspectRatio, onBackToLanding }: S
             onVerify={session.verifyContent}
             isRewriting={session.isRewriting}
             onRewriteBlock={session.rewriteBlock}
+            canUndo={session.canUndo}
+            canRedo={session.canRedo}
+            onUndo={session.undo}
+            onRedo={session.redo}
+            onInsertBlock={session.insertBlock}
+            onInsertSection={session.insertSection}
+            onDeleteBlocks={session.deleteBlocks}
+            onDuplicateBlocks={session.duplicateBlocks}
+            onApplyRewrite={session.applyRewrite}
+            onBeginBlockEdit={session.beginBlockEdit}
+            onUpdateBlockContent={session.updateBlockContent}
+            onCommitBlockEdit={session.commitBlockEdit}
           />
         </div>
       </div>

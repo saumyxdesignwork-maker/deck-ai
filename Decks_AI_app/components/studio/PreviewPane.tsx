@@ -10,7 +10,7 @@ import { PreviewToolbar, CanvasMode } from './PreviewToolbar'
 import { SlideThumbRail } from './SlideThumbRail'
 import { OutlineReviewPanel } from './OutlineReviewPanel'
 import { ResizeHandle } from '@/components/shared/ResizeHandle'
-import { MOCK_DECK, DeckData, DeckSection, Block } from '@/lib/fixtures'
+import { MOCK_DECK, DeckData } from '@/lib/fixtures'
 import { OutlineSection, VerifyFlag } from '@/lib/studioScript'
 import { PreviewState } from '@/lib/useStudioSession'
 import { useResizableWidth } from '@/lib/useResizableWidth'
@@ -32,35 +32,27 @@ interface PreviewPaneProps {
   onVerify: () => void
   isRewriting: boolean
   onRewriteBlock: (text: string, instruction: string, sectionTitle?: string) => Promise<string | null>
+  canUndo: boolean
+  canRedo: boolean
+  onUndo: () => void
+  onRedo: () => void
+  onInsertBlock: (sectionIdx: number, blockType: string) => void
+  onInsertSection: (index: number) => void
+  onDeleteBlocks: (blockIds: Set<string>) => void
+  onDuplicateBlocks: (blockIds: Set<string>) => void
+  onApplyRewrite: (blockId: string, text: string) => void
+  onBeginBlockEdit: () => void
+  onUpdateBlockContent: (blockId: string, text: string) => void
+  onCommitBlockEdit: () => void
 }
 
-// Mirrors app/editor/page.tsx's makeBlock/makeDefaultSection — kept local so Studio stays additive.
-function makeBlock(blockType: string): Block {
-  const id = `bl-${Date.now()}-${Math.random().toString(36).slice(2)}`
-  if (blockType === 'card-group') {
-    return { id, type: 'card-group', content: '', cards: [{ icon: '✨', title: 'New Card', value: '—' }] }
-  }
-  const defaults: Record<string, string> = {
-    heading: 'New Heading', paragraph: 'Start writing here…', callout: 'Add a callout note…', image: 'Image placeholder',
-  }
-  return { id, type: blockType as Block['type'], content: defaults[blockType] ?? '' }
-}
-
-function makeDefaultSection(): DeckSection {
-  return {
-    id: `ds-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-    title: 'New Section',
-    layout: 'key-points',
-    thumbnailColor: '#F3F4F6',
-    blocks: [
-      { id: `bl-h-${Date.now()}`, type: 'heading',   content: 'New Section' },
-      { id: `bl-p-${Date.now()}`, type: 'paragraph', content: 'Start writing your content here…' },
-    ],
-  }
-}
-
-export function PreviewPane({ previewState, revealedSlides, deck, isWorking, outlinePending, onApproveOutline, onRegenerateOutline, verifyFlags, isVerifying, onVerify, isRewriting, onRewriteBlock }: PreviewPaneProps) {
-  const [sections, setSections] = useState<DeckSection[]>([])
+export function PreviewPane({
+  previewState, revealedSlides, deck, isWorking, outlinePending, onApproveOutline, onRegenerateOutline,
+  verifyFlags, isVerifying, onVerify, isRewriting, onRewriteBlock,
+  canUndo, canRedo, onUndo, onRedo,
+  onInsertBlock, onInsertSection, onDeleteBlocks, onDuplicateBlocks, onApplyRewrite,
+  onBeginBlockEdit, onUpdateBlockContent, onCommitBlockEdit,
+}: PreviewPaneProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const [autoFollow, setAutoFollow] = useState(true)
   const [isPresenting, setIsPresenting] = useState(false)
@@ -70,13 +62,25 @@ export function PreviewPane({ previewState, revealedSlides, deck, isWorking, out
     useResizableWidth(DEFAULT_INSERT_WIDTH, MIN_INSERT_WIDTH, MAX_INSERT_WIDTH, /* invert */ true)
 
   const isDone = previewState === 'done'
+  const sections = deck?.sections ?? []
   const slideRefs = useRef<Array<HTMLDivElement | null>>([])
 
-  // Seed local (editable) sections from the real generated deck as soon as
-  // it arrives over the stream — replaces the old MOCK_DECK.sections seed.
+  // Undo/redo — only meaningful once the deck is editable, and never while
+  // the user is typing in a field (native Cmd+Z there must stay untouched).
   useEffect(() => {
-    if (deck) setSections(deck.sections.map(s => ({ ...s, blocks: [...s.blocks] })))
-  }, [deck])
+    if (!isDone) return
+    const handler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null
+      const isTyping = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
+      if (isTyping) return
+      if (!(e.metaKey || e.ctrlKey) || e.key.toLowerCase() !== 'z') return
+      e.preventDefault()
+      if (e.shiftKey) onRedo()
+      else onUndo()
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [isDone, onUndo, onRedo])
 
   // Follow the newest revealed slide while streaming (single-slide preview)
   useEffect(() => {
@@ -91,23 +95,6 @@ export function PreviewPane({ previewState, revealedSlides, deck, isWorking, out
     // Once the deck is fully assembled, all slides render stacked —
     // clicking a thumbnail scrolls to it instead of swapping a single view.
     slideRefs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }, [])
-
-  // Dropped directly onto a specific slide's card (see ContentSection's
-  // onDropBlock) — never onto the canvas at large, so the block always
-  // lands on the slide the user actually dropped it on.
-  const handleDropOnSection = useCallback((sectionIdx: number, blockType: string) => {
-    setSections(prev => prev.map((s, i) => (i === sectionIdx ? { ...s, blocks: [...s.blocks, makeBlock(blockType)] } : s)))
-  }, [])
-
-  // Inserts a new slide immediately before the section at `index`
-  const handleInsertSectionAt = useCallback((index: number) => {
-    const newSection = makeDefaultSection()
-    setSections(prev => {
-      const next = [...prev]
-      next.splice(index, 0, newSection)
-      return next
-    })
   }, [])
 
   const handleModeChange = useCallback((mode: CanvasMode) => {
@@ -127,21 +114,14 @@ export function PreviewPane({ previewState, revealedSlides, deck, isWorking, out
   const handleClearSelection = useCallback(() => setSelectedBlockIds(new Set()), [])
 
   const handleDeleteSelected = useCallback(() => {
-    setSections(prev => prev.map(s => ({ ...s, blocks: s.blocks.filter(b => !selectedBlockIds.has(b.id)) })))
+    onDeleteBlocks(selectedBlockIds)
     setSelectedBlockIds(new Set())
-  }, [selectedBlockIds])
+  }, [selectedBlockIds, onDeleteBlocks])
 
   const handleDuplicateSelected = useCallback(() => {
-    setSections(prev =>
-      prev.map(s => {
-        const toDuplicate = s.blocks.filter(b => selectedBlockIds.has(b.id))
-        if (!toDuplicate.length) return s
-        const duplicates = toDuplicate.map(b => ({ ...b, id: `bl-${Date.now()}-${Math.random().toString(36).slice(2)}` }))
-        return { ...s, blocks: [...s.blocks, ...duplicates] }
-      }),
-    )
+    onDuplicateBlocks(selectedBlockIds)
     setSelectedBlockIds(new Set())
-  }, [selectedBlockIds])
+  }, [selectedBlockIds, onDuplicateBlocks])
 
   const handleRewriteBlock = useCallback(
     async (sectionIdx: number, blockId: string, instruction: string) => {
@@ -150,9 +130,9 @@ export function PreviewPane({ previewState, revealedSlides, deck, isWorking, out
       if (!block) return
       const newText = await onRewriteBlock(block.content, instruction, section.title)
       if (newText === null) return
-      setSections(prev => prev.map((s, i) => (i !== sectionIdx ? s : { ...s, blocks: s.blocks.map(b => (b.id === blockId ? { ...b, content: newText } : b)) })))
+      onApplyRewrite(blockId, newText)
     },
-    [sections, onRewriteBlock],
+    [sections, onRewriteBlock, onApplyRewrite],
   )
 
   const flagCountBySection = new Map<string, number>()
@@ -300,9 +280,9 @@ export function PreviewPane({ previewState, revealedSlides, deck, isWorking, out
                       section={section}
                       isActive={activeIndex === i + 1}
                       onClick={() => setActiveIndex(i + 1)}
-                      onInsertBefore={() => handleInsertSectionAt(i)}
+                      onInsertBefore={() => onInsertSection(i)}
                       aspectRatio={deck?.aspectRatio}
-                      onDropBlock={blockType => handleDropOnSection(i, blockType)}
+                      onDropBlock={blockType => onInsertBlock(i, blockType)}
                       mode={canvasMode}
                       selectedBlockIds={selectedBlockIds}
                       onToggleBlockSelect={handleToggleBlockSelect}
@@ -310,6 +290,9 @@ export function PreviewPane({ previewState, revealedSlides, deck, isWorking, out
                       flagCount={flagCountBySection.get(section.id) ?? 0}
                       onRewriteBlock={(blockId, instruction) => handleRewriteBlock(i, blockId, instruction)}
                       isRewriting={isRewriting}
+                      onUpdateBlockContent={onUpdateBlockContent}
+                      onBeginBlockEdit={onBeginBlockEdit}
+                      onCommitBlockEdit={onCommitBlockEdit}
                     />
                   </div>
                 ))}
@@ -330,6 +313,9 @@ export function PreviewPane({ previewState, revealedSlides, deck, isWorking, out
                 isActive
                 onClick={() => {}}
                 aspectRatio={deck?.aspectRatio}
+                onUpdateBlockContent={onUpdateBlockContent}
+                onBeginBlockEdit={onBeginBlockEdit}
+                onCommitBlockEdit={onCommitBlockEdit}
               />
             ) : null}
           </div>

@@ -58,6 +58,13 @@ export default function EditorPage() {
     setSections(prev => prev.map(s => (s.id === sectionId ? { ...s, blocks: [...s.blocks, makeBlock(blockType)] } : s)))
   }, [])
 
+  // ContentSection's blocks are controlled off `block.content` (see
+  // lib/useDeckEditor.ts for Studio's undoable version) — Classic has no
+  // undo/history, so this just writes straight through.
+  const handleUpdateBlockContent = useCallback((blockId: string, text: string) => {
+    setSections(prev => prev.map(s => ({ ...s, blocks: s.blocks.map(b => (b.id === blockId ? { ...b, content: text } : b)) })))
+  }, [])
+
   const makeDefaultSection = (): DeckSection => ({
     id: `ds-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     title: 'New Section',
@@ -138,6 +145,7 @@ export default function EditorPage() {
               onClick={() => setActiveSectionId(section.id)}
               onInsertBefore={() => handleInsertSectionAt(i)}
               onDropBlock={blockType => handleDropOnSection(section.id, blockType)}
+              onUpdateBlockContent={handleUpdateBlockContent}
             />
           ))}
 

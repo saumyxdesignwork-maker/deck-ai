@@ -3,6 +3,7 @@ import { MODELS } from '../config/models.js'
 import { structuredCompletion, StructuredOutputError } from '../openrouter/json.js'
 import { OpenRouterError } from '../openrouter/client.js'
 import { logError } from '../lib/log.js'
+import { newId } from '../lib/ids.js'
 import type { SessionState } from '../session/store.js'
 import type { OutlineSection } from '../contract/chat.js'
 import type { LayoutType, Block } from '../contract/deck.js'
@@ -185,8 +186,8 @@ function fallbackDeck(state: SessionState): DeckSkeleton {
       title: s.title,
       layout: s.layout ?? LAYOUTS[i % LAYOUTS.length],
       blocks: [
-        { id: '', type: 'heading', content: s.title },
-        ...s.bullets.map(b => ({ id: '', type: 'paragraph' as const, content: b })),
+        { id: newId('bl'), type: 'heading', content: s.title },
+        ...s.bullets.map(b => ({ id: newId('bl'), type: 'paragraph' as const, content: b })),
       ],
     })),
   }
@@ -232,7 +233,7 @@ export async function expandDeck(state: SessionState): Promise<{ deck: DeckSkele
           // the prompt asks for compliance but this guarantees it rather
           // than trusting the model to follow instructions.
           layout: storyline[i]?.layout ?? (s.layout as LayoutType),
-          blocks: s.blocks.map(b => ({ id: '', type: b.type, content: b.content, cards: b.cards })),
+          blocks: s.blocks.map(b => ({ id: newId('bl'), type: b.type, content: b.content, cards: b.cards })),
         })),
       },
       usedFallback: false,
