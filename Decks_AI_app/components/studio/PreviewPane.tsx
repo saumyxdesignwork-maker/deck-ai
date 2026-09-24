@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { AnimatePresence, LayoutGroup, MotionConfig, motion, useReducedMotion } from 'motion/react'
-import { BookOpen, History, FolderOpen, Play, Download, PanelRightOpen, PanelRightClose, Trash2, Copy, X } from 'lucide-react'
+import { BookOpen, History, Play, Download, PanelRightOpen, PanelRightClose, Trash2, Copy, X } from 'lucide-react'
 import { CoverBlock } from '@/components/editor/blocks/CoverBlock'
 import { ContentSection } from '@/components/editor/blocks/ContentSection'
 import { InsertPanel } from '@/components/editor/InsertPanel'
@@ -122,6 +122,23 @@ export function PreviewPane({
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [isDone, onUndo, onRedo])
+
+  // Insert panel — ⌘/ toggles it open/closed, same guard rules as Cmd+Z
+  // above. The shortcut is also shown visibly under the panel's own rail
+  // icon (see the toggle button below), not just in this handler.
+  useEffect(() => {
+    if (!isDone) return
+    const handler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null
+      const isTyping = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
+      if (isTyping) return
+      if (!(e.metaKey || e.ctrlKey) || e.key !== '/') return
+      e.preventDefault()
+      setInsertCollapsed(c => !c)
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [isDone])
 
   // Ask AI — double-tap Cmd (⌘⌘) toggles the floating surface. Only live
   // once a first draft exists (never during brief intake). Detection rules
@@ -273,7 +290,7 @@ export function PreviewPane({
         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font-body)', flex: 1 }}>
           {deck?.title ?? MOCK_DECK.title}
         </span>
-        {isDone ? (
+        {isDone && (
           <>
             <button style={miniBtnStyle} onClick={() => setIsPresenting(true)}><Play size={12} fill="currentColor" /> Present</button>
             <button style={miniBtnStyle}><Download size={12} /> Export</button>
@@ -293,17 +310,6 @@ export function PreviewPane({
                 />
               )}
             </div>
-            <button
-              style={{ ...miniBtnStyle, padding: '5px 7px' }}
-              title={insertCollapsed ? 'Show insert panel' : 'Hide insert panel'}
-              onClick={() => setInsertCollapsed(c => !c)}
-            >
-              {insertCollapsed ? <PanelRightOpen size={12} /> : <PanelRightClose size={12} />}
-            </button>
-          </>
-        ) : (
-          <>
-            <button style={{ ...miniBtnStyle, padding: '5px 7px' }}><FolderOpen size={12} /></button>
           </>
         )}
       </div>
@@ -522,32 +528,40 @@ export function PreviewPane({
         </div>
 
         {isDone && (
-          insertCollapsed ? (
+          <>
+            {/* Single, persistent toggle for the insert panel — same icon,
+                same spot, whether it's open or closed (mirrors the chat
+                rail's pattern instead of also having a separate button in
+                the mini top bar). The ⌘/ caption is the visible mention of
+                the shortcut, not just a hover tooltip. */}
             <button
-              onClick={() => setInsertCollapsed(false)}
-              title="Show insert panel"
+              onClick={() => setInsertCollapsed(c => !c)}
+              title={`${insertCollapsed ? 'Show' : 'Hide'} insert panel (⌘/)`}
+              aria-pressed={!insertCollapsed}
               style={{
                 width: 40, flexShrink: 0, height: '100%',
-                display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 16,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', gap: 4, paddingTop: 16,
                 border: 'none', borderLeft: '1px solid var(--divider)',
                 background: 'var(--surface-panel, var(--surface))', cursor: 'pointer',
-                color: 'var(--text-muted)',
+                color: insertCollapsed ? 'var(--text-muted)' : 'var(--accent)',
               }}
             >
-              <PanelRightOpen size={16} />
+              {insertCollapsed ? <PanelRightOpen size={16} /> : <PanelRightClose size={16} />}
+              <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.02em' }}>⌘/</span>
             </button>
-          ) : (
-            <>
-              <ResizeHandle isResizing={isResizingInsert} onPointerDown={handleInsertResizeStart} />
-              <InsertPanel
-                width={insertWidth}
-                activeSection={activeSection}
-                onSetLayout={layout => { if (activeSectionIdx !== null) onSetSectionLayout(activeSectionIdx, layout) }}
-                onRemix={instruction => { if (activeSection) handleRemix(instruction, activeSection.id) }}
-                isEditing={isEditing}
-              />
-            </>
-          )
+            {!insertCollapsed && (
+              <>
+                <ResizeHandle isResizing={isResizingInsert} onPointerDown={handleInsertResizeStart} />
+                <InsertPanel
+                  width={insertWidth}
+                  activeSection={activeSection}
+                  onSetLayout={layout => { if (activeSectionIdx !== null) onSetSectionLayout(activeSectionIdx, layout) }}
+                  onRemix={instruction => { if (activeSection) handleRemix(instruction, activeSection.id) }}
+                  isEditing={isEditing}
+                />
+              </>
+            )}
+          </>
         )}
       </div>
 

@@ -87,6 +87,8 @@ export function StudioSession({ initialPrompt, aspectRatio, deckStyle = 'profess
         >
           <button
             onClick={onBackToLanding}
+            aria-label="Back to landing"
+            title="Back to landing"
             style={{
               display: 'flex', alignItems: 'center', gap: 5,
               border: 'none', background: 'transparent', cursor: 'pointer',
@@ -97,7 +99,6 @@ export function StudioSession({ initialPrompt, aspectRatio, deckStyle = 'profess
             onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
           >
             <ArrowLeft size={14} />
-            New deck
           </button>
           <span style={{ fontSize: 12, color: 'var(--text-disabled)' }}>·</span>
           <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', fontFamily: 'var(--font-body)' }}>
