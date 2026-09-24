@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AspectRatio, aspectRatioCss } from '@/lib/fixtures'
 
 interface CoverBlockProps {
@@ -17,6 +17,14 @@ interface CoverBlockProps {
 export function CoverBlock({ title, subtitle, author, coverColor, aspectRatio }: CoverBlockProps) {
   const [editTitle, setEditTitle] = useState(title)
   const [editSubtitle, setEditSubtitle] = useState(subtitle)
+
+  // These fields aren't wired to persist local typing anywhere yet (a
+  // pre-existing gap, not new here) — but they must at least reflect an
+  // externally-changed deck (e.g. an agent edit via POST /edit, or a fresh
+  // streamed deck), otherwise this local state permanently shadows the real
+  // title/subtitle the moment it mounts.
+  useEffect(() => setEditTitle(title), [title])
+  useEffect(() => setEditSubtitle(subtitle), [subtitle])
 
   return (
     <div

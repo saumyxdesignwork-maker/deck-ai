@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { BookOpen, History, FolderOpen, Play, Download, PanelLeft, Trash2, Copy, X } from 'lucide-react'
+import { BookOpen, History, FolderOpen, Play, Download, PanelLeft, PanelRight, Trash2, Copy, X } from 'lucide-react'
 import { CoverBlock } from '@/components/editor/blocks/CoverBlock'
 import { ContentSection } from '@/components/editor/blocks/ContentSection'
 import { InsertPanel } from '@/components/editor/InsertPanel'
@@ -9,10 +9,10 @@ import { PresentationMode } from '@/components/editor/PresentationMode'
 import { PreviewToolbar, CanvasMode } from './PreviewToolbar'
 import { SlideThumbRail } from './SlideThumbRail'
 import { OutlineReviewPanel } from './OutlineReviewPanel'
-import { AskAIOverlay } from './AskAIOverlay'
+import { FloatingChat } from './FloatingChat'
 import { ResizeHandle } from '@/components/shared/ResizeHandle'
 import { MOCK_DECK, DeckData, LayoutType } from '@/lib/fixtures'
-import { OutlineSection, VerifyFlag } from '@/lib/studioScript'
+import { ChatItem, OutlineSection, VerifyFlag } from '@/lib/studioScript'
 import { PreviewState } from '@/lib/useStudioSession'
 import { useResizableWidth } from '@/lib/useResizableWidth'
 
@@ -46,6 +46,10 @@ interface PreviewPaneProps {
   onUpdateBlockContent: (blockId: string, text: string) => void
   onCommitBlockEdit: () => void
   onSetSectionLayout: (sectionIdx: number, layout: LayoutType) => void
+  items: ChatItem[]
+  isEditing: boolean
+  editGroupId: string | null
+  onRunEdit: (instruction: string, activeSectionId?: string) => void
 }
 
 export function PreviewPane({
@@ -54,6 +58,7 @@ export function PreviewPane({
   canUndo, canRedo, onUndo, onRedo,
   onInsertBlock, onInsertSection, onDeleteBlocks, onDuplicateBlocks, onApplyRewrite,
   onBeginBlockEdit, onUpdateBlockContent, onCommitBlockEdit, onSetSectionLayout,
+  items, isEditing, editGroupId, onRunEdit,
 }: PreviewPaneProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const [autoFollow, setAutoFollow] = useState(true)
@@ -61,8 +66,10 @@ export function PreviewPane({
   const [canvasMode, setCanvasMode] = useState<CanvasMode>('edit')
   const [selectedBlockIds, setSelectedBlockIds] = useState<Set<string>>(new Set())
   const [isAskAIOpen, setIsAskAIOpen] = useState(false)
-  const [isRemixingSection, setIsRemixingSection] = useState(false)
-  const lastMetaPressRef = useRef(0)
+  const [insertCollapsed, setInsertCollapsed] = useState(false)
+  const metaHeldRef = useRef(false)
+  const metaCleanRef = useRef(true)
+  const lastCleanTapRef = useRef(0)
   const { width: insertWidth, isResizing: isResizingInsert, handlePointerDown: handleInsertResizeStart } =
     useResizableWidth(DEFAULT_INSERT_WIDTH, MIN_INSERT_WIDTH, MAX_INSERT_WIDTH, /* invert */ true)
 
@@ -87,27 +94,49 @@ export function PreviewPane({
     return () => window.removeEventListener('keydown', handler)
   }, [isDone, onUndo, onRedo])
 
-  // Ask AI — double-tap Cmd (⌘⌘) toggles the focused overlay. Only live
-  // once a first draft exists; ignored while typing so it never interrupts
-  // normal editing (a lone Cmd press never lands in a text field anyway,
-  // but this keeps the guard consistent with the undo/redo listener above).
+  // Ask AI — double-tap Cmd (⌘⌘) toggles the floating popup. Only live once
+  // a first draft exists. "Clean tap" tracking (metaHeldRef/metaCleanRef)
+  // means a tap only counts if no other key was pressed while Meta was held
+  // — so ⌘S ⌘S (save twice) never mis-fires this, unlike counting every
+  // Meta keydown. macOS/iOS only: Meta is OS-reserved on Windows/Linux, so
+  // there the visible "Ask AI" button (PreviewToolbar) is the only trigger.
   useEffect(() => {
     if (!isDone) return
-    const handler = (e: KeyboardEvent) => {
-      if (e.key !== 'Meta' || e.repeat) return
-      const target = e.target as HTMLElement | null
+    const isApplePlatform = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent)
+    if (!isApplePlatform) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Meta') {
+        if (!e.repeat) {
+          metaHeldRef.current = true
+          metaCleanRef.current = true
+        }
+        return
+      }
+      if (metaHeldRef.current) metaCleanRef.current = false
+    }
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key !== 'Meta') return
+      const wasCleanTap = metaHeldRef.current && metaCleanRef.current
+      metaHeldRef.current = false
+      if (!wasCleanTap) return
+      const target = document.activeElement as HTMLElement | null
       const isTyping = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
       if (isTyping) return
       const now = Date.now()
-      if (now - lastMetaPressRef.current < 400) {
+      if (now - lastCleanTapRef.current < 350) {
         setIsAskAIOpen(open => !open)
-        lastMetaPressRef.current = 0
+        lastCleanTapRef.current = 0
       } else {
-        lastMetaPressRef.current = now
+        lastCleanTapRef.current = now
       }
     }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
+    window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('keyup', handleKeyUp)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keyup', handleKeyUp)
+    }
   }, [isDone])
 
   // Follow the newest revealed slide while streaming (single-slide preview)
@@ -168,45 +197,6 @@ export function PreviewPane({
   const activeSectionIdx = activeIndex !== null && activeIndex > 0 ? activeIndex - 1 : null
   const activeSection = activeSectionIdx !== null ? sections[activeSectionIdx] ?? null : null
 
-  const handleAskAIInsertBlock = useCallback(
-    (blockType: string) => {
-      if (activeSectionIdx === null) return
-      onInsertBlock(activeSectionIdx, blockType)
-    },
-    [activeSectionIdx, onInsertBlock],
-  )
-
-  const handleAskAISetLayout = useCallback(
-    (layout: LayoutType) => {
-      if (activeSectionIdx === null) return
-      onSetSectionLayout(activeSectionIdx, layout)
-    },
-    [activeSectionIdx, onSetSectionLayout],
-  )
-
-  // "Remix this slide" has no dedicated backend intent yet — it fans the
-  // instruction out to /rewrite across every text-bearing block in the
-  // active section (heading/paragraph/callout), applying each result.
-  const handleAskAIRemixSection = useCallback(
-    async (instruction: string) => {
-      if (activeSectionIdx === null || !activeSection) return
-      const textBlocks = activeSection.blocks.filter(b => b.type === 'heading' || b.type === 'paragraph' || b.type === 'callout')
-      if (!textBlocks.length) return
-      setIsRemixingSection(true)
-      try {
-        await Promise.all(
-          textBlocks.map(async b => {
-            const newText = await onRewriteBlock(b.content, instruction, activeSection.title)
-            if (newText !== null) onApplyRewrite(b.id, newText)
-          }),
-        )
-      } finally {
-        setIsRemixingSection(false)
-      }
-    },
-    [activeSectionIdx, activeSection, onRewriteBlock, onApplyRewrite],
-  )
-
   const flagCountBySection = new Map<string, number>()
   for (const flag of verifyFlags) {
     flagCountBySection.set(flag.sectionId, (flagCountBySection.get(flag.sectionId) ?? 0) + 1)
@@ -238,6 +228,13 @@ export function PreviewPane({
           <>
             <button style={miniBtnStyle} onClick={() => setIsPresenting(true)}><Play size={12} fill="currentColor" /> Present</button>
             <button style={miniBtnStyle}><Download size={12} /> Export</button>
+            <button
+              style={{ ...miniBtnStyle, padding: '5px 7px' }}
+              title={insertCollapsed ? 'Show insert panel' : 'Hide insert panel'}
+              onClick={() => setInsertCollapsed(c => !c)}
+            >
+              <PanelRight size={12} />
+            </button>
           </>
         ) : (
           <>
@@ -266,14 +263,17 @@ export function PreviewPane({
             />
           )}
 
-          {isDone && isAskAIOpen && (
-            <AskAIOverlay
-              section={activeSection}
+          {isDone && (
+            <FloatingChat
+              isOpen={isAskAIOpen}
               onClose={() => setIsAskAIOpen(false)}
-              onInsertBlock={handleAskAIInsertBlock}
-              onSetLayout={handleAskAISetLayout}
-              onRemixSection={handleAskAIRemixSection}
-              isRemixing={isRemixingSection}
+              activeSection={activeSection}
+              items={items}
+              isEditing={isEditing}
+              editGroupId={editGroupId}
+              onSubmit={onRunEdit}
+              canUndo={canUndo}
+              onUndo={onUndo}
             />
           )}
 
@@ -405,11 +405,27 @@ export function PreviewPane({
           </div>
         </div>
 
-        {isDone && !isAskAIOpen && (
-          <>
-            <ResizeHandle isResizing={isResizingInsert} onPointerDown={handleInsertResizeStart} />
-            <InsertPanel width={insertWidth} />
-          </>
+        {isDone && (
+          insertCollapsed ? (
+            <button
+              onClick={() => setInsertCollapsed(false)}
+              title="Show insert panel"
+              style={{
+                width: 40, flexShrink: 0, height: '100%',
+                display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 16,
+                border: 'none', borderLeft: '1px solid var(--divider)',
+                background: 'var(--surface-panel, var(--surface))', cursor: 'pointer',
+                color: 'var(--text-muted)',
+              }}
+            >
+              <PanelRight size={16} />
+            </button>
+          ) : (
+            <>
+              <ResizeHandle isResizing={isResizingInsert} onPointerDown={handleInsertResizeStart} />
+              <InsertPanel width={insertWidth} />
+            </>
+          )
         )}
       </div>
 

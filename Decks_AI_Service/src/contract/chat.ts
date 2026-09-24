@@ -1,6 +1,7 @@
 // Mirrors Decks_AI_app/lib/studioScript.ts — keep these two files in sync by hand.
 
 import type { LayoutType } from './deck.js'
+import type { VerifyFlag } from './verify.js'
 
 export interface ChecklistTask {
   label: string
@@ -31,6 +32,7 @@ export type ChatItem =
   | { id: string; type: 'checklist'; title: string; tasks: ChecklistTask[] }
   | { id: string; type: 'outline'; sections: OutlineSection[]; approved?: boolean }
   | { id: string; type: 'verify'; label: string; detail: string; status: 'running' | 'done' }
+  | { id: string; type: 'verify-report'; flags: (VerifyFlag & { sectionTitle: string })[] }
   | { id: string; type: 'summary'; text: string }
 
 export type ChatItemPatch = Partial<Omit<ChatItem, 'id' | 'type'>>

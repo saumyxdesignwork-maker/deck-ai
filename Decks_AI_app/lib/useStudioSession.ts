@@ -62,6 +62,26 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
   // alongside the first clarify gate, never repeated on /regenerate etc.
   const hasNudgedRef = useRef(false)
 
+  // While an agent edit (/edit) is in flight, the streamed `deck` event is
+  // the whole edited deck coming back from the Editor tier — it must land as
+  // ONE undoable step via deckEditor.applyExternalDeck, not through the
+  // pre-ownership streamedDeck mirror (which would just get discarded once
+  // useDeckEditor already owns the deck). A ref (not state) because
+  // applyEvent is a stable useCallback with an empty dep array.
+  const isEditingRef = useRef(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editGroupId, setEditGroupId] = useState<string | null>(null)
+
+  // applyEvent (below) is a stable useCallback with an empty dep array — it
+  // reaches deckEditor.applyExternalDeck through this ref (kept current
+  // every render) rather than closing over it directly, since useDeckEditor
+  // returns a fresh object each render and a stale closure would end up
+  // bound to whatever sessionId was in scope when applyEvent was created.
+  const deckEditorRef = useRef(deckEditor)
+  useEffect(() => {
+    deckEditorRef.current = deckEditor
+  })
+
   const applyEvent = useCallback((event: StreamEvent) => {
     switch (event.t) {
       case 'session':
@@ -69,6 +89,13 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
         setSessionId(event.sessionId)
         break
       case 'chat':
+        // The first `group` item of an /edit run is the live agent-progress
+        // container the floating popup renders — capture its id so it can
+        // find that item in `items` (the group id itself is server-random,
+        // unlike /generate's fixed 'group-analyze'/'group-slides').
+        if (isEditingRef.current && event.item.type === 'group') {
+          setEditGroupId(prev => prev ?? event.item.id)
+        }
         setItems(prev => [...prev, event.item])
         break
       case 'update':
@@ -95,7 +122,13 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
         setRevealedSlides(prev => (prev.includes(event.index) ? prev : [...prev, event.index]))
         break
       case 'deck':
-        setStreamedDeck(event.deck)
+        if (isEditingRef.current) {
+          // Agent edit result — lands as ONE undoable step on the deck the
+          // user is already editing, not through the pre-ownership mirror.
+          deckEditorRef.current.applyExternalDeck(event.deck)
+        } else {
+          setStreamedDeck(event.deck)
+        }
         break
       case 'error':
         console.error(`[decks-ai-service] ${event.code}: ${event.message}`)
@@ -108,6 +141,8 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
         if (HARD_ERROR_CODES.has(event.code)) {
           setClarifyPending(null)
           setOutlinePending(null)
+          isEditingRef.current = false
+          setIsEditing(false)
           setItems(prev => [
             ...prev,
             {
@@ -122,6 +157,8 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
         }
         break
       case 'done':
+        isEditingRef.current = false
+        setIsEditing(false)
         break
     }
   }, [])
@@ -194,14 +231,28 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
     [outlinePending, runStream],
   )
 
-  const sendFollowUp = useCallback(
-    (text: string) => {
-      if (!text.trim()) return
-      setItems(prev => [...prev, { id: nextId('user'), type: 'user', text }])
-      runStream('/followup', { sessionId: sessionIdRef.current, text })
+  // Real canvas-first editing: sends the client's CURRENT deck (so unsaved
+  // inline edits aren't lost) plus the instruction and, when known, which
+  // slide is active — the backend Coordinator scopes ambiguous asks to it.
+  // The agents' own progress renders through the normal `items` timeline
+  // (same chip/checklist components as first-draft generation); the result
+  // comes back as a single `deck` event applied as ONE undoable step.
+  const runEdit = useCallback(
+    (instruction: string, activeSectionId?: string) => {
+      const deck = deckEditorRef.current.deck
+      if (!instruction.trim() || !deck || isEditingRef.current) return
+      setItems(prev => [...prev, { id: nextId('user'), type: 'user', text: instruction }])
+      isEditingRef.current = true
+      setIsEditing(true)
+      setEditGroupId(null)
+      runStream('/edit', { sessionId: sessionIdRef.current, instruction, deck, activeSectionId })
     },
     [runStream],
   )
+
+  // The persistent chat's bottom composer now drives real edits too, instead
+  // of the old dead-stub /followup acknowledgment.
+  const sendFollowUp = useCallback((text: string) => runEdit(text), [runEdit])
 
   const verifyContent = useCallback(async () => {
     const deck = deckEditor.deck
@@ -294,6 +345,9 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
     approveOutline,
     regenerateOutline,
     sendFollowUp,
+    isEditing,
+    editGroupId,
+    runEdit,
     verifyContent,
     rewriteBlock,
     updateItem,

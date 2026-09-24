@@ -210,6 +210,17 @@ export function useDeckEditor(streamedDeck: DeckData | null, isDone: boolean, se
     })
   }, [])
 
+  // Adopts a whole deck returned by an agent edit (POST /edit) as ONE
+  // undoable step — Cmd+Z reverts the entire edit, not each operation it
+  // applied. Distinct from the streamedDeck mirror effect above: that one
+  // only runs pre-ownership (first draft), this runs any time post-ownership.
+  const applyExternalDeck = useCallback(
+    (next: DeckData) => {
+      applyMutation(() => next)
+    },
+    [applyMutation],
+  )
+
   return {
     deck: state.deck,
     canUndo: state.past.length > 0,
@@ -225,6 +236,7 @@ export function useDeckEditor(streamedDeck: DeckData | null, isDone: boolean, se
     beginBlockEdit,
     updateBlockContent,
     commitBlockEdit,
+    applyExternalDeck,
   }
 }
 

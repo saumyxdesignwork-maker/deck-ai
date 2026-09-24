@@ -3,9 +3,14 @@ import { config } from '../config/env.js'
 import { analyzeBrief } from '../tiers/orchestrator.js'
 import { draftStoryline, expandDeck } from '../tiers/copywriter.js'
 import { applyTheme, generateAndAssignImages } from '../tiers/designer.js'
+import { planEdit, COVER_TITLE_BLOCK_ID, COVER_SUBTITLE_BLOCK_ID, type Op } from '../tiers/planner.js'
+import { rewriteText } from '../tiers/rewriter.js'
+import { verifyDeck } from '../tiers/verifier.js'
+import { applyAddBlock, applyDeleteBlock, applyReorderSection, applySetLayout, opTargetExists } from '../tiers/deckOps.js'
 import type { SessionState } from '../session/store.js'
 import type { StreamEvent } from './events.js'
 import type { DeckData } from '../contract/deck.js'
+import type { ChecklistTask } from '../contract/chat.js'
 
 export type Emit = (event: StreamEvent) => Promise<void>
 
@@ -181,20 +186,131 @@ export async function runRegenerate(state: SessionState, notes: string | undefin
   await emit({ t: 'outline', id: newId('outline'), sections })
 }
 
+function opLabel(op: Op): string {
+  switch (op.kind) {
+    case 'rewrite':
+      return `Rewrite: ${op.instruction}`
+    case 'add-block':
+      return `Add a ${op.blockType.replace('-', ' ')} block`
+    case 'delete-block':
+      return 'Remove a block'
+    case 'reorder-section':
+      return `Move slide to position ${op.toIndex + 1}`
+    case 'set-layout':
+      return `Switch layout to ${op.layout.replace('-', ' ')}`
+  }
+}
+
 /**
- * POST /followup — post-generation refinement. Intentionally minimal for
- * this pass (acknowledges the note without re-running the full pipeline);
- * a real targeted-patch flow is a documented follow-up.
+ * POST /edit (alias: /followup) — post-generation, canvas-first editing via
+ * the client's *current* deck (fixes the staleness of state.deck, which is
+ * otherwise only ever written once, inside runApprove). Coordinator (plan) →
+ * Editor (execute) → Reviewer (verify) — each a real tier call; the client
+ * renders their progress as the same chip/checklist chat items used during
+ * first-draft generation. Ends with a single `deck` event so the whole edit
+ * lands as one atomic, undoable mutation on the client.
  */
-export async function runFollowup(state: SessionState, text: string, emit: Emit): Promise<void> {
-  void state
+export async function runEdit(state: SessionState, instruction: string, deck: DeckData, activeSectionId: string | undefined, emit: Emit): Promise<void> {
+  const groupId = newId('group')
+  await emit({ t: 'chat', item: { id: groupId, type: 'group', label: 'Working on your deck', children: [] } })
+
+  // 1. Coordinator — turn the instruction into a small plan of operations.
+  const planToolId = newId('tool')
+  await emit({ t: 'group-push', groupId, item: { id: planToolId, type: 'tool', label: 'Understanding your request', detail: instruction, status: 'running' } })
+
+  const { plan, usedFallback: plannerFallback } = await planEdit(instruction, deck, activeSectionId)
+
+  await emit({ t: 'update', id: planToolId, patch: { status: 'done' } })
+  await emit({ t: 'group-push', groupId, item: { id: newId('reasoning'), type: 'reasoning', text: plan.summary } })
+  if (plannerFallback) {
+    await emit({ t: 'error', message: 'The planning model was unavailable — using a fallback response.', code: 'PLANNER_FALLBACK' })
+  }
+
+  const operations = plan.operations.filter(op => opTargetExists(deck, op))
+
+  if (operations.length === 0) {
+    await emit({
+      t: 'chat',
+      item: { id: newId('agent'), type: 'agent', text: plannerFallback ? plan.summary : "I couldn't find a change to make for that — try describing a specific edit, like a slide or piece of text to change." },
+    })
+    await emit({ t: 'done' })
+    return
+  }
+
+  // 2. Editor — apply each operation to a working copy, one checklist task
+  // per op so progress is visible as it lands.
+  const checklistId = newId('checklist')
+  let tasks: ChecklistTask[] = operations.map(op => ({ label: opLabel(op), done: false }))
+  await emit({ t: 'group-push', groupId, item: { id: checklistId, type: 'checklist', title: 'Applying changes', tasks } })
+
+  let workingDeck = deck
+  let anyRewriteFallback = false
+
+  for (let i = 0; i < operations.length; i++) {
+    const op = operations[i]
+    switch (op.kind) {
+      case 'rewrite': {
+        // The cover's title/subtitle live on the deck itself, not in
+        // `sections` — addressed via fixed pseudo-ids (see planner.ts) since
+        // they're otherwise invisible to the planner's block-based model.
+        if (op.blockId === COVER_TITLE_BLOCK_ID || op.blockId === COVER_SUBTITLE_BLOCK_ID) {
+          const current = op.blockId === COVER_TITLE_BLOCK_ID ? workingDeck.title : workingDeck.subtitle
+          const { text, usedFallback } = await rewriteText(current, op.instruction)
+          if (usedFallback) anyRewriteFallback = true
+          workingDeck = op.blockId === COVER_TITLE_BLOCK_ID ? { ...workingDeck, title: text } : { ...workingDeck, subtitle: text }
+          break
+        }
+        const block = workingDeck.sections.flatMap(s => s.blocks).find(b => b.id === op.blockId)
+        const sectionTitle = workingDeck.sections.find(s => s.id === op.sectionId)?.title
+        if (block) {
+          const { text, usedFallback } = await rewriteText(block.content, op.instruction, sectionTitle)
+          if (usedFallback) anyRewriteFallback = true
+          workingDeck = {
+            ...workingDeck,
+            sections: workingDeck.sections.map(s => ({ ...s, blocks: s.blocks.map(b => (b.id === op.blockId ? { ...b, content: text } : b)) })),
+          }
+        }
+        break
+      }
+      case 'add-block':
+        workingDeck = applyAddBlock(workingDeck, op)
+        break
+      case 'delete-block':
+        workingDeck = applyDeleteBlock(workingDeck, op)
+        break
+      case 'reorder-section':
+        workingDeck = applyReorderSection(workingDeck, op)
+        break
+      case 'set-layout':
+        workingDeck = applySetLayout(workingDeck, op)
+        break
+    }
+    tasks = tasks.map((t, idx) => (idx === i ? { ...t, done: true } : t))
+    await emit({ t: 'update', id: checklistId, patch: { tasks } })
+  }
+
+  if (anyRewriteFallback) {
+    await emit({ t: 'error', message: 'One of the rewrite steps fell back to a degraded model response.', code: 'REWRITE_FALLBACK' })
+  }
+
+  // 3. Reviewer — re-run the same content-quality pass used post-generation.
+  const verifyId = newId('verify')
+  await emit({ t: 'group-push', groupId, item: { id: verifyId, type: 'verify', label: 'Reviewing the result', detail: 'Checking for inconsistencies introduced by the edit', status: 'running' } })
+  const { flags, usedFallback: verifyFallback } = await verifyDeck(workingDeck)
+  await emit({ t: 'update', id: verifyId, patch: { status: 'done' } })
+  if (verifyFallback) {
+    await emit({ t: 'error', message: 'The review model was unavailable — skipped content review.', code: 'VERIFIER_FALLBACK' })
+  }
+  if (flags.length > 0) {
+    const withTitles = flags.map(f => ({ ...f, sectionTitle: workingDeck.sections.find(s => s.id === f.sectionId)?.title ?? 'Untitled section' }))
+    await emit({ t: 'chat', item: { id: newId('verify-report'), type: 'verify-report', flags: withTitles } })
+  }
+
+  state.deck = workingDeck
+  await emit({ t: 'deck', deck: workingDeck })
   await emit({
     t: 'chat',
-    item: {
-      id: newId('agent'),
-      type: 'agent',
-      text: `Got it — I've noted "${text}". Targeted refinement isn't fully wired up yet; try re-generating the deck for now.`,
-    },
+    item: { id: newId('summary'), type: 'summary', text: plan.summary },
   })
   await emit({ t: 'done' })
 }
