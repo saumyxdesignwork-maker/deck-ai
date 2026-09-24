@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
+import { useEffect, useState, useCallback, useMemo, useRef, useSyncExternalStore } from 'react'
 import { AnimatePresence, LayoutGroup, MotionConfig, motion, useReducedMotion } from 'motion/react'
 import { BookOpen, History, Play, Download, PanelRightOpen, PanelRightClose, Trash2, Copy, X } from 'lucide-react'
 import { CoverBlock } from '@/components/editor/blocks/CoverBlock'
@@ -14,13 +14,14 @@ import { StorylineSkeleton, DeckSkeleton } from './GenerationSkeletons'
 import { FloatingChat, ChatSurfaceState } from './FloatingChat'
 import { EditStageChips } from './EditStageChips'
 import { HistoryPanel } from './HistoryPanel'
+import { ShortcutWalkthrough, WalkthroughStep } from './ShortcutWalkthrough'
 import type { DeckHistoryEntry } from '@/lib/useDeckEditor'
 import { ResizeHandle } from '@/components/shared/ResizeHandle'
 import { MOCK_DECK, DeckData, LayoutType } from '@/lib/fixtures'
 import { ChatItem, OutlineSection, VerifyFlag } from '@/lib/studioScript'
 import { PreviewState } from '@/lib/useStudioSession'
 import { useResizableWidth } from '@/lib/useResizableWidth'
-import { useDoubleMetaTap } from '@/lib/useDoubleMetaTap'
+import { useDoubleMetaTap, isApplePlatform } from '@/lib/useDoubleMetaTap'
 import { deriveEditRun } from '@/lib/editStages'
 import { motionPresets } from '@/lib/motion'
 import { ChangeHighlight, COVER_SUBTITLE_ID, COVER_TITLE_ID } from '@/lib/deckDiff'
@@ -28,6 +29,8 @@ import { ChangeHighlight, COVER_SUBTITLE_ID, COVER_TITLE_ID } from '@/lib/deckDi
 const MIN_INSERT_WIDTH = 220
 const MAX_INSERT_WIDTH = 480
 const DEFAULT_INSERT_WIDTH = 276
+export const WALKTHROUGH_SEEN_KEY = 'deckai.shortcutWalkthroughSeen'
+const noopSubscribe = () => () => {}
 
 interface PreviewPaneProps {
   previewState: PreviewState
@@ -123,15 +126,15 @@ export function PreviewPane({
     return () => window.removeEventListener('keydown', handler)
   }, [isDone, onUndo, onRedo])
 
-  // Insert panel — ⌘/ toggles it open/closed, same guard rules as Cmd+Z
-  // above. The shortcut is also shown visibly under the panel's own rail
-  // icon (see the toggle button below), not just in this handler.
+  // Insert panel — ⌘/ toggles it open/closed. Unlike Cmd+Z, this isn't a
+  // native text-editing command, so holding Cmd never inserts a character —
+  // it's safe to honor even while focus is in a text field (e.g. the Ask AI
+  // composer), which is exactly when a user would reach for it. The shortcut
+  // is also shown visibly under the panel's own rail icon (see the toggle
+  // button below), not just in this handler.
   useEffect(() => {
     if (!isDone) return
     const handler = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement | null
-      const isTyping = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
-      if (isTyping) return
       if (!(e.metaKey || e.ctrlKey) || e.key !== '/') return
       e.preventDefault()
       setInsertCollapsed(c => !c)
@@ -150,6 +153,42 @@ export function PreviewPane({
 
   const openAskAI = useCallback(() => onChatStateChange('expanded'), [onChatStateChange])
   const closeAskAI = useCallback(() => onChatStateChange('closed'), [onChatStateChange])
+
+  // First-run shortcut walkthrough — a real hands-on tutorial, not a scripted
+  // demo. It never opens either surface itself; it just names the shortcut
+  // and watches the SAME state the real ⌘⌘/⌘/ handlers above already drive
+  // (chatState, insertCollapsed), so it only advances once the user has
+  // actually done it. ⌘⌘ is Apple-only (see useDoubleMetaTap), so the whole
+  // walkthrough is gated the same way rather than teaching a dead shortcut.
+  const showShortcuts = useSyncExternalStore(noopSubscribe, isApplePlatform, () => false)
+  const [walkthroughSeen, setWalkthroughSeen] = useState(() => {
+    try { return window.localStorage.getItem(WALKTHROUGH_SEEN_KEY) === '1' } catch { return true }
+  })
+  const [walkthroughStep, setWalkthroughStep] = useState<WalkthroughStep>(0)
+  const [walkthroughCompleted, setWalkthroughCompleted] = useState(false)
+  const showWalkthrough = showShortcuts && isDone && !walkthroughSeen
+
+  const dismissWalkthrough = useCallback(() => {
+    setWalkthroughSeen(true)
+    try { window.localStorage.setItem(WALKTHROUGH_SEEN_KEY, '1') } catch {}
+  }, [])
+
+  useEffect(() => {
+    if (!showWalkthrough || walkthroughStep !== 0 || chatState === 'closed') return
+    setWalkthroughCompleted(true)
+    const t = setTimeout(() => {
+      setWalkthroughStep(1)
+      setWalkthroughCompleted(false)
+    }, 1100)
+    return () => clearTimeout(t)
+  }, [showWalkthrough, walkthroughStep, chatState])
+
+  useEffect(() => {
+    if (!showWalkthrough || walkthroughStep !== 1 || insertCollapsed) return
+    setWalkthroughCompleted(true)
+    const t = setTimeout(dismissWalkthrough, 1100)
+    return () => clearTimeout(t)
+  }, [showWalkthrough, walkthroughStep, insertCollapsed, dismissWalkthrough])
 
   const handleAskAISubmit = useCallback(
     (instruction: string, activeSectionId?: string) => {
@@ -349,6 +388,15 @@ export function PreviewPane({
               flagCount={verifyFlags.length ? verifyFlags.length : null}
               onOpenAskAI={openAskAI}
               isChatOpen={chatState !== 'closed'}
+              suppressCoachmark={showWalkthrough}
+            />
+          )}
+
+          {showWalkthrough && (
+            <ShortcutWalkthrough
+              step={walkthroughStep}
+              completed={walkthroughCompleted}
+              onDismiss={dismissWalkthrough}
             />
           )}
 

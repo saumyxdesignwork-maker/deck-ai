@@ -26,9 +26,12 @@ interface PreviewToolbarProps {
   onOpenAskAI: () => void
   /** True while the Ask AI surface is expanded or compact. */
   isChatOpen: boolean
+  /** Hides this smaller one-liner while the full shortcut walkthrough is
+   * showing — they teach the same ⌘⌘ gesture, and both at once is clutter. */
+  suppressCoachmark?: boolean
 }
 
-export function PreviewToolbar({ mode, onModeChange, onVerify, isVerifying, flagCount, onOpenAskAI, isChatOpen }: PreviewToolbarProps) {
+export function PreviewToolbar({ mode, onModeChange, onVerify, isVerifying, flagCount, onOpenAskAI, isChatOpen, suppressCoachmark }: PreviewToolbarProps) {
   // ⌘⌘ only exists on Apple platforms (see useDoubleMetaTap) — don't
   // advertise a shortcut that can't work. Server snapshot is false.
   const showShortcut = useSyncExternalStore(noopSubscribe, isApplePlatform, () => false)
@@ -39,7 +42,7 @@ export function PreviewToolbar({ mode, onModeChange, onVerify, isVerifying, flag
     setHintSeen(true)
     try { window.localStorage.setItem(ASK_AI_HINT_SEEN_KEY, '1') } catch {}
   }, [])
-  const showCoachmark = showShortcut && !hintSeen && !isChatOpen
+  const showCoachmark = showShortcut && !hintSeen && !isChatOpen && !suppressCoachmark
   const m = motionPresets(useReducedMotion())
 
   // Using Ask AI at all (button or ⌘⌘) counts as having learned it. State

@@ -3,7 +3,7 @@ import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useEffect, useState } from 'react'
 import { MotionGlobalConfig } from 'motion/react'
-import { PreviewPane } from './PreviewPane'
+import { PreviewPane, WALKTHROUGH_SEEN_KEY } from './PreviewPane'
 import type { ChatSurfaceState } from './FloatingChat'
 import { MOCK_DECK } from '@/lib/fixtures'
 import type { ChatItem } from '@/lib/studioScript'
@@ -326,6 +326,10 @@ describe('Ask AI surface', () => {
 
 describe('shortcut signifier', () => {
   it('shows ⌘⌘ and a dismissible first-use tip on Apple platforms, once', async () => {
+    // Isolates this from the full shortcut walkthrough (a separate, newer
+    // first-run experience that covers the same ⌘⌘ gesture) by treating it
+    // as already seen — a realistic state for anyone testing the smaller tip.
+    window.localStorage.setItem(WALKTHROUGH_SEEN_KEY, '1')
     const user = userEvent.setup()
     const { unmount } = render(<Harness />)
     const askButton = screen.getByRole('button', { name: /Ask AI/ })
@@ -344,6 +348,7 @@ describe('shortcut signifier', () => {
   })
 
   it('the tip hides while chat is open and does not come back after using ⌘⌘', async () => {
+    window.localStorage.setItem(WALKTHROUGH_SEEN_KEY, '1')
     render(<Harness />)
     expect(screen.getByTestId('ask-ai-coachmark')).toBeInTheDocument()
     doubleCmd()
@@ -364,6 +369,39 @@ describe('shortcut signifier', () => {
     render(<Harness />)
     expect(screen.getByRole('button', { name: /Ask AI/ })).not.toHaveTextContent('⌘⌘')
     expect(screen.queryByTestId('ask-ai-coachmark')).toBeNull()
+  })
+})
+
+describe('shortcut walkthrough', () => {
+  it('walks through ⌘⌘ then ⌘/, advancing only once each real shortcut is actually used, then dismisses itself', async () => {
+    render(<Harness />)
+    expect(screen.getByText('Try the Ask AI shortcut')).toBeInTheDocument()
+    // The smaller one-line coachmark teaches the same gesture — suppressed
+    // while the full walkthrough covers it instead.
+    expect(screen.queryByTestId('ask-ai-coachmark')).toBeNull()
+
+    // Step 1 never advances on its own — only a real ⌘⌘ opens the popup.
+    doubleCmd()
+    await waitFor(() => expect(dialog()).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText('Try the manual edit shortcut')).toBeInTheDocument(), { timeout: 2000 })
+
+    // Step 2 likewise only advances on a real ⌘/.
+    key('keydown', '/', { metaKey: true })
+    await waitFor(() => expect(screen.getByTitle(/Hide insert panel/)).toBeInTheDocument())
+    await waitFor(() => expect(screen.queryByText('Try the manual edit shortcut')).toBeNull(), { timeout: 2000 })
+    expect(window.localStorage.getItem(WALKTHROUGH_SEEN_KEY)).toBe('1')
+  })
+
+  it('Skip dismisses it immediately and it does not return', async () => {
+    const user = userEvent.setup()
+    const { unmount } = render(<Harness />)
+    await user.click(screen.getByRole('button', { name: 'Skip walkthrough' }))
+    await waitFor(() => expect(screen.queryByText('Try the Ask AI shortcut')).toBeNull())
+    expect(window.localStorage.getItem(WALKTHROUGH_SEEN_KEY)).toBe('1')
+
+    unmount()
+    render(<Harness />)
+    expect(screen.queryByText('Try the Ask AI shortcut')).toBeNull()
   })
 })
 
