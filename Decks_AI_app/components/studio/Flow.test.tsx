@@ -20,12 +20,16 @@ describe('ClarifyCard', () => {
     { topic: 'Length', options: ['Short', 'Long'] },
   ]
 
-  it('after auto-advance, focus lands on the next question and it is announced', async () => {
+  it('selecting an option only highlights it; Next is required to advance, then focus lands on the next question and it is announced', async () => {
     const user = userEvent.setup()
     render(<ClarifyCard questions={questions} onSubmit={() => {}} />)
     const option = screen.getByRole('button', { name: /Executives/ })
     await user.click(option)
     expect(option).toHaveAttribute('aria-pressed', 'true')
+    // Selecting alone must not advance the question.
+    expect(screen.queryByText('Length')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Next' }))
 
     const heading = await screen.findByText('Length', {}, { timeout: 2000 })
     await waitFor(() => expect(heading).toHaveFocus())
