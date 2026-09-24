@@ -8,11 +8,13 @@ import { ClarifyCard } from './ClarifyCard'
 import { OutlineCard } from './OutlineCard'
 import { ReasoningText } from './ReasoningText'
 import { ChainOfThoughtBlock } from './ChainOfThoughtBlock'
+import { DataNudgeCard } from './DataNudgeCard'
+import type { ConnectStep } from './DataConnectPanel'
 
 interface ChatItemProps {
   item: ChatItemType
   onAnswerClarify: (answers: string[]) => void
-  onOpenConnectors: () => void
+  onOpenConnectors: (initialStep?: ConnectStep) => void
 }
 
 export function ChatItemView({ item, onAnswerClarify, onOpenConnectors }: ChatItemProps) {
@@ -64,9 +66,11 @@ export function ChatItemView({ item, onAnswerClarify, onOpenConnectors }: ChatIt
           questions={item.questions}
           answered={item.answered}
           onSubmit={onAnswerClarify}
-          onOpenConnectors={onOpenConnectors}
         />
       )
+
+    case 'data-nudge':
+      return <DataNudgeCard onOpenConnectors={onOpenConnectors} />
 
     case 'outline':
       return <OutlineCard sectionCount={item.sections.length} approved={item.approved} />

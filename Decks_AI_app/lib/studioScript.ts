@@ -43,5 +43,10 @@ export type ChatItem =
   | { id: string; type: 'verify'; label: string; detail: string; status: 'running' | 'done' }
   | { id: string; type: 'verify-report'; flags: VerifyFlag[] }
   | { id: string; type: 'summary'; text: string }
+  /** Frontend-local only (not part of the backend NDJSON protocol) — a
+   * standalone call-to-action card offering to ground the deck in real
+   * data, with explicit buttons per connector. Injected once, alongside
+   * the first clarify gate. */
+  | { id: string; type: 'data-nudge' }
 
 export type ChatItemPatch = Partial<Omit<ChatItem, 'id' | 'type'>>

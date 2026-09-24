@@ -12,6 +12,10 @@ const COMING_SOON_PROVIDERS = [
   { key: 'email', label: 'Email', icon: Mail },
 ] as const
 
+/** The connector entry points a caller can jump straight into (skipping the
+ * provider list) — e.g. from DataNudgeCard's per-connector buttons. */
+export type ConnectStep = 'providers' | 'paste' | 'sheets'
+
 type Step =
   | { kind: 'providers' }
   | { kind: 'paste' }
@@ -20,12 +24,13 @@ type Step =
 
 interface DataConnectPanelProps {
   sessionId: string | null
+  initialStep?: ConnectStep
   onClose: () => void
   onAttach: (dataset: DeckDataset) => void
 }
 
-export function DataConnectPanel({ sessionId, onClose, onAttach }: DataConnectPanelProps) {
-  const [step, setStep] = useState<Step>({ kind: 'providers' })
+export function DataConnectPanel({ sessionId, initialStep = 'providers', onClose, onAttach }: DataConnectPanelProps) {
+  const [step, setStep] = useState<Step>({ kind: initialStep })
   const containerRef = useRef<HTMLDivElement>(null)
   const previouslyFocusedRef = useRef<HTMLElement | null>(null)
 

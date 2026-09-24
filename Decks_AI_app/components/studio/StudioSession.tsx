@@ -8,7 +8,7 @@ import { ResizeHandle } from '@/components/shared/ResizeHandle'
 import { AspectRatio } from '@/lib/fixtures'
 import { ChatPane } from './ChatPane'
 import { PreviewPane } from './PreviewPane'
-import { DataConnectPanel } from './DataConnectPanel'
+import { DataConnectPanel, ConnectStep } from './DataConnectPanel'
 
 const MIN_CHAT_WIDTH = 300
 const MAX_CHAT_WIDTH = 640
@@ -24,7 +24,7 @@ export function StudioSession({ initialPrompt, aspectRatio, onBackToLanding }: S
   const session = useStudioSession(initialPrompt, aspectRatio)
   const { width: chatWidth, isResizing, handlePointerDown } =
     useResizableWidth(DEFAULT_CHAT_WIDTH, MIN_CHAT_WIDTH, MAX_CHAT_WIDTH)
-  const [isConnectOpen, setIsConnectOpen] = useState(false)
+  const [connectStep, setConnectStep] = useState<ConnectStep | null>(null)
 
   return (
     <div style={{ height: '100vh', overflow: 'hidden', background: 'var(--bg-canvas)' }}>
@@ -70,7 +70,7 @@ export function StudioSession({ initialPrompt, aspectRatio, onBackToLanding }: S
             isWorking={session.isWorking}
             onAnswerClarify={session.answerClarify}
             onSendFollowUp={session.sendFollowUp}
-            onOpenConnectors={() => setIsConnectOpen(true)}
+            onOpenConnectors={(initialStep = 'providers') => setConnectStep(initialStep)}
           />
           <ResizeHandle isResizing={isResizing} onPointerDown={handlePointerDown} />
           <PreviewPane
@@ -103,13 +103,14 @@ export function StudioSession({ initialPrompt, aspectRatio, onBackToLanding }: S
         </div>
       </div>
 
-      {isConnectOpen && (
+      {connectStep && (
         <DataConnectPanel
           sessionId={session.sessionId}
-          onClose={() => setIsConnectOpen(false)}
+          initialStep={connectStep}
+          onClose={() => setConnectStep(null)}
           onAttach={dataset => {
             session.attachDataset(dataset)
-            setIsConnectOpen(false)
+            setConnectStep(null)
           }}
         />
       )}

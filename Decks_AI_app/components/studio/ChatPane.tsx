@@ -4,13 +4,14 @@ import { useEffect, useRef } from 'react'
 import { ChatItem } from '@/lib/studioScript'
 import { ChatItemView } from './ChatItem'
 import { Composer } from './Composer'
+import type { ConnectStep } from './DataConnectPanel'
 
 interface ChatPaneProps {
   items: ChatItem[]
   isWorking: boolean
   onAnswerClarify: (answers: string[]) => void
   onSendFollowUp: (text: string) => void
-  onOpenConnectors: () => void
+  onOpenConnectors: (initialStep?: ConnectStep) => void
   width: number
 }
 

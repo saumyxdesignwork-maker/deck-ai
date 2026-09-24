@@ -57,6 +57,10 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
   const deckEditor = useDeckEditor(streamedDeck, isDone, sessionId)
 
   const sessionIdRef = useRef<string | null>(null)
+  // Data-connect nudge is a standalone call-to-action (see DataNudgeCard),
+  // not part of the backend protocol — injected client-side exactly once,
+  // alongside the first clarify gate, never repeated on /regenerate etc.
+  const hasNudgedRef = useRef(false)
 
   const applyEvent = useCallback((event: StreamEvent) => {
     switch (event.t) {
@@ -73,10 +77,13 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
       case 'group-push':
         setItems(prev => pushToGroup(prev, event.groupId, event.item))
         break
-      case 'clarify':
-        setItems(prev => [...prev, { id: event.id, type: 'clarify', questions: event.questions }])
+      case 'clarify': {
+        const nudge: ChatItem[] = hasNudgedRef.current ? [] : [{ id: nextId('data-nudge'), type: 'data-nudge' }]
+        hasNudgedRef.current = true
+        setItems(prev => [...prev, ...nudge, { id: event.id, type: 'clarify', questions: event.questions }])
         setClarifyPending({ id: event.id, questions: event.questions })
         break
+      }
       case 'outline':
         setItems(prev => [...prev, { id: event.id, type: 'outline', sections: event.sections }])
         setOutlinePending({ id: event.id, sections: event.sections })
