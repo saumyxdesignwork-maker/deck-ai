@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { motionPresets } from '@/lib/motion'
 import { X, ClipboardPaste, Upload, Sheet, FileText, MessageSquare, Mail, ChevronLeft, Loader2, Check } from 'lucide-react'
 import { DeckDataset, DeckDatasetColumn, DeckDatasetRow, MAX_DATASET_ROWS, parseDelimitedTable } from '@/lib/dataset'
 import { SERVICE_BASE_URL } from '@/lib/deckStream'
@@ -32,18 +34,50 @@ interface DataConnectPanelProps {
 export function DataConnectPanel({ sessionId, initialStep = 'providers', onClose, onAttach }: DataConnectPanelProps) {
   const [step, setStep] = useState<Step>({ kind: initialStep })
   const containerRef = useRef<HTMLDivElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
+  const titleRef = useRef<HTMLDivElement>(null)
   const previouslyFocusedRef = useRef<HTMLElement | null>(null)
+  const prevStepKindRef = useRef(step.kind)
+  const m = motionPresets(useReducedMotion())
 
+  // Focus moves INTO the dialog on open (first focusable control) and back
+  // to whatever opened it on close.
   useEffect(() => {
     previouslyFocusedRef.current = document.activeElement as HTMLElement | null
+    focusables(panelRef.current)[0]?.focus()
     return () => previouslyFocusedRef.current?.focus?.()
   }, [])
 
+  // Switching steps unmounts the control that was clicked — keep focus in
+  // the dialog by moving it to the (programmatically focusable) title.
+  useEffect(() => {
+    if (prevStepKindRef.current === step.kind) return
+    prevStepKindRef.current = step.kind
+    titleRef.current?.focus()
+  }, [step.kind])
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && !e.isComposing) {
         e.preventDefault()
         onClose()
+        return
+      }
+      // Keep Tab inside the modal.
+      if (e.key === 'Tab') {
+        const items = focusables(panelRef.current)
+        if (!items.length) return
+        const first = items[0]
+        const last = items[items.length - 1]
+        const active = document.activeElement
+        const inside = !!active && !!panelRef.current?.contains(active)
+        if (e.shiftKey && (active === first || !inside || active === titleRef.current)) {
+          e.preventDefault()
+          last.focus()
+        } else if (!e.shiftKey && (active === last || !inside)) {
+          e.preventDefault()
+          first.focus()
+        }
       }
     }
     window.addEventListener('keydown', handler)
@@ -51,11 +85,15 @@ export function DataConnectPanel({ sessionId, initialStep = 'providers', onClose
   }, [onClose])
 
   return (
-    <div
+    <motion.div
       role="dialog"
       aria-modal="true"
-      aria-label="Connect data"
+      aria-labelledby="data-connect-title"
       ref={containerRef}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0, transition: m.exit }}
+      transition={m.overlay}
       style={{
         position: 'fixed', inset: 0, zIndex: 40,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -63,7 +101,12 @@ export function DataConnectPanel({ sessionId, initialStep = 'providers', onClose
       }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div
+      <motion.div
+        ref={panelRef}
+        initial={{ opacity: 0, scale: m.reduce ? 1 : 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: m.reduce ? 1 : 0.98, transition: m.exit }}
+        transition={m.overlay}
         style={{
           width: 460, maxWidth: 'calc(100% - 48px)', maxHeight: '85vh',
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
@@ -77,7 +120,12 @@ export function DataConnectPanel({ sessionId, initialStep = 'providers', onClose
               <ChevronLeft size={16} />
             </button>
           )}
-          <div style={{ flex: 1, fontSize: 13, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font-body)' }}>
+          <div
+            id="data-connect-title"
+            ref={titleRef}
+            tabIndex={-1}
+            style={{ flex: 1, fontSize: 13, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font-body)', outline: 'none' }}
+          >
             {step.kind === 'providers' && 'Connect data'}
             {step.kind === 'paste' && 'Paste or upload a table'}
             {step.kind === 'sheets' && 'Google Sheets'}
@@ -88,7 +136,14 @@ export function DataConnectPanel({ sessionId, initialStep = 'providers', onClose
           </button>
         </div>
 
-        <div style={{ flex: 1, overflow: 'auto', padding: 16 }}>
+        <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={step.kind}
+          {...m.fade}
+          exit={{ opacity: 0, transition: m.exit }}
+          transition={m.menu}
+          style={{ flex: 1, overflow: 'auto', padding: 16 }}
+        >
           {step.kind === 'providers' && <ProvidersStep onPickPaste={() => setStep({ kind: 'paste' })} onPickSheets={() => setStep({ kind: 'sheets' })} />}
           {step.kind === 'paste' && <PasteStep onParsed={(source, columns, rows) => setStep({ kind: 'preview', source, columns, rows })} />}
           {step.kind === 'sheets' && (
@@ -102,9 +157,17 @@ export function DataConnectPanel({ sessionId, initialStep = 'providers', onClose
               onConfirm={dataset => onAttach(dataset)}
             />
           )}
-        </div>
-      </div>
-    </div>
+        </motion.div>
+        </AnimatePresence>
+      </motion.div>
+    </motion.div>
+  )
+}
+
+function focusables(root: HTMLElement | null): HTMLElement[] {
+  if (!root) return []
+  return Array.from(
+    root.querySelectorAll<HTMLElement>('button:not(:disabled), [href], input:not(:disabled), textarea:not(:disabled), select:not(:disabled), [tabindex]:not([tabindex="-1"])'),
   )
 }
 

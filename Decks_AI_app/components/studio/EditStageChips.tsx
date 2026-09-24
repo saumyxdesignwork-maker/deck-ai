@@ -3,9 +3,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { CheckCircle2, CircleAlert, CircleDashed, CircleMinus, Loader2, X } from 'lucide-react'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { Badge } from '@/components/ui/badge'
 import { describeTransition, EditRun, EditStage, EditStageStatus, STATUS_TEXT } from '@/lib/editStages'
+import { motionPresets } from '@/lib/motion'
 
 interface EditStageChipsProps {
   run: EditRun
@@ -23,6 +24,7 @@ interface EditStageChipsProps {
 export function EditStageChips({ run, onDismiss, onDetailOpenChange }: EditStageChipsProps) {
   const [announcement, setAnnouncement] = useState('')
   const prevRunRef = useRef<EditRun | null>(null)
+  const m = motionPresets(useReducedMotion())
 
   // Announce only meaningful stage/phase transitions — never per checklist
   // tick or animation frame. Keyed on the statuses, not the object identity.
@@ -35,10 +37,15 @@ export function EditStageChips({ run, onDismiss, onDetailOpenChange }: EditStage
   }, [signature])
 
   return (
-    <div
+    // Brief arrival (fade + small rise) — the canvas behind never moves.
+    <motion.div
       role="group"
       aria-label="Edit progress"
       data-testid="edit-stage-chips"
+      initial={m.arrive.initial}
+      animate={m.arrive.animate}
+      exit={{ opacity: 0, transition: m.exit }}
+      transition={m.overlay}
       style={{
         position: 'absolute', left: 16, bottom: 16, zIndex: 20,
         display: 'flex', alignItems: 'center', gap: 6,
@@ -64,7 +71,7 @@ export function EditStageChips({ run, onDismiss, onDetailOpenChange }: EditStage
       <div role="status" aria-live="polite" aria-atomic="true" style={srOnly}>
         {announcement}
       </div>
-    </div>
+    </motion.div>
   )
 }
 
@@ -72,12 +79,10 @@ function StageChip({
   stage, index, onDetailOpenChange,
 }: { stage: EditStage; index: number; onDetailOpenChange?: EditStageChipsProps['onDetailOpenChange'] }) {
   const [open, setOpen] = useState(false)
-  // Focus that arrives via pointer (mouse click / tap) is handled by Base
-  // UI's own hover/press logic; only keyboard focus should auto-open here,
-  // or a click would open-on-focus then immediately toggle closed.
-  const pointerFocusRef = useRef(false)
-  const reduceMotion = useReducedMotion()
-  const fade = reduceMotion ? { duration: 0 } : { duration: 0.15, ease: 'easeOut' as const }
+  // Hover and keyboard focus are handled by the HoverCard itself. Touch has
+  // no hover, so a tap toggles the card instead.
+  const lastPointerTypeRef = useRef<string>('mouse')
+  const m = motionPresets(useReducedMotion())
 
   const setOpenAndReport = (next: boolean, byEscape = false) => {
     setOpen(next)
@@ -87,23 +92,19 @@ function StageChip({
   const isActive = stage.status === 'running' || stage.status === 'failed'
 
   return (
-    <Popover
+    <HoverCard
       open={open}
       onOpenChange={(next, details) => setOpenAndReport(next, details.reason === 'escape-key')}
     >
-      <PopoverTrigger
-        openOnHover
+      <HoverCardTrigger
         delay={120}
         closeDelay={80}
         aria-label={`Step ${index} of 3, ${stage.label}: ${STATUS_TEXT[stage.status]}. ${stage.step}`}
         data-status={stage.status}
-        // Keyboard focus opens the card too (hover/tap are handled by Base UI).
-        onPointerDown={() => { pointerFocusRef.current = true }}
-        onFocus={() => {
-          if (!pointerFocusRef.current) setOpenAndReport(true)
-          pointerFocusRef.current = false
+        onPointerDown={e => { lastPointerTypeRef.current = e.pointerType }}
+        onClick={() => {
+          if (lastPointerTypeRef.current === 'touch' || lastPointerTypeRef.current === 'pen') setOpenAndReport(!open)
         }}
-        onBlur={() => { pointerFocusRef.current = false; if (open) setOpenAndReport(false) }}
         render={
           <Badge
             render={<button type="button" />}
@@ -123,28 +124,27 @@ function StageChip({
         <StatusIcon status={stage.status} />
         <span style={{ fontWeight: 600 }}>{stage.label}</span>
         <span aria-hidden style={{ color: 'var(--text-muted)', display: 'inline-flex', overflow: 'hidden' }}>
+          {/* Status text crossfades on update. */}
           <AnimatePresence mode="popLayout" initial={false}>
             <motion.span
               key={stage.short}
-              initial={{ opacity: 0, y: 3 }}
+              initial={{ opacity: 0, y: m.reduce ? 0 : 3 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -3 }}
-              transition={fade}
+              exit={{ opacity: 0, y: m.reduce ? 0 : -3 }}
+              transition={m.control}
             >
               {stage.short}
             </motion.span>
           </AnimatePresence>
         </span>
-      </PopoverTrigger>
-      <PopoverContent
+      </HoverCardTrigger>
+      <HoverCardContent
         side="top"
         align="start"
         sideOffset={8}
-        // Read-only detail — keep focus on the chip so Tab order is unchanged.
-        initialFocus={false}
-        finalFocus={false}
-        className="w-64 gap-1.5"
-        style={{ background: 'var(--surface-solid)', color: 'var(--text)', fontFamily: 'var(--font-body)' }}
+        alignOffset={0}
+        className="w-64 motion-reduce:animate-none"
+        style={{ background: 'var(--surface-solid)', color: 'var(--text)', fontFamily: 'var(--font-body)', display: 'flex', flexDirection: 'column', gap: 6 }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600 }}>
           <StatusIcon status={stage.status} />
@@ -153,8 +153,8 @@ function StageChip({
         </div>
         <DetailRow label="Current step" value={stage.step} />
         <DetailRow label="Latest change" value={stage.latestChange ?? '—'} />
-      </PopoverContent>
-    </Popover>
+      </HoverCardContent>
+    </HoverCard>
   )
 }
 

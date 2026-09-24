@@ -1,6 +1,8 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
+import { motion, useReducedMotion } from 'motion/react'
+import { motionPresets } from '@/lib/motion'
 import { X, ChevronLeft, ChevronRight, Minimize2 } from 'lucide-react'
 import { DeckSection, Block, AspectRatio, aspectRatioCss } from '@/lib/fixtures'
 
@@ -101,6 +103,16 @@ export function PresentationMode({ deckTitle, subtitle, author, coverColor, sect
   const [current, setCurrent] = useState(0)
   const [controlsVisible, setControlsVisible] = useState(true)
   const [hideTimer, setHideTimer] = useState<ReturnType<typeof setTimeout> | null>(null)
+  const rootRef = useRef<HTMLDivElement>(null)
+  const m = motionPresets(useReducedMotion())
+
+  // Take focus on open (so arrow keys/Esc work immediately and screen
+  // readers land in the presentation), give it back on close.
+  useEffect(() => {
+    const previous = document.activeElement as HTMLElement | null
+    rootRef.current?.focus()
+    return () => previous?.focus?.()
+  }, [])
 
   const go = useCallback((dir: 1 | -1) => {
     setCurrent(c => Math.max(0, Math.min(slides.length - 1, c + dir)))
@@ -134,9 +146,19 @@ export function PresentationMode({ deckTitle, subtitle, author, coverColor, sect
   const slide = slides[current]
 
   return (
-    <div
+    <motion.div
+      ref={rootRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Presenting ${deckTitle}`}
+      tabIndex={-1}
       onMouseMove={showControls}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0, transition: m.exit }}
+      transition={m.overlay}
       style={{
+        outline: 'none',
         position: 'fixed',
         inset: 0,
         zIndex: 9999,
@@ -372,6 +394,6 @@ export function PresentationMode({ deckTitle, subtitle, author, coverColor, sect
       }}>
         ← → to navigate · ESC to exit
       </div>
-    </div>
+    </motion.div>
   )
 }

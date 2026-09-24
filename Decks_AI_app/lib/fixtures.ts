@@ -231,6 +231,19 @@ export const SUGGESTED_PROMPTS = [
   'Generate a roadmap presentation for the next two quarters',
 ]
 
+export interface StudioTemplate {
+  prompt: string
+  /** Path under /public — one per card, matched left-to-right. */
+  thumbnail: string
+}
+
+// Studio's "Try one of these" — one real thumbnail per card (public/Thumbnail-1..6.png),
+// so this stays at exactly 6 entries, mapped left-to-right/top-to-bottom in that order.
+export const STUDIO_TEMPLATES: StudioTemplate[] = SUGGESTED_PROMPTS.slice(0, 6).map((prompt, i) => ({
+  prompt,
+  thumbnail: `/Thumbnail-${i + 1}.png`,
+}))
+
 // ─── Layout options for storyline selector ───
 export const LAYOUT_OPTIONS: { id: LayoutType; label: string }[] = [
   { id: 'statement', label: 'Statement' },

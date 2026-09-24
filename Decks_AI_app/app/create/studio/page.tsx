@@ -1,10 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { MotionConfig } from 'motion/react'
 import { ControlsPanel } from '@/components/controls/ControlsPanel'
 import { useTheme } from '@/components/controls/ThemeProvider'
 import { useCreate } from '@/lib/createContext'
-import { StudioLanding } from '@/components/studio/StudioLanding'
+import { StudioLanding, DeckStyle } from '@/components/studio/StudioLanding'
 import { StudioSession } from '@/components/studio/StudioSession'
 import { AspectRatio } from '@/lib/fixtures'
 
@@ -16,6 +17,7 @@ export default function StudioPage() {
   const [phase, setPhase] = useState<Phase>('landing')
   const [prompt, setPrompt] = useState('')
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9')
+  const [deckStyle, setDeckStyle] = useState<DeckStyle>('professional')
 
   // Keep the Controls "Create Flow" pill in sync if this route is reached directly.
   useEffect(() => {
@@ -23,10 +25,11 @@ export default function StudioPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const handleSubmit = (text: string, ratio: AspectRatio) => {
+  const handleSubmit = (text: string, ratio: AspectRatio, style: DeckStyle) => {
     setInput(text)
     setPrompt(text)
     setAspectRatio(ratio)
+    setDeckStyle(style)
     setPhase('session')
   }
 
@@ -35,21 +38,23 @@ export default function StudioPage() {
     setPrompt('')
   }
 
+  // reducedMotion="user": every Motion animation in Studio honors
+  // prefers-reduced-motion (no travel/scale; state changes stay immediate).
   if (phase === 'session') {
     return (
-      <>
-        <StudioSession initialPrompt={prompt} aspectRatio={aspectRatio} onBackToLanding={handleBackToLanding} />
+      <MotionConfig reducedMotion="user">
+        <StudioSession initialPrompt={prompt} aspectRatio={aspectRatio} deckStyle={deckStyle} onBackToLanding={handleBackToLanding} />
         <ControlsPanel />
-      </>
+      </MotionConfig>
     )
   }
 
   return (
-    <>
+    <MotionConfig reducedMotion="user">
       <div style={{ height: '100vh', overflow: 'hidden', background: 'var(--bg-canvas)' }}>
         <StudioLanding onSubmit={handleSubmit} />
       </div>
       <ControlsPanel />
-    </>
+    </MotionConfig>
   )
 }

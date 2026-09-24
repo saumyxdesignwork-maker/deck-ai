@@ -1,6 +1,8 @@
 'use client'
 
+import { motion, useReducedMotion } from 'motion/react'
 import { CheckCircle2, ListChecks, ArrowRight } from 'lucide-react'
+import { motionPresets } from '@/lib/motion'
 
 interface OutlineCardProps {
   sectionCount: number
@@ -11,9 +13,17 @@ interface OutlineCardProps {
 // Generate Slides / Rethink Storyline) lives in the preview pane on the
 // right, where there's room to actually read it.
 export function OutlineCard({ sectionCount, approved }: OutlineCardProps) {
+  const m = motionPresets(useReducedMotion())
   if (approved) {
+    // Approval is an obvious, distinct state: success check + wording,
+    // arriving with a short fade (keyed so it plays once on the switch).
     return (
-      <div
+      <motion.div
+        key="approved"
+        role="status"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={m.content}
         style={{
           display: 'flex', alignItems: 'center', gap: 8,
           background: 'var(--surface)',
@@ -25,9 +35,9 @@ export function OutlineCard({ sectionCount, approved }: OutlineCardProps) {
           fontFamily: 'var(--font-body)',
         }}
       >
-        <CheckCircle2 size={14} style={{ color: 'var(--success)', flexShrink: 0 }} />
+        <CheckCircle2 size={14} aria-hidden style={{ color: 'var(--success)', flexShrink: 0 }} />
         Outline approved — {sectionCount} sections
-      </div>
+      </motion.div>
     )
   }
 

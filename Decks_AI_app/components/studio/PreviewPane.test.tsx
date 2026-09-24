@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import { act, render, screen, fireEvent, waitFor, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useEffect, useState } from 'react'
 import { MotionGlobalConfig } from 'motion/react'
@@ -288,6 +288,9 @@ describe('Ask AI surface', () => {
     const user = userEvent.setup()
     render(<Harness />)
     await submit('Tighten slide 2')
+    // The frozen performance.now() clock is only for ⌘⌘ timing; the hover
+    // card's open delay needs real time to elapse.
+    vi.mocked(performance.now).mockRestore()
     const chips = screen.getByTestId('edit-stage-chips')
     const planChip = within(chips).getAllByRole('button').find(b => b.getAttribute('data-status'))!
 
@@ -303,10 +306,12 @@ describe('Ask AI surface', () => {
     await waitFor(() => expect(screen.queryByText('Current step')).toBeNull())
     expect(screen.getByRole('button', { name: /Reopen Ask AI/ })).toBeInTheDocument()
 
-    // Touch: a tap (click without hover) toggles the card open.
-    fireEvent.pointerDown(planChip, { pointerType: 'touch' })
-    fireEvent.click(planChip)
+    // Touch: no hover on touch screens, so a tap toggles the card open…
+    await user.pointer({ keys: '[TouchA]', target: planChip })
     expect(await screen.findByText('Current step')).toBeInTheDocument()
+    // …and a second tap closes it.
+    await user.pointer({ keys: '[TouchA]', target: planChip })
+    await waitFor(() => expect(screen.queryByText('Current step')).toBeNull())
   })
 })
 
@@ -320,7 +325,8 @@ describe('shortcut signifier', () => {
     expect(screen.getByTestId('ask-ai-coachmark')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Dismiss tip' }))
-    expect(screen.queryByTestId('ask-ai-coachmark')).toBeNull()
+    // Fades away (exit animation), then is gone.
+    await waitFor(() => expect(screen.queryByTestId('ask-ai-coachmark')).toBeNull())
     expect(window.localStorage.getItem(ASK_AI_HINT_SEEN_KEY)).toBe('1')
 
     unmount()
@@ -332,16 +338,16 @@ describe('shortcut signifier', () => {
     render(<Harness />)
     expect(screen.getByTestId('ask-ai-coachmark')).toBeInTheDocument()
     doubleCmd()
-    expect(screen.queryByTestId('ask-ai-coachmark')).toBeNull()
+    await waitFor(() => expect(screen.queryByTestId('ask-ai-coachmark')).toBeNull())
     doubleCmd()
     await waitFor(() => expect(dialog()).toBeNull())
     expect(screen.queryByTestId('ask-ai-coachmark')).toBeNull()
   })
 
-  it('Escape dismisses the tip without blocking anything', () => {
+  it('Escape dismisses the tip without blocking anything', async () => {
     render(<Harness />)
     key('keydown', 'Escape')
-    expect(screen.queryByTestId('ask-ai-coachmark')).toBeNull()
+    await waitFor(() => expect(screen.queryByTestId('ask-ai-coachmark')).toBeNull())
   })
 
   it('does not advertise ⌘⌘ on non-Apple platforms', () => {

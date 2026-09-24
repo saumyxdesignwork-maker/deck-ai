@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
-import { LayoutGroup, MotionConfig } from 'motion/react'
+import { AnimatePresence, LayoutGroup, MotionConfig, motion, useReducedMotion } from 'motion/react'
 import { BookOpen, History, FolderOpen, Play, Download, PanelLeft, PanelRight, Trash2, Copy, X } from 'lucide-react'
 import { CoverBlock } from '@/components/editor/blocks/CoverBlock'
 import { ContentSection } from '@/components/editor/blocks/ContentSection'
@@ -10,6 +10,7 @@ import { PresentationMode } from '@/components/editor/PresentationMode'
 import { PreviewToolbar, CanvasMode } from './PreviewToolbar'
 import { SlideThumbRail } from './SlideThumbRail'
 import { OutlineReviewPanel } from './OutlineReviewPanel'
+import { StorylineSkeleton, DeckSkeleton } from './GenerationSkeletons'
 import { FloatingChat, ChatSurfaceState } from './FloatingChat'
 import { EditStageChips } from './EditStageChips'
 import { ResizeHandle } from '@/components/shared/ResizeHandle'
@@ -19,6 +20,8 @@ import { PreviewState } from '@/lib/useStudioSession'
 import { useResizableWidth } from '@/lib/useResizableWidth'
 import { useDoubleMetaTap } from '@/lib/useDoubleMetaTap'
 import { deriveEditRun } from '@/lib/editStages'
+import { motionPresets } from '@/lib/motion'
+import { ChangeHighlight, COVER_SUBTITLE_ID, COVER_TITLE_ID } from '@/lib/deckDiff'
 
 const MIN_INSERT_WIDTH = 220
 const MAX_INSERT_WIDTH = 480
@@ -55,6 +58,8 @@ interface PreviewPaneProps {
   editFailed: boolean
   editGroupId: string | null
   onRunEdit: (instruction: string, activeSectionId?: string) => void
+  /** Blocks the latest agent edit / AI rewrite changed (see useDeckEditor). */
+  changeHighlight?: ChangeHighlight | null
 }
 
 export function PreviewPane({
@@ -63,8 +68,9 @@ export function PreviewPane({
   canUndo, canRedo, onUndo, onRedo,
   onInsertBlock, onInsertSection, onDeleteBlocks, onDuplicateBlocks, onApplyRewrite,
   onBeginBlockEdit, onUpdateBlockContent, onCommitBlockEdit, onSetSectionLayout,
-  items, isEditing, editFailed, editGroupId, onRunEdit,
+  items, isEditing, editFailed, editGroupId, onRunEdit, changeHighlight,
 }: PreviewPaneProps) {
+  const m = motionPresets(useReducedMotion())
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const [autoFollow, setAutoFollow] = useState(true)
   const [isPresenting, setIsPresenting] = useState(false)
@@ -122,6 +128,19 @@ export function PreviewPane({
       onRunEdit(instruction, activeSectionId)
     },
     [items.length, onRunEdit],
+  )
+
+  // Inspector Remix actions run through the same real /edit pipeline, scoped
+  // to the active slide. The status chips show progress; the chat stays as
+  // it is (the inspector is its own surface).
+  const handleRemix = useCallback(
+    (instruction: string, sectionId: string) => {
+      if (isEditing) return
+      setRunAnchor(items.length)
+      setChipsVisible(true)
+      onRunEdit(instruction, sectionId)
+    },
+    [isEditing, items.length, onRunEdit],
   )
 
   // Escape closes an open chip detail card first, not the whole chat. The
@@ -211,6 +230,16 @@ export function PreviewPane({
 
   const showOutlineReview = !!outlinePending
   const showPlaceholder = !showOutlineReview && (previewState === 'idle' || previewState === 'preparing' || activeIndex === null)
+  // One key per canvas "view" — the canvas crossfades (opacity only)
+  // between review → placeholder → the slide being written → the full deck.
+  // The deck view itself is steady: no per-edit re-keying.
+  const canvasView = showOutlineReview ? 'outline' : showPlaceholder ? 'placeholder' : isDone ? 'deck' : `stream-${activeIndex}`
+
+  // Slides that exist when the draft becomes ready never animate in; only
+  // slides added afterwards (insert-slide) arrive with a short fade.
+  const [readySectionIds, setReadySectionIds] = useState<Set<string> | null>(null)
+  if (isDone && readySectionIds === null && deck) setReadySectionIds(new Set(sections.map(s => s.id)))
+  const coverChanged = !!changeHighlight && (changeHighlight.ids.has(COVER_TITLE_ID) || changeHighlight.ids.has(COVER_SUBTITLE_ID))
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -290,13 +319,16 @@ export function PreviewPane({
                   shouldIgnoreEscape={shouldIgnoreEscape}
                 />
               </LayoutGroup>
-              {chipsVisible && run && (
-                <EditStageChips
-                  run={run}
-                  onDismiss={() => setChipsVisible(false)}
-                  onDetailOpenChange={handleDetailOpenChange}
-                />
-              )}
+              <AnimatePresence>
+                {chipsVisible && run && (
+                  <EditStageChips
+                    key="edit-stage-chips"
+                    run={run}
+                    onDismiss={() => setChipsVisible(false)}
+                    onDetailOpenChange={handleDetailOpenChange}
+                  />
+                )}
+              </AnimatePresence>
             </MotionConfig>
           )}
 
@@ -327,6 +359,7 @@ export function PreviewPane({
 
           {!isDone && !showPlaceholder && !showOutlineReview && (
             <div
+              role="status"
               style={{
                 position: 'absolute', top: 14, right: 14, zIndex: 10,
                 display: 'flex', alignItems: 'center', gap: 6,
@@ -336,7 +369,9 @@ export function PreviewPane({
                 fontFamily: 'var(--font-body)',
               }}
             >
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)' }} className="animate-pulse" />
+              {/* Static dot — the label carries the status; one quiet
+                  indicator for the canvas instead of a competing pulse. */}
+              <span aria-hidden style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)' }} />
               {isWorking ? 'Agent is editing…' : 'Agent is working…'}
             </div>
           )}
@@ -352,6 +387,15 @@ export function PreviewPane({
               boxSizing: 'border-box',
             }}
           >
+            <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={canvasView}
+              data-canvas-view={canvasView}
+              {...m.fade}
+              exit={{ opacity: 0, transition: m.exit }}
+              transition={m.content}
+              style={{ height: canvasView === 'placeholder' ? '100%' : undefined }}
+            >
             {showOutlineReview ? (
               <OutlineReviewPanel
                 sections={outlinePending!.sections}
@@ -359,20 +403,30 @@ export function PreviewPane({
                 onRegenerate={onRegenerateOutline}
               />
             ) : showPlaceholder ? (
-              <div style={{
-                height: '100%', minHeight: 320,
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                gap: 10, color: 'var(--text-muted)',
-              }}>
-                <BookOpen size={28} strokeWidth={1.5} />
-                <span style={{ fontSize: 13, fontFamily: 'var(--font-body)' }}>
-                  {previewState === 'idle' ? 'Waiting to start…' : 'Preparing your slides…'}
-                </span>
-              </div>
+              // A real skeleton once the agent is actually generating
+              // something (isWorking) — the plain notice stays only for the
+              // moment the ball is in the user's court (clarify unanswered).
+              previewState === 'idle' ? (
+                isWorking ? (
+                  <StorylineSkeleton />
+                ) : (
+                  <div style={{
+                    height: '100%', minHeight: 320,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    gap: 10, color: 'var(--text-muted)',
+                  }}>
+                    <BookOpen size={28} strokeWidth={1.5} />
+                    <span style={{ fontSize: 13, fontFamily: 'var(--font-body)' }}>Waiting to start…</span>
+                  </div>
+                )
+              ) : (
+                <DeckSkeleton aspectRatio={deck?.aspectRatio} />
+              )
             ) : isDone ? (
               // Deck is fully assembled — render every slide stacked, like the standalone editor.
               <>
-                <div ref={el => { slideRefs.current[0] = el }}>
+                <div ref={el => { slideRefs.current[0] = el }} style={{ position: 'relative' }}>
+                  {coverChanged && <span key={changeHighlight!.key} aria-hidden data-changed className="dk-changed-cue" style={{ inset: -4, borderRadius: 'var(--r-xl)' }} />}
                   <CoverBlock
                     title={deck?.title ?? MOCK_DECK.title}
                     subtitle={deck?.subtitle ?? MOCK_DECK.subtitle}
@@ -382,7 +436,13 @@ export function PreviewPane({
                   />
                 </div>
                 {sections.map((section, i) => (
-                  <div key={section.id} ref={el => { slideRefs.current[i + 1] = el }}>
+                  <motion.div
+                    key={section.id}
+                    ref={el => { slideRefs.current[i + 1] = el }}
+                    initial={readySectionIds && !readySectionIds.has(section.id) ? m.arrive.initial : false}
+                    animate={m.arrive.animate}
+                    transition={m.content}
+                  >
                     <ContentSection
                       section={section}
                       isActive={activeIndex === i + 1}
@@ -400,8 +460,9 @@ export function PreviewPane({
                       onUpdateBlockContent={onUpdateBlockContent}
                       onBeginBlockEdit={onBeginBlockEdit}
                       onCommitBlockEdit={onCommitBlockEdit}
+                      highlight={changeHighlight}
                     />
-                  </div>
+                  </motion.div>
                 ))}
                 <div style={{ height: 60 }} />
               </>
@@ -425,6 +486,8 @@ export function PreviewPane({
                 onCommitBlockEdit={onCommitBlockEdit}
               />
             ) : null}
+            </motion.div>
+            </AnimatePresence>
           </div>
         </div>
 
@@ -446,14 +509,22 @@ export function PreviewPane({
           ) : (
             <>
               <ResizeHandle isResizing={isResizingInsert} onPointerDown={handleInsertResizeStart} />
-              <InsertPanel width={insertWidth} />
+              <InsertPanel
+                width={insertWidth}
+                activeSection={activeSection}
+                onSetLayout={layout => { if (activeSectionIdx !== null) onSetSectionLayout(activeSectionIdx, layout) }}
+                onRemix={instruction => { if (activeSection) handleRemix(instruction, activeSection.id) }}
+                isEditing={isEditing}
+              />
             </>
           )
         )}
       </div>
 
+      <AnimatePresence>
       {isPresenting && (
         <PresentationMode
+          key="present"
           deckTitle={deck?.title ?? MOCK_DECK.title}
           subtitle={deck?.subtitle ?? MOCK_DECK.subtitle}
           author={deck?.author ?? MOCK_DECK.author}
@@ -463,6 +534,7 @@ export function PreviewPane({
           aspectRatio={deck?.aspectRatio}
         />
       )}
+      </AnimatePresence>
     </div>
   )
 }

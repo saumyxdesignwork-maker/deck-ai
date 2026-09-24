@@ -15,6 +15,14 @@ interface ChatPaneProps {
   width: number
 }
 
+function hasActiveProgress(items: ChatItem[]): boolean {
+  const last = items[items.length - 1]
+  if (!last || last.type !== 'group') return false
+  return last.children.length === 0 || last.children.some(
+    c => ((c.type === 'tool' || c.type === 'verify') && c.status === 'running') || (c.type === 'checklist' && c.tasks.some(t => !t.done)),
+  )
+}
+
 export function ChatPane({ items, isWorking, onAnswerClarify, onSendFollowUp, onOpenConnectors, width }: ChatPaneProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -52,8 +60,10 @@ export function ChatPane({ items, isWorking, onAnswerClarify, onSendFollowUp, on
             onOpenConnectors={onOpenConnectors}
           />
         ))}
-        {isWorking && (
-          <div style={{ display: 'flex', gap: 4 }}>
+        {/* Generic "working" dots only when nothing more specific is
+            already showing progress — never two competing indicators. */}
+        {isWorking && !hasActiveProgress(items) && (
+          <div role="status" aria-label="Working" style={{ display: 'flex', gap: 4 }}>
             {[0, 1, 2].map(i => (
               <span
                 key={i}

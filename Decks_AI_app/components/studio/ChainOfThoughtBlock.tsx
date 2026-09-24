@@ -54,7 +54,6 @@ export function ChainOfThoughtBlock({ label, steps }: ChainOfThoughtBlockProps) 
           style={{
             flexShrink: 0,
             color: isActive ? 'var(--accent)' : 'var(--text-muted)',
-            animation: isActive ? 'studio-blink 1s ease-in-out infinite' : 'none',
           }}
         />
         {isActive ? `${label}…` : label}

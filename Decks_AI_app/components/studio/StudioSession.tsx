@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { AnimatePresence } from 'motion/react'
 import { ArrowLeft, MessageSquare, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
-import { useStudioSession } from '@/lib/useStudioSession'
+import { useStudioSession, DeckStyle } from '@/lib/useStudioSession'
 import { useResizableWidth } from '@/lib/useResizableWidth'
 import { ResizeHandle } from '@/components/shared/ResizeHandle'
 import { AspectRatio } from '@/lib/fixtures'
@@ -18,11 +19,12 @@ const CHAT_RAIL_WIDTH = 48
 interface StudioSessionProps {
   initialPrompt: string
   aspectRatio: AspectRatio
+  deckStyle?: DeckStyle
   onBackToLanding: () => void
 }
 
-export function StudioSession({ initialPrompt, aspectRatio, onBackToLanding }: StudioSessionProps) {
-  const session = useStudioSession(initialPrompt, aspectRatio)
+export function StudioSession({ initialPrompt, aspectRatio, deckStyle = 'professional', onBackToLanding }: StudioSessionProps) {
+  const session = useStudioSession(initialPrompt, aspectRatio, deckStyle)
   const { width: chatWidth, isResizing, handlePointerDown } =
     useResizableWidth(DEFAULT_CHAT_WIDTH, MIN_CHAT_WIDTH, MAX_CHAT_WIDTH)
   const [connectStep, setConnectStep] = useState<ConnectStep | null>(null)
@@ -148,14 +150,17 @@ export function StudioSession({ initialPrompt, aspectRatio, onBackToLanding }: S
             items={session.items}
             isEditing={session.isEditing}
             editFailed={session.editFailed}
+            changeHighlight={session.changeHighlight}
             editGroupId={session.editGroupId}
             onRunEdit={session.runEdit}
           />
         </div>
       </div>
 
+      <AnimatePresence>
       {connectStep && (
         <DataConnectPanel
+          key="data-connect"
           sessionId={session.sessionId}
           initialStep={connectStep}
           onClose={() => setConnectStep(null)}
@@ -165,6 +170,7 @@ export function StudioSession({ initialPrompt, aspectRatio, onBackToLanding }: S
           }}
         />
       )}
+      </AnimatePresence>
     </div>
   )
 }

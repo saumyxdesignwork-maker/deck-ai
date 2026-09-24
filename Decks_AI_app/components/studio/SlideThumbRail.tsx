@@ -1,6 +1,8 @@
 'use client'
 
+import { motion, useReducedMotion } from 'motion/react'
 import { AspectRatio, DeckData, DeckSection, Block, aspectRatioCss } from '@/lib/fixtures'
+import { motionPresets } from '@/lib/motion'
 
 interface SlideThumbRailProps {
   deck: DeckData | null
@@ -151,7 +153,10 @@ function MiniSection({ section, height }: { section: DeckSection; height: number
         width: DESIGN_WIDTH,
         height,
         boxSizing: 'border-box',
-        background: 'var(--surface)',
+        // --surface-solid — same reasoning as ContentSection: a slide's
+        // content shouldn't render as translucent glass just because VL2/VL3
+        // use glass for floating chrome elsewhere.
+        background: 'var(--surface-solid)',
         border: '1px solid var(--border)',
         borderRadius: 16,
         padding: '26px 30px',
@@ -164,6 +169,7 @@ function MiniSection({ section, height }: { section: DeckSection; height: number
 }
 
 export function SlideThumbRail({ deck, revealedSlides, activeIndex, onSelect }: SlideThumbRailProps) {
+  const fadeIn = motionPresets(useReducedMotion()).content
   const totalSlides = deck ? 1 + deck.sections.length : 0
   const slots = Array.from({ length: totalSlides }, (_, i) => i)
   const height = designHeight(deck?.aspectRatio)
@@ -196,6 +202,8 @@ export function SlideThumbRail({ deck, revealedSlides, activeIndex, onSelect }: 
             onClick={() => revealed && onSelect(i)}
             disabled={!revealed}
             title={revealed ? slideTitle(i) : undefined}
+            aria-label={revealed ? `Slide ${i + 1}: ${slideTitle(i)}` : `Slide ${i + 1}, not written yet`}
+            aria-current={isActive || undefined}
             style={{
               position: 'relative',
               width: '100%',
@@ -203,7 +211,7 @@ export function SlideThumbRail({ deck, revealedSlides, activeIndex, onSelect }: 
               borderRadius: 'var(--r-sm)',
               border: '1.5px solid',
               borderColor: isActive ? 'var(--accent)' : 'var(--border)',
-              background: revealed ? 'var(--surface)' : 'var(--surface-muted)',
+              background: revealed ? 'var(--surface-solid)' : 'var(--surface-muted)',
               cursor: revealed ? 'pointer' : 'default',
               padding: 0,
               overflow: 'hidden',
@@ -211,11 +219,17 @@ export function SlideThumbRail({ deck, revealedSlides, activeIndex, onSelect }: 
             }}
           >
             {revealed && deck && (
-              <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: 'inherit' }}>
+              // Fades in once, when this slide is first written.
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={fadeIn}
+                style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: 'inherit' }}
+              >
                 <div style={{ width: DESIGN_WIDTH, height, transform: `scale(${SCALE})`, transformOrigin: 'top left', pointerEvents: 'none' }}>
                   {i === 0 ? <MiniCover deck={deck} height={height} /> : <MiniSection section={deck.sections[i - 1]} height={height} />}
                 </div>
-              </div>
+              </motion.div>
             )}
             <span
               style={{
@@ -231,7 +245,9 @@ export function SlideThumbRail({ deck, revealedSlides, activeIndex, onSelect }: 
               {i + 1}
             </span>
             {!revealed && (
-              <div className="animate-pulse" style={{ position: 'absolute', inset: 4, background: 'var(--border)', borderRadius: 3, opacity: 0.4 }} />
+              // Static placeholder — the canvas's "Agent is working" label
+              // is the single progress indicator; no pulsing thumbnails.
+              <div style={{ position: 'absolute', inset: 4, background: 'var(--border)', borderRadius: 3, opacity: 0.4 }} />
             )}
           </button>
         )

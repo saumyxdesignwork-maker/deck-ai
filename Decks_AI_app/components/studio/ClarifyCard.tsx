@@ -1,8 +1,10 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { Circle, ChevronLeft, ChevronRight, Paperclip } from 'lucide-react'
 import { ClarifyQuestion } from '@/lib/studioScript'
+import { motionPresets } from '@/lib/motion'
 
 interface ClarifyCardProps {
   questions: ClarifyQuestion[]
@@ -15,10 +17,26 @@ export function ClarifyCard({ questions, answered, onSubmit }: ClarifyCardProps)
   const [answers, setAnswers] = useState<(string | null)[]>(() => questions.map(() => null))
   const [details, setDetails] = useState<string[]>(() => questions.map(() => ''))
   const advanceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const topicRef = useRef<HTMLSpanElement>(null)
+  const prevStepRef = useRef(step)
+  const [announcement, setAnnouncement] = useState('')
+  const m = motionPresets(useReducedMotion())
 
   useEffect(() => () => {
     if (advanceTimeoutRef.current) clearTimeout(advanceTimeoutRef.current)
   }, [])
+
+  // When the step changes, the option the user just clicked unmounts —
+  // without this, keyboard focus would fall back to <body>. Move it to the
+  // new question's heading and announce it (never on first render).
+  useEffect(() => {
+    if (prevStepRef.current === step) return
+    prevStepRef.current = step
+    topicRef.current?.focus()
+    const q = questions[step]
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- announcing an already-happened step change
+    if (q) setAnnouncement(`Question ${step + 1} of ${questions.length}: ${q.topic}`)
+  }, [step, questions])
 
   // Already answered — render the compact Q/A echo bubble (matches reference)
   if (answered) {
@@ -111,7 +129,12 @@ export function ClarifyCard({ questions, answered, onSubmit }: ClarifyCardProps)
           borderBottom: '1px solid var(--divider)',
         }}
       >
-        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font-body)' }}>
+        <span
+          ref={topicRef}
+          tabIndex={-1}
+          id={`clarify-topic-${step}`}
+          style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font-body)', outline: 'none' }}
+        >
           {question.topic}
         </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -119,6 +142,7 @@ export function ClarifyCard({ questions, answered, onSubmit }: ClarifyCardProps)
           <button
             onClick={() => setStep(s => Math.max(0, s - 1))}
             disabled={step === 0}
+            aria-label="Previous question"
             style={navBtnStyle(step === 0)}
           >
             <ChevronLeft size={14} />
@@ -126,6 +150,7 @@ export function ClarifyCard({ questions, answered, onSubmit }: ClarifyCardProps)
           <button
             onClick={() => setStep(s => Math.min(total - 1, s + 1))}
             disabled={isLast || !currentAnswer()}
+            aria-label="Next question"
             style={navBtnStyle(isLast || !currentAnswer())}
           >
             <ChevronRight size={14} />
@@ -133,14 +158,26 @@ export function ClarifyCard({ questions, answered, onSubmit }: ClarifyCardProps)
         </div>
       </div>
 
-      <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div role="status" aria-live="polite" aria-atomic="true" style={srOnly}>{announcement}</div>
+
+      <AnimatePresence mode="wait" initial={false}>
+      <motion.div
+        key={step}
+        initial={m.arrive.initial}
+        animate={m.arrive.animate}
+        exit={{ opacity: 0, transition: m.exit }}
+        transition={m.content}
+        style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}
+      >
+        <div role="group" aria-labelledby={`clarify-topic-${step}`} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {question.options.map(opt => {
             const isSelected = selected === opt
             return (
               <button
                 key={opt}
                 onClick={() => setSelected(opt)}
+                aria-pressed={isSelected}
+                className="dk-select dk-focus-ring"
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   padding: '11px 14px',
@@ -154,7 +191,6 @@ export function ClarifyCard({ questions, answered, onSubmit }: ClarifyCardProps)
                   cursor: 'pointer',
                   textAlign: 'left',
                   fontFamily: 'var(--font-body)',
-                  transition: 'all 0.12s',
                 }}
               >
                 {opt}
@@ -178,6 +214,7 @@ export function ClarifyCard({ questions, answered, onSubmit }: ClarifyCardProps)
           <input
             value={details[step]}
             onChange={e => setDetail(e.target.value)}
+            aria-label="Additional details (optional)"
             placeholder="Additional details (optional)"
             style={{
               width: '100%',
@@ -215,9 +252,15 @@ export function ClarifyCard({ questions, answered, onSubmit }: ClarifyCardProps)
             {isLast ? 'Submit' : 'Next'}
           </button>
         </div>
-      </div>
+      </motion.div>
+      </AnimatePresence>
     </div>
   )
+}
+
+const srOnly: React.CSSProperties = {
+  position: 'absolute', width: 1, height: 1, padding: 0, margin: -1,
+  overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap', border: 0,
 }
 
 function navBtnStyle(disabled: boolean): React.CSSProperties {

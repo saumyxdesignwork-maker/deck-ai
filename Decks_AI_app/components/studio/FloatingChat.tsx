@@ -7,6 +7,7 @@ import { ChatItem } from '@/lib/studioScript'
 import { DeckSection } from '@/lib/fixtures'
 import { EditRun } from '@/lib/editStages'
 import { DOUBLE_META_ALLOW_ATTR } from '@/lib/useDoubleMetaTap'
+import { motionPresets } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { ChatItemView } from './ChatItem'
@@ -130,8 +131,13 @@ export function FloatingChat({
   }
 
   const noop = () => {}
-  const transition = reduceMotion ? { duration: 0 } : { type: 'spring' as const, stiffness: 420, damping: 38, mass: 0.9 }
-  const fade = reduceMotion ? { duration: 0 } : { duration: 0.14 }
+  // Shared-layout morph between the expanded popup and the compact prompt:
+  // ~270ms decelerating tween, no overshoot. Reduced motion → instant.
+  const presets = motionPresets(reduceMotion)
+  // Opening/closing uses the compact-overlay timing (~200ms); only the
+  // expanded ⇄ compact box change uses the longer morph.
+  const transition = { ...presets.overlay, layout: presets.morph }
+  const fade = presets.menu
   const canSend = !!instruction.trim() && !isEditing
   const isExpanded = state === 'expanded'
 
@@ -163,9 +169,9 @@ export function FloatingChat({
             aria-label={isExpanded ? undefined : 'Ask AI (running in background)'}
             data-motion={reduceMotion ? 'reduced' : 'full'}
             data-state={state}
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: presets.rise }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8, transition: fade }}
+            exit={{ opacity: 0, y: presets.rise, transition: fade }}
             transition={transition}
             style={isExpanded ? expandedSurfaceStyle : compactSurfaceStyle}
           >

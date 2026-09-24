@@ -1,31 +1,38 @@
 'use client'
 
-import { DeckSection, Block, AspectRatio, aspectRatioCss } from '@/lib/fixtures'
+import { DeckSection, Block, AspectRatio, LayoutType, aspectRatioCss } from '@/lib/fixtures'
 import { Plus, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { AIEditPopover } from './AIEditPopover'
+import type { ChangeHighlight } from '@/lib/deckDiff'
+import { motionPresets } from '@/lib/motion'
 
 interface BlockEditHandlers {
   onChange: (text: string) => void
   onFocus: () => void
   onBlur: () => void
+  /** Text alignment for this layout (e.g. centered "statement" slides). */
+  align?: 'left' | 'center'
 }
 
-function HeadingBlock({ block, onChange, onFocus, onBlur }: { block: Block } & BlockEditHandlers) {
+function HeadingBlock({ block, onChange, onFocus, onBlur, align = 'left' }: { block: Block } & BlockEditHandlers) {
   return (
     <input
       value={block.content}
       onChange={e => onChange(e.target.value)}
       onFocus={onFocus}
       onBlur={onBlur}
+      aria-label="Slide heading"
       style={{
+        textAlign: align,
         display: 'block',
         width: '100%',
         border: 'none',
         outline: 'none',
         background: 'transparent',
         fontFamily: 'var(--font-heading)',
-        fontSize: 22,
+        fontSize: align === 'center' ? 28 : 22,
         fontWeight: 700,
         color: 'var(--text)',
         lineHeight: 1.25,
@@ -36,7 +43,7 @@ function HeadingBlock({ block, onChange, onFocus, onBlur }: { block: Block } & B
   )
 }
 
-function ParagraphBlock({ block, onChange, onFocus, onBlur }: { block: Block } & BlockEditHandlers) {
+function ParagraphBlock({ block, onChange, onFocus, onBlur, align = 'left' }: { block: Block } & BlockEditHandlers) {
   return (
     <textarea
       value={block.content}
@@ -44,7 +51,9 @@ function ParagraphBlock({ block, onChange, onFocus, onBlur }: { block: Block } &
       onFocus={onFocus}
       onBlur={onBlur}
       rows={3}
+      aria-label="Slide text"
       style={{
+        textAlign: align,
         display: 'block',
         width: '100%',
         border: 'none',
@@ -62,7 +71,7 @@ function ParagraphBlock({ block, onChange, onFocus, onBlur }: { block: Block } &
   )
 }
 
-function CalloutBlock({ block, onChange, onFocus, onBlur }: { block: Block } & BlockEditHandlers) {
+function CalloutBlock({ block, onChange, onFocus, onBlur, align = 'left' }: { block: Block } & BlockEditHandlers) {
   return (
     <div
       style={{
@@ -81,7 +90,9 @@ function CalloutBlock({ block, onChange, onFocus, onBlur }: { block: Block } & B
         onFocus={onFocus}
         onBlur={onBlur}
         rows={2}
+        aria-label="Callout"
         style={{
+          textAlign: align,
           width: '100%',
           border: 'none',
           outline: 'none',
@@ -190,6 +201,45 @@ function renderBlock(block: Block, handlers: BlockEditHandlers) {
   }
 }
 
+// ── Layouts ─────────────────────────────────────────────────────────────
+// Pure CSS arrangement of the section's existing blocks (block order and
+// content never change) so the inspector's Layout tab has a visible,
+// undoable effect on the canvas.
+function layoutContainerStyle(layout: LayoutType): React.CSSProperties {
+  switch (layout) {
+    case 'statement':
+      return { display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '100%', maxWidth: 560, margin: '0 auto' }
+    case 'media-text':
+      return { display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: 24, alignContent: 'start' }
+    case 'bento':
+      return { display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: 14, alignContent: 'start' }
+    case 'heading-media':
+    case 'data':
+      return { display: 'flex', flexDirection: 'column' }
+    case 'key-points':
+    default:
+      return {}
+  }
+}
+
+function layoutItemStyle(layout: LayoutType, block: Block): React.CSSProperties {
+  const isMedia = block.type === 'image'
+  const isHeading = block.type === 'heading'
+  const isFigure = block.type === 'card-group' || block.type === 'callout'
+  switch (layout) {
+    case 'heading-media':
+      return { order: isHeading ? 0 : isMedia ? 1 : 2 }
+    case 'media-text':
+      return isMedia ? { gridColumn: 1, gridRow: '1 / span 20' } : { gridColumn: 2 }
+    case 'bento':
+      return isHeading || block.type === 'card-group' ? { gridColumn: '1 / -1' } : {}
+    case 'data':
+      return { order: isHeading ? 0 : isFigure ? 1 : 2 }
+    default:
+      return {}
+  }
+}
+
 interface ContentSectionProps {
   section: DeckSection
   isActive: boolean
@@ -222,11 +272,20 @@ interface ContentSectionProps {
   onUpdateBlockContent?: (blockId: string, text: string) => void
   onBeginBlockEdit?: () => void
   onCommitBlockEdit?: () => void
+  /** Blocks an external change (agent edit / AI rewrite) just altered — each
+   * gets a brief tint cue; nothing else on the canvas moves. */
+  highlight?: ChangeHighlight | null
 }
 
-export function ContentSection({ section, isActive, onClick, onInsertBefore, aspectRatio, onDropBlock, mode = 'edit', selectedBlockIds, onToggleBlockSelect, onClearSelection, flagCount = 0, onRewriteBlock, isRewriting = false, onUpdateBlockContent, onBeginBlockEdit, onCommitBlockEdit }: ContentSectionProps) {
+export function ContentSection({ section, isActive, onClick, onInsertBefore, aspectRatio, onDropBlock, mode = 'edit', selectedBlockIds, onToggleBlockSelect, onClearSelection, flagCount = 0, onRewriteBlock, isRewriting = false, onUpdateBlockContent, onBeginBlockEdit, onCommitBlockEdit, highlight }: ContentSectionProps) {
   const [hovered, setHovered] = useState(false)
   const [dragOver, setDragOver] = useState(false)
+  // Blocks present at first render never animate in; only blocks added
+  // later (Insert panel drop, duplicate, agent add-block) get an entrance.
+  const [initialBlockIds] = useState(() => new Set(section.blocks.map(b => b.id)))
+  const m = motionPresets(useReducedMotion())
+  const layout = section.layout ?? 'key-points'
+  const align = layout === 'statement' ? 'center' : 'left'
 
   return (
     <div
@@ -289,7 +348,13 @@ export function ContentSection({ section, isActive, onClick, onInsertBefore, asp
         }}
         style={{
           position: 'relative',
-          background: 'var(--surface)',
+          // --surface-solid, not --surface: in VL2/VL3 --surface is a
+          // translucent glass fill (by design, for floating chrome like the
+          // toolbar/chat), so using it here let the deck's own slide content
+          // pick up the app's ambient glass-panel look. A slide is content,
+          // not chrome — it should render as a plain, opaque, theme-colored
+          // card (near-black/near-white in VL2's dark mode) regardless.
+          background: 'var(--surface-solid)',
           borderRadius: 'var(--r-xl)',
           padding: '36px 44px',
           border: '1.5px solid',
@@ -317,15 +382,40 @@ export function ContentSection({ section, isActive, onClick, onInsertBefore, asp
             {flagCount}
           </div>
         )}
+        {/* Layout change = quick crossfade of this slide's content only. */}
+        <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={layout}
+          data-layout={layout}
+          {...m.fade}
+          exit={{ opacity: 0, transition: m.exit }}
+          transition={m.content}
+          style={layoutContainerStyle(layout)}
+        >
         {section.blocks.map(block => {
           const isSelected = selectedBlockIds?.has(block.id) ?? false
           const showEditPopover = mode === 'select' && isSelected && selectedBlockIds?.size === 1 && block.type !== 'card-group'
+          const isNew = !initialBlockIds.has(block.id)
+          const isChanged = !!highlight?.ids.has(block.id)
           return (
-            <div key={block.id} style={{ position: 'relative' }}>
+            <motion.div
+              key={block.id}
+              data-block-id={block.id}
+              data-entering={isNew || undefined}
+              initial={isNew ? m.arrive.initial : false}
+              animate={m.arrive.animate}
+              transition={m.content}
+              style={{ position: 'relative', ...layoutItemStyle(layout, block) }}
+            >
+              {isChanged && (
+                // Keyed on the highlight so the cue replays on each new change.
+                <span key={highlight!.key} aria-hidden data-changed className="dk-changed-cue" />
+              )}
               {renderBlock(block, {
                 onChange: text => onUpdateBlockContent?.(block.id, text),
                 onFocus: () => onBeginBlockEdit?.(),
                 onBlur: () => onCommitBlockEdit?.(),
+                align,
               })}
               {mode === 'select' && (
                 <div
@@ -351,9 +441,11 @@ export function ContentSection({ section, isActive, onClick, onInsertBefore, asp
                   onSubmit={instruction => onRewriteBlock?.(block.id, instruction)}
                 />
               )}
-            </div>
+            </motion.div>
           )
         })}
+        </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   )

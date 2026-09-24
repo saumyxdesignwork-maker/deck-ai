@@ -36,7 +36,9 @@ function pushToGroup(items: ChatItem[], groupId: string, child: ChatItem): ChatI
   return items.map(it => (it.id === groupId && it.type === 'group' ? { ...it, children: [...it.children, child] } : it))
 }
 
-export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio) {
+export type DeckStyle = 'professional' | 'creative'
+
+export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio, deckStyle: DeckStyle = 'professional') {
   const [items, setItems] = useState<ChatItem[]>([
     { id: nextId('user'), type: 'user', text: initialPrompt },
   ])
@@ -200,7 +202,7 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
     // sessions with colliding chat-item ids (and double OpenRouter spend).
     if (hasStartedRef.current) return
     hasStartedRef.current = true
-    runStream('/generate', { prompt: initialPrompt, user: CURRENT_USER, aspectRatio })
+    runStream('/generate', { prompt: initialPrompt, user: CURRENT_USER, aspectRatio, style: deckStyle })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -355,6 +357,7 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
     beginBlockEdit: deckEditor.beginBlockEdit,
     updateBlockContent: deckEditor.updateBlockContent,
     commitBlockEdit: deckEditor.commitBlockEdit,
+    changeHighlight: deckEditor.highlight,
     answerClarify,
     approveOutline,
     regenerateOutline,

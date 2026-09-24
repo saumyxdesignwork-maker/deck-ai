@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { DeckData, DeckSection, Block, LayoutType } from './fixtures'
+import { changedBlockIds, ChangeHighlight } from './deckDiff'
 
 interface DeckEditorState {
   deck: DeckData | null
@@ -70,6 +71,10 @@ export function makeDefaultSection(): DeckSection {
  */
 export function useDeckEditor(streamedDeck: DeckData | null, isDone: boolean, sessionId: string | null) {
   const [state, setState] = useState<DeckEditorState>({ deck: null, past: [], future: [] })
+  // Which blocks the latest EXTERNAL change (agent edit / AI rewrite)
+  // altered — drives a brief "changed" cue on just those blocks. Never set by
+  // the user's own typing, undo, or redo.
+  const [highlight, setHighlight] = useState<ChangeHighlight | null>(null)
   const ownedRef = useRef(false)
   const pendingSnapshotRef = useRef<DeckData | null>(null)
 
@@ -171,6 +176,7 @@ export function useDeckEditor(streamedDeck: DeckData | null, isDone: boolean, se
         ...deck,
         sections: deck.sections.map(s => ({ ...s, blocks: s.blocks.map(b => (b.id === blockId ? { ...b, content: text } : b)) })),
       }))
+      setHighlight({ ids: new Set([blockId]), key: Date.now() })
     },
     [applyMutation],
   )
@@ -216,9 +222,11 @@ export function useDeckEditor(streamedDeck: DeckData | null, isDone: boolean, se
   // only runs pre-ownership (first draft), this runs any time post-ownership.
   const applyExternalDeck = useCallback(
     (next: DeckData) => {
+      const ids = changedBlockIds(state.deck, next)
       applyMutation(() => next)
+      if (ids.size) setHighlight({ ids, key: Date.now() })
     },
-    [applyMutation],
+    [applyMutation, state.deck],
   )
 
   return {
@@ -237,6 +245,7 @@ export function useDeckEditor(streamedDeck: DeckData | null, isDone: boolean, se
     updateBlockContent,
     commitBlockEdit,
     applyExternalDeck,
+    highlight,
   }
 }
 

@@ -1,6 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { motionPresets } from '@/lib/motion'
 import { MousePointer2, PenSquare, ShieldCheck, Loader2, Sparkles, X } from 'lucide-react'
 import { isApplePlatform } from '@/lib/useDoubleMetaTap'
 import { ASK_AI_TRIGGER_ATTR } from './FloatingChat'
@@ -38,6 +40,7 @@ export function PreviewToolbar({ mode, onModeChange, onVerify, isVerifying, flag
     try { window.localStorage.setItem(ASK_AI_HINT_SEEN_KEY, '1') } catch {}
   }, [])
   const showCoachmark = showShortcut && !hintSeen && !isChatOpen
+  const m = motionPresets(useReducedMotion())
 
   // Using Ask AI at all (button or ⌘⌘) counts as having learned it. State
   // adjusted during render (React's documented pattern for deriving from a
@@ -175,12 +178,19 @@ export function PreviewToolbar({ mode, onModeChange, onVerify, isVerifying, flag
         </span>
       )}
 
+      <AnimatePresence>
       {showCoachmark && (
         // Non-blocking first-use tip: not a dialog, no focus steal, no
-        // backdrop. Dismissed by ×, Escape, or simply using Ask AI once.
-        <div
+        // backdrop. Dismissed by ×, Escape, or simply using Ask AI once —
+        // then it fades away.
+        <motion.div
+          key="coachmark"
           role="note"
           data-testid="ask-ai-coachmark"
+          initial={{ opacity: 0, y: m.reduce ? 0 : -2 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, transition: m.exit }}
+          transition={m.overlay}
           style={{
             position: 'absolute', top: 'calc(100% + 8px)', right: 0,
             display: 'flex', alignItems: 'center', gap: 8,
@@ -203,8 +213,9 @@ export function PreviewToolbar({ mode, onModeChange, onVerify, isVerifying, flag
           >
             <X size={12} aria-hidden />
           </button>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </div>
   )
 }

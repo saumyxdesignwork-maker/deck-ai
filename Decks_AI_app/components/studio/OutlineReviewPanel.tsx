@@ -255,7 +255,9 @@ export function OutlineReviewPanel({ sections, onApprove, onRegenerate }: Outlin
       {/* CTA row — always the last thing in the panel, directly below the list */}
       <div style={{ display: 'flex', gap: 10, padding: '16px 24px', borderTop: '1px solid var(--divider)', background: 'var(--surface-muted)' }}>
         <button
+          type="button"
           onClick={onRegenerate}
+          className="dk-press dk-focus-ring"
           style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
             padding: '11px 18px', borderRadius: 'var(--r-pill)',
@@ -268,7 +270,9 @@ export function OutlineReviewPanel({ sections, onApprove, onRegenerate }: Outlin
           Rethink Storyline
         </button>
         <button
+          type="button"
           onClick={() => onApprove(toOutline(local))}
+          className="dk-press dk-focus-ring"
           style={{
             flex: 1,
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,

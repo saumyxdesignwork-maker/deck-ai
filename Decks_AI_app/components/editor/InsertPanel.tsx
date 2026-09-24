@@ -1,11 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useId, useState } from 'react'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { DeckSection, LayoutType, LAYOUT_OPTIONS } from '@/lib/fixtures'
+import { motionPresets } from '@/lib/motion'
 import {
   Type, SquareStack, Image, BarChart3, StickyNote,
   Heading1, AlignLeft, Quote, Flame, Hash,
   GripVertical, ChevronDown, ChevronRight,
-  LayoutList, Columns2, Grid2x2, LayoutPanelTop,
+  LayoutList, Columns2, Grid2x2, LayoutPanelTop, Quote as QuoteIcon, Loader2,
   Download, Printer, Copy, Archive,
 } from 'lucide-react'
 
@@ -60,22 +63,26 @@ export const BLOCK_GROUPS = [
   },
 ]
 
-const LAYOUTS = [
-  { icon: LayoutList,     label: 'Key Points',  id: 'key-points' },
-  { icon: Columns2,       label: 'Two Column',  id: 'two-col' },
-  { icon: Grid2x2,        label: 'Four Grid',   id: 'four-grid' },
-  { icon: Image,          label: 'Image Left',  id: 'image-left' },
-  { icon: Image,          label: 'Image Right', id: 'image-right' },
-  { icon: LayoutPanelTop, label: 'Full Width',  id: 'full-width' },
-]
+// The deck's real layouts (same ids the backend and canvas use).
+const LAYOUT_ICONS: Record<LayoutType, typeof LayoutList> = {
+  'statement': QuoteIcon,
+  'key-points': LayoutList,
+  'heading-media': LayoutPanelTop,
+  'media-text': Columns2,
+  'bento': Grid2x2,
+  'data': BarChart3,
+}
+const LAYOUTS = LAYOUT_OPTIONS.map(o => ({ ...o, icon: LAYOUT_ICONS[o.id] }))
 
-const REMIX_OPTIONS = [
-  { emoji: '✨', label: 'Rewrite',       desc: 'Rephrase this section' },
-  { emoji: '📋', label: 'Summarise',    desc: 'Condense key points' },
-  { emoji: '🔄', label: 'Make concise', desc: 'Remove filler content' },
-  { emoji: '💡', label: 'Add examples', desc: 'Illustrate with cases' },
-  { emoji: '📈', label: 'Add data',     desc: 'Insert stats & numbers' },
-  { emoji: '🎯', label: 'Sharpen CTA',  desc: 'Strengthen call-to-action' },
+// Remix actions → real /edit instructions, scoped to the active slide.
+// Deck-purpose-agnostic wording; "Add data" never invents figures.
+export const REMIX_OPTIONS = [
+  { emoji: '✨', label: 'Rewrite',       desc: 'Rephrase this section', instruction: "Rephrase the text on this slide so it reads fresher, keeping the same meaning." },
+  { emoji: '📋', label: 'Summarise',    desc: 'Condense key points',   instruction: 'Condense this slide to its key points.' },
+  { emoji: '🔄', label: 'Make concise', desc: 'Remove filler content', instruction: 'Remove filler and tighten every sentence on this slide.' },
+  { emoji: '💡', label: 'Add examples', desc: 'Illustrate with cases', instruction: "Add one short, concrete example that illustrates this slide's main point." },
+  { emoji: '📈', label: 'Add data',     desc: 'Insert stats & numbers', instruction: 'Add a callout with one relevant number or statistic for this slide. Use only figures already in the deck or its attached data; if there are none, use a clearly marked placeholder such as "[X]%".' },
+  { emoji: '🎯', label: 'Sharpen CTA',  desc: 'Strengthen call-to-action', instruction: 'Make the call to action on this slide clearer and more direct.' },
 ]
 
 const MORE_ITEMS = [
@@ -90,18 +97,46 @@ const TABS = ['Insert', 'Layout', 'Remix', 'More'] as const
 
 interface InsertPanelProps {
   width?: number
+  /** Studio wiring. When `onSetLayout`/`onRemix` are provided, Layout and
+   * Remix act on the deck's active slide; without them (standalone editor)
+   * the panel keeps its previous local-only behavior. */
+  activeSection?: DeckSection | null
+  onSetLayout?: (layout: LayoutType) => void
+  onRemix?: (instruction: string) => void
+  /** An agent edit is in flight — Remix waits for it. */
+  isEditing?: boolean
 }
 
-export function InsertPanel({ width }: InsertPanelProps) {
+export function InsertPanel({ width, activeSection = null, onSetLayout, onRemix, isEditing = false }: InsertPanelProps) {
   const [activeTab, setActiveTab] = useState<typeof TABS[number]>('Insert')
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(['Text', 'Cards']))
   const [dragging, setDragging] = useState<string | null>(null)
-  const [selectedLayout, setSelectedLayout] = useState('key-points')
-  const [remixLoading, setRemixLoading] = useState<string | null>(null)
+  const [localLayout, setLocalLayout] = useState<LayoutType>('key-points')
+  const [localRemixLoading, setLocalRemixLoading] = useState<string | null>(null)
+  const [lastRemix, setLastRemix] = useState<string | null>(null)
+  const tabsId = useId()
+  const m = motionPresets(useReducedMotion())
+
+  const connected = !!onSetLayout || !!onRemix
+  const selectedLayout: LayoutType | null = connected ? activeSection?.layout ?? null : localLayout
+  const remixLoading = connected ? (isEditing ? lastRemix : null) : localRemixLoading
+  const needsSlide = connected && !activeSection
+
+  const selectLayout = (id: LayoutType) => {
+    if (connected) onSetLayout?.(id)
+    else setLocalLayout(id)
+  }
 
   const handleRemix = (label: string) => {
-    setRemixLoading(label)
-    setTimeout(() => setRemixLoading(null), 1800)
+    const option = REMIX_OPTIONS.find(o => o.label === label)
+    if (connected) {
+      if (!option || !activeSection || isEditing) return
+      setLastRemix(label)
+      onRemix?.(option.instruction)
+      return
+    }
+    setLocalRemixLoading(label)
+    setTimeout(() => setLocalRemixLoading(null), 1800)
   }
 
   const toggleGroup = (label: string) => {
@@ -126,8 +161,19 @@ export function InsertPanel({ width }: InsertPanelProps) {
         overflow: 'hidden',
       }}
     >
-      {/* Tabs */}
+      {/* Tabs — the underline slides between tabs (shared layoutId); the
+          panel's width never changes. */}
       <div
+        role="tablist"
+        aria-label="Inspector"
+        onKeyDown={e => {
+          if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return
+          e.preventDefault()
+          const idx = TABS.indexOf(activeTab)
+          const next = TABS[(idx + (e.key === 'ArrowRight' ? 1 : TABS.length - 1)) % TABS.length]
+          setActiveTab(next)
+          document.getElementById(`${tabsId}-tab-${next}`)?.focus()
+        }}
         style={{
           display: 'flex',
           borderBottom: '1px solid var(--divider)',
@@ -138,8 +184,15 @@ export function InsertPanel({ width }: InsertPanelProps) {
         {TABS.map((tab) => (
           <button
             key={tab}
+            id={`${tabsId}-tab-${tab}`}
+            role="tab"
+            aria-selected={activeTab === tab}
+            aria-controls={`${tabsId}-panel`}
+            tabIndex={activeTab === tab ? 0 : -1}
             onClick={() => setActiveTab(tab)}
+            className="dk-select dk-focus-ring"
             style={{
+              position: 'relative',
               flex: 1,
               padding: '12px 4px',
               border: 'none',
@@ -148,19 +201,34 @@ export function InsertPanel({ width }: InsertPanelProps) {
               fontWeight: activeTab === tab ? 600 : 400,
               color: activeTab === tab ? 'var(--text)' : 'var(--text-muted)',
               cursor: 'pointer',
-              borderBottom: '2px solid',
-              borderColor: activeTab === tab ? 'var(--text)' : 'transparent',
-              transition: 'all 0.12s',
               fontFamily: 'var(--font-body)',
             }}
           >
             {tab}
+            {activeTab === tab && (
+              <motion.span
+                layoutId={`${tabsId}-underline`}
+                transition={m.menu}
+                aria-hidden
+                style={{ position: 'absolute', left: 4, right: 4, bottom: -1, height: 2, background: 'var(--text)', borderRadius: 1 }}
+              />
+            )}
           </button>
         ))}
       </div>
 
-      {/* Content */}
-      <div style={{ flex: 1, overflow: 'auto', padding: '8px 0' }}>
+      {/* Content — quick crossfade on tab switch. */}
+      <AnimatePresence mode="wait" initial={false}>
+      <motion.div
+        key={activeTab}
+        id={`${tabsId}-panel`}
+        role="tabpanel"
+        aria-labelledby={`${tabsId}-tab-${activeTab}`}
+        {...m.fade}
+        exit={{ opacity: 0, transition: { duration: m.reduce ? 0 : 0.08 } }}
+        transition={{ duration: m.reduce ? 0 : 0.12 }}
+        style={{ flex: 1, overflow: 'auto', padding: '8px 0' }}
+      >
         {activeTab === 'Insert' ? (
           <>
             <p
@@ -249,14 +317,19 @@ export function InsertPanel({ width }: InsertPanelProps) {
         ) : activeTab === 'Layout' ? (
           <div style={{ padding: '4px 14px' }}>
             <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', padding: '0 0 10px', fontFamily: 'var(--font-body)' }}>
-              Choose a layout for the active section
+              {needsSlide ? 'Select a slide on the canvas to change its layout' : 'Choose a layout for the active section'}
             </p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            <div role="radiogroup" aria-label="Slide layout" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               {LAYOUTS.map(({ icon: Icon, label, id }) => (
                 <button
                   key={id}
-                  onClick={() => setSelectedLayout(id)}
+                  role="radio"
+                  aria-checked={selectedLayout === id}
+                  disabled={needsSlide}
+                  onClick={() => selectLayout(id)}
+                  className="dk-select dk-focus-ring"
                   style={{
+                    opacity: needsSlide ? 0.5 : 1,
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
@@ -266,8 +339,7 @@ export function InsertPanel({ width }: InsertPanelProps) {
                     border: '1.5px solid',
                     borderColor: selectedLayout === id ? 'var(--accent)' : 'var(--border)',
                     background: selectedLayout === id ? 'var(--accent-soft)' : 'var(--surface-muted)',
-                    cursor: 'pointer',
-                    transition: 'all 0.12s',
+                    cursor: needsSlide ? 'not-allowed' : 'pointer',
                     fontFamily: 'var(--font-body)',
                   }}
                 >
@@ -282,14 +354,17 @@ export function InsertPanel({ width }: InsertPanelProps) {
         ) : activeTab === 'Remix' ? (
           <div style={{ padding: '4px 8px' }}>
             <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', padding: '0 6px 8px', fontFamily: 'var(--font-body)' }}>
-              AI actions for the active section
+              {needsSlide ? 'Select a slide on the canvas to remix it' : isEditing && connected ? 'Working on an edit — progress shows at the lower left' : 'AI actions for the active section'}
             </p>
             {REMIX_OPTIONS.map(({ emoji, label, desc }) => (
               <button
                 key={label}
                 onClick={() => handleRemix(label)}
-                disabled={remixLoading !== null}
+                disabled={remixLoading !== null || needsSlide || (connected && isEditing)}
+                aria-busy={remixLoading === label || undefined}
+                className="dk-focus-ring"
                 style={{
+                  opacity: needsSlide || (connected && isEditing && remixLoading !== label) ? 0.55 : 1,
                   width: '100%',
                   display: 'flex',
                   alignItems: 'center',
@@ -298,7 +373,7 @@ export function InsertPanel({ width }: InsertPanelProps) {
                   borderRadius: 'var(--r-sm)',
                   border: 'none',
                   background: remixLoading === label ? 'var(--accent-soft)' : 'transparent',
-                  cursor: remixLoading ? 'wait' : 'pointer',
+                  cursor: remixLoading ? 'wait' : needsSlide ? 'not-allowed' : 'pointer',
                   fontFamily: 'var(--font-body)',
                   textAlign: 'left',
                   transition: 'background 0.1s',
@@ -306,10 +381,12 @@ export function InsertPanel({ width }: InsertPanelProps) {
                 onMouseEnter={e => { if (!remixLoading) (e.currentTarget as HTMLElement).style.background = 'var(--surface-muted)' }}
                 onMouseLeave={e => { if (!remixLoading) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
               >
-                <span style={{ fontSize: 18, width: 28, textAlign: 'center' }}>{emoji}</span>
+                <span aria-hidden style={{ fontSize: 18, width: 28, textAlign: 'center' }}>
+                  {remixLoading === label ? <Loader2 size={15} className="studio-spin" style={{ color: 'var(--accent)' }} /> : emoji}
+                </span>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 500, color: remixLoading === label ? 'var(--accent)' : 'var(--text)' }}>
-                    {remixLoading === label ? 'Rewriting…' : label}
+                    {remixLoading === label ? `${label}…` : label}
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{desc}</div>
                 </div>
@@ -345,7 +422,8 @@ export function InsertPanel({ width }: InsertPanelProps) {
             ))}
           </div>
         )}
-      </div>
+      </motion.div>
+      </AnimatePresence>
     </div>
   )
 }
