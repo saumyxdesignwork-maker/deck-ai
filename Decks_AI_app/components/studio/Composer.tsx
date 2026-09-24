@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, KeyboardEvent } from 'react'
-import { Plus, Mic, ArrowUp, ChevronDown, Upload, FolderOpenDot } from 'lucide-react'
+import { Plus, Mic, ArrowUp, ChevronDown, Upload, FolderOpenDot, Plug } from 'lucide-react'
 
 // Simple three-tone Drive mark — no brand asset dependency, just a recognizable shape.
 // Accepts the same size/style props as the lucide icons it sits alongside in ATTACH_OPTIONS.
@@ -19,6 +19,7 @@ const ATTACH_OPTIONS = [
   { key: 'local', icon: Upload, label: 'Browse Local Files' },
   { key: 'ai-drive', icon: FolderOpenDot, label: 'Choose from AI Drive' },
   { key: 'google-drive', icon: GoogleDriveIcon, label: 'Choose from Google Drive' },
+  { key: 'connectors', icon: Plug, label: 'Connectors' },
 ] as const
 
 interface ComposerProps {
@@ -29,9 +30,13 @@ interface ComposerProps {
   /** Controlled input — pass both to let a parent (e.g. a template click) fill the field. */
   value?: string
   onChange?: (value: string) => void
+  /** Opens the data-connectors panel. Only wired in the Studio session
+   * composer (there's a live session to attach data to); the other Attach
+   * options stay cosmetic stubs everywhere, per the existing design. */
+  onOpenConnectors?: () => void
 }
 
-export function Composer({ onSubmit, placeholder = 'Enter your slides request here', variant = 'session', disabled, value: controlledValue, onChange: controlledOnChange }: ComposerProps) {
+export function Composer({ onSubmit, placeholder = 'Enter your slides request here', variant = 'session', disabled, value: controlledValue, onChange: controlledOnChange, onOpenConnectors }: ComposerProps) {
   const [internalValue, setInternalValue] = useState('')
   const isControlled = controlledValue !== undefined
   const value = isControlled ? controlledValue : internalValue
@@ -133,7 +138,10 @@ export function Composer({ onSubmit, placeholder = 'Enter your slides request he
               {ATTACH_OPTIONS.map(({ key, icon: Icon, label }) => (
                 <button
                   key={key}
-                  onClick={() => setAttachOpen(false)}
+                  onClick={() => {
+                    setAttachOpen(false)
+                    if (key === 'connectors') onOpenConnectors?.()
+                  }}
                   style={{
                     width: '100%',
                     display: 'flex', alignItems: 'center', gap: 10,

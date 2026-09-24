@@ -7,6 +7,7 @@ import { StreamEvent } from './streamEvents'
 import { fetchStream, postJson, DeckServiceError } from './deckStream'
 import { CURRENT_USER } from './identity'
 import { useDeckEditor } from './useDeckEditor'
+import { DeckDataset } from './dataset'
 
 export type PreviewState = 'idle' | 'preparing' | 'thumbs' | 'done'
 
@@ -49,6 +50,8 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
   const [verifyFlags, setVerifyFlags] = useState<VerifyFlag[]>([])
   const [isVerifying, setIsVerifying] = useState(false)
   const [isRewriting, setIsRewriting] = useState(false)
+  const [dataset, setDataset] = useState<DeckDataset | null>(null)
+  const [isAttachingDataset, setIsAttachingDataset] = useState(false)
 
   const isDone = previewState === 'done'
   const deckEditor = useDeckEditor(streamedDeck, isDone, sessionId)
@@ -225,6 +228,29 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
     }
   }, [])
 
+  const attachDataset = useCallback(async (next: DeckDataset) => {
+    if (!sessionIdRef.current) return
+    setIsAttachingDataset(true)
+    try {
+      await postJson('/data', { sessionId: sessionIdRef.current, dataset: next })
+      setDataset(next)
+      setItems(prev => [
+        ...prev,
+        {
+          id: nextId('agent'),
+          type: 'agent',
+          text: `Connected "${next.source}" (${next.rows.length} row${next.rows.length === 1 ? '' : 's'}) — I'll ground the deck in this data and call out anything it doesn't cover.`,
+        },
+      ])
+    } catch (err) {
+      const message = err instanceof DeckServiceError ? err.message : 'Could not reach Decks AI Service — is it running?'
+      console.error(message, err)
+      setItems(prev => [...prev, { id: nextId('agent'), type: 'agent', text: "I couldn't attach that data. Please check the service is running and try again." }])
+    } finally {
+      setIsAttachingDataset(false)
+    }
+  }, [])
+
   const updateItem = useCallback((id: string, patch: ChatItemPatch) => {
     setItems(prev => prev.map(it => patchItemRecursive(it, id, patch)))
   }, [])
@@ -234,6 +260,10 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
     previewState,
     revealedSlides,
     deck: deckEditor.deck,
+    sessionId,
+    dataset,
+    isAttachingDataset,
+    attachDataset,
     isWorking,
     clarifyPending,
     outlinePending,

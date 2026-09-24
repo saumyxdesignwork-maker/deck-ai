@@ -1,10 +1,18 @@
 import type { ChatMessage } from '../openrouter/types.js'
 import type { OutlineSection } from '../contract/chat.js'
 import type { AspectRatio, DeckData } from '../contract/deck.js'
+import type { DeckDataset } from '../contract/data.js'
 // Type-only import — erased at compile time, so this doesn't create a
 // runtime circular dependency with tiers/orchestrator.ts (which imports
 // SessionState from this file).
 import type { OrchestratorResult } from '../tiers/orchestrator.js'
+
+export interface GoogleTokens {
+  accessToken: string
+  refreshToken?: string
+  /** Epoch ms — refresh proactively once we're within a minute of this. */
+  expiresAt: number
+}
 
 export interface UserVars {
   name: string
@@ -33,6 +41,13 @@ export interface SessionState {
    * so the built slides always match what the user approved. */
   approvedStoryline?: OutlineSection[]
   deck?: DeckData
+  /** User-supplied data grounding this deck (paste/upload or a connector) —
+   * see contract/data.ts. Injected into the copywriter tiers when present. */
+  dataset?: DeckDataset
+  /** OAuth tokens for a connected Google account — in-memory like the rest
+   * of SessionState, so a backend restart requires reconnecting. A real
+   * pilot beyond this would need persistent token storage. */
+  googleTokens?: GoogleTokens
 }
 
 // Generous on purpose — this is a single-user dev tool and a SessionState is

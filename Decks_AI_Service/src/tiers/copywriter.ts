@@ -7,8 +7,26 @@ import { newId } from '../lib/ids.js'
 import type { SessionState } from '../session/store.js'
 import type { OutlineSection } from '../contract/chat.js'
 import type { LayoutType, Block } from '../contract/deck.js'
+import type { DeckDataset } from '../contract/data.js'
 
 const LAYOUTS: LayoutType[] = ['statement', 'key-points', 'heading-media', 'media-text', 'bento', 'data']
+
+// ── Data grounding ──────────────────────────────────────────────────────
+// Shared between draftStoryline and expandDeck so a connected dataset (see
+// contract/data.ts) shapes both the outline and the final copy the same way.
+
+const GROUNDING_INSTRUCTIONS =
+  'The user has attached real data (below). Ground the deck in it: use its actual figures instead of inventing numbers, and where a value would naturally appear (a stat, a comparison, a trend), pull it from this data. If the data does not cover something the deck seems to need, say so plainly rather than making a number up — a vague or qualitative statement is always better than a fabricated one. Do not silently drop the fact that a claim is not backed by the data.'
+
+function formatDatasetForPrompt(dataset: DeckDataset): string {
+  const usableColumns = dataset.columns.filter(c => c.role !== 'ignore').map(c => c.name)
+  const rowLines = dataset.rows.map((row, i) => `${i + 1}. ${usableColumns.map(name => `${name}=${row[name] ?? ''}`).join(', ')}`)
+  return [
+    `Attached data — source: "${dataset.source}", captured ${dataset.capturedAt}:`,
+    `Columns: ${usableColumns.join(', ')}`,
+    ...rowLines,
+  ].join('\n')
+}
 
 // ── Storyline (outline) ──────────────────────────────────────────────────
 
@@ -66,11 +84,12 @@ export async function draftStoryline(state: SessionState, notes?: string): Promi
   const directive = state.copyDirective
   const sectionCount = directive?.sectionCount ?? 6
 
-  const system = `You are the copywriter for an AI deck-generation product. Draft a presentation storyline: a sequence of sections, each with a punchy title and 2-5 concise, high-impact bullet points. Write for ${directive?.audienceGoal ?? 'a general professional audience'} in a ${directive?.tone ?? 'clear, confident'} tone. Avoid repetitive phrasing across sections. Call the emit_storyline tool with your result — do not respond in prose.`
+  const system = `You are the copywriter for an AI deck-generation product. Draft a presentation storyline: a sequence of sections, each with a punchy title and 2-5 concise, high-impact bullet points. Write for ${directive?.audienceGoal ?? 'a general professional audience'} in a ${directive?.tone ?? 'clear, confident'} tone. Avoid repetitive phrasing across sections.${state.dataset ? ` ${GROUNDING_INSTRUCTIONS}` : ''} Call the emit_storyline tool with your result — do not respond in prose.`
 
   const clarifyAnswers = state.clarifyAnswers?.join('; ') ?? 'unspecified'
   const userParts = [`Deck topic: "${state.prompt}"`, `Answers to clarifying questions: "${clarifyAnswers}"`, `Target section count: ${sectionCount}`]
   if (notes) userParts.push(`Additional notes for this revision: ${notes}`)
+  if (state.dataset) userParts.push(formatDatasetForPrompt(state.dataset))
 
   try {
     const result = await structuredCompletion(
@@ -202,11 +221,16 @@ function fallbackDeck(state: SessionState): DeckSkeleton {
 export async function expandDeck(state: SessionState): Promise<{ deck: DeckSkeleton; usedFallback: boolean }> {
   const storyline = state.approvedStoryline ?? []
 
-  const system = `You are the copywriter for an AI deck-generation product. You are given a storyline the user has ALREADY APPROVED — you must expand it into rendered slide blocks WITHOUT changing section titles, order, or count. For each section, produce 2-4 blocks using ONLY these block types: "heading" (the section title, once), "paragraph" (prose expanding a bullet), "callout" (one key stat or quote, short), "card-group" (2-4 short cards with an emoji icon, a title, and a short value — use for comparisons/lists of items), "image" (a short one-line caption describing what the image should depict — do not describe pixels, just the subject). Choose one layout per section from: ${LAYOUTS.join(', ')} — unless a section already specifies "(layout: ...)", in which case you MUST use that exact layout. Call the emit_deck tool — do not respond in prose.`
+  const system = `You are the copywriter for an AI deck-generation product. You are given a storyline the user has ALREADY APPROVED — you must expand it into rendered slide blocks WITHOUT changing section titles, order, or count. For each section, produce 2-4 blocks using ONLY these block types: "heading" (the section title, once), "paragraph" (prose expanding a bullet), "callout" (one key stat or quote, short), "card-group" (2-4 short cards with an emoji icon, a title, and a short value — use for comparisons/lists of items), "image" (a short one-line caption describing what the image should depict — do not describe pixels, just the subject). Choose one layout per section from: ${LAYOUTS.join(', ')} — unless a section already specifies "(layout: ...)", in which case you MUST use that exact layout.${state.dataset ? ` ${GROUNDING_INSTRUCTIONS} A "data" or "card-group" layout is a natural home for attached figures — cite the source in a callout or caption when you use one (e.g. "Source: ${state.dataset.source}").` : ''} Call the emit_deck tool — do not respond in prose.`
 
-  const user = `Deck topic: "${state.prompt}"\nApproved storyline (expand each section in this exact order):\n${storyline
-    .map((s, i) => `${i + 1}. ${s.title}${s.layout ? ` (layout: ${s.layout})` : ''}\n   - ${s.bullets.join('\n   - ')}`)
-    .join('\n')}`
+  const userParts = [
+    `Deck topic: "${state.prompt}"`,
+    `Approved storyline (expand each section in this exact order):\n${storyline
+      .map((s, i) => `${i + 1}. ${s.title}${s.layout ? ` (layout: ${s.layout})` : ''}\n   - ${s.bullets.join('\n   - ')}`)
+      .join('\n')}`,
+  ]
+  if (state.dataset) userParts.push(formatDatasetForPrompt(state.dataset))
+  const user = userParts.join('\n\n')
 
   try {
     const result = await structuredCompletion(

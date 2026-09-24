@@ -11,6 +11,8 @@ import { regenerateRoute } from './routes/regenerate.js'
 import { followupRoute } from './routes/followup.js'
 import { verifyRoute } from './routes/verify.js'
 import { rewriteRoute } from './routes/rewrite.js'
+import { dataRoute } from './routes/data.js'
+import { googleRoute } from './routes/google.js'
 import { assetsRoute } from './routes/assets.js'
 
 export const app = new Hono()
@@ -36,6 +38,8 @@ app.route('/', regenerateRoute)
 app.route('/', followupRoute)
 app.route('/', verifyRoute)
 app.route('/', rewriteRoute)
+app.route('/', dataRoute)
+app.route('/', googleRoute)
 app.route('/', assetsRoute)
 
 app.onError((err, c) => {

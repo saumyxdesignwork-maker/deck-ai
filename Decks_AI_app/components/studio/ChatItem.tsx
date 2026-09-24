@@ -12,9 +12,10 @@ import { ChainOfThoughtBlock } from './ChainOfThoughtBlock'
 interface ChatItemProps {
   item: ChatItemType
   onAnswerClarify: (answers: string[]) => void
+  onOpenConnectors: () => void
 }
 
-export function ChatItemView({ item, onAnswerClarify }: ChatItemProps) {
+export function ChatItemView({ item, onAnswerClarify, onOpenConnectors }: ChatItemProps) {
   switch (item.type) {
     case 'user':
       return (
@@ -63,6 +64,7 @@ export function ChatItemView({ item, onAnswerClarify }: ChatItemProps) {
           questions={item.questions}
           answered={item.answered}
           onSubmit={onAnswerClarify}
+          onOpenConnectors={onOpenConnectors}
         />
       )
 

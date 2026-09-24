@@ -23,6 +23,16 @@ const EnvSchema = z.object({
     .default('true')
     .transform(v => v.toLowerCase() !== 'false' && v !== '0'),
   MAX_IMAGES_PER_DECK: z.coerce.number().int().min(0).default(3),
+
+  // Google Sheets connector (Phase 3) — optional. Unset by default: the
+  // /connectors/google/* routes detect this and return a clear "not
+  // configured" error instead of failing boot, so the rest of the app works
+  // fine before these are added. Create an OAuth client (type "Web
+  // application") in Google Cloud Console, enable the Sheets API, and add
+  // this backend's callback URL to its authorized redirect URIs.
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
+  GOOGLE_REDIRECT_URI: z.string().optional(),
 })
 
 const parsed = EnvSchema.safeParse(process.env)
@@ -37,11 +47,18 @@ if (!parsed.success) {
 
 export const env = parsed.data
 
-// Never log env.OPENROUTER_API_KEY or include it in any response body.
+// Never log env.OPENROUTER_API_KEY (or the Google client secret) or include
+// them in any response body.
 export const config = {
   port: env.PORT,
   corsOrigin: env.CORS_ORIGIN,
   servicePublicUrl: env.SERVICE_PUBLIC_URL,
   imagesEnabled: env.IMAGES_ENABLED,
   maxImagesPerDeck: env.MAX_IMAGES_PER_DECK,
+  google: {
+    clientId: env.GOOGLE_CLIENT_ID,
+    clientSecret: env.GOOGLE_CLIENT_SECRET,
+    redirectUri: env.GOOGLE_REDIRECT_URI ?? `${env.SERVICE_PUBLIC_URL}/connectors/google/callback`,
+    configured: Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET),
+  },
 }

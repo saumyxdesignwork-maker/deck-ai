@@ -10,10 +10,11 @@ interface ChatPaneProps {
   isWorking: boolean
   onAnswerClarify: (answers: string[]) => void
   onSendFollowUp: (text: string) => void
+  onOpenConnectors: () => void
   width: number
 }
 
-export function ChatPane({ items, isWorking, onAnswerClarify, onSendFollowUp, width }: ChatPaneProps) {
+export function ChatPane({ items, isWorking, onAnswerClarify, onSendFollowUp, onOpenConnectors, width }: ChatPaneProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -47,6 +48,7 @@ export function ChatPane({ items, isWorking, onAnswerClarify, onSendFollowUp, wi
             key={item.id}
             item={item}
             onAnswerClarify={onAnswerClarify}
+            onOpenConnectors={onOpenConnectors}
           />
         ))}
         {isWorking && (
@@ -70,6 +72,7 @@ export function ChatPane({ items, isWorking, onAnswerClarify, onSendFollowUp, wi
           onSubmit={onSendFollowUp}
           placeholder="Enter your slides request here"
           variant="session"
+          onOpenConnectors={onOpenConnectors}
         />
       </div>
     </div>

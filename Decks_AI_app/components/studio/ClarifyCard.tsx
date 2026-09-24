@@ -1,16 +1,17 @@
 'use client'
 
 import { useState } from 'react'
-import { Circle, ChevronLeft, ChevronRight, Paperclip } from 'lucide-react'
+import { Circle, ChevronLeft, ChevronRight, Paperclip, Database } from 'lucide-react'
 import { ClarifyQuestion } from '@/lib/studioScript'
 
 interface ClarifyCardProps {
   questions: ClarifyQuestion[]
   answered?: string[]
   onSubmit: (answers: string[]) => void
+  onOpenConnectors: () => void
 }
 
-export function ClarifyCard({ questions, answered, onSubmit }: ClarifyCardProps) {
+export function ClarifyCard({ questions, answered, onSubmit, onOpenConnectors }: ClarifyCardProps) {
   const [step, setStep] = useState(0)
   const [answers, setAnswers] = useState<(string | null)[]>(() => questions.map(() => null))
   const [details, setDetails] = useState<string[]>(() => questions.map(() => ''))
@@ -176,6 +177,21 @@ export function ClarifyCard({ questions, answered, onSubmit }: ClarifyCardProps)
           />
           <Paperclip size={13} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
         </div>
+
+        <button
+          onClick={onOpenConnectors}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            border: 'none', background: 'transparent', cursor: 'pointer',
+            padding: '2px 0', alignSelf: 'flex-start',
+            fontSize: 11.5, color: 'var(--text-muted)', fontFamily: 'var(--font-body)',
+          }}
+          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = 'var(--accent)')}
+          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = 'var(--text-muted)')}
+        >
+          <Database size={12} />
+          Have data to ground this deck? Connect or upload it
+        </button>
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
           <button onClick={skip} style={skipBtnStyle}>
