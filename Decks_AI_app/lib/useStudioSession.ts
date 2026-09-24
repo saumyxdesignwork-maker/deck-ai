@@ -8,6 +8,7 @@ import { fetchStream, postJson, DeckServiceError } from './deckStream'
 import { CURRENT_USER } from './identity'
 import { useDeckEditor } from './useDeckEditor'
 import { DeckDataset } from './dataset'
+import { SavedDeck, saveDeckToHistory } from './deckHistory'
 
 export type PreviewState = 'idle' | 'preparing' | 'thumbs' | 'done'
 
@@ -38,15 +39,37 @@ function pushToGroup(items: ChatItem[], groupId: string, child: ChatItem): ChatI
 
 export type DeckStyle = 'professional' | 'creative'
 
-export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio, deckStyle: DeckStyle = 'professional') {
-  const [items, setItems] = useState<ChatItem[]>([
-    { id: nextId('user'), type: 'user', text: initialPrompt },
-  ])
-  const [previewState, setPreviewState] = useState<PreviewState>('idle')
-  const [revealedSlides, setRevealedSlides] = useState<number[]>([])
-  const [streamedDeck, setStreamedDeck] = useState<DeckData | null>(null)
-  const [sessionId, setSessionId] = useState<string | null>(null)
-  const [isWorking, setIsWorking] = useState(true)
+export function useStudioSession(
+  initialPrompt: string,
+  aspectRatio: AspectRatio,
+  deckStyle: DeckStyle = 'professional',
+  /** Reopens a deck saved from a previous session (Studio landing's "Your
+   * slides" tab) instead of generating a new one. The original backend
+   * session has almost certainly expired by then, so this hydrates
+   * everything client-side and skips /generate entirely — viewing,
+   * presenting, and manual editing all work offline; Ask AI/Verify degrade
+   * to the existing "session expired" messaging until a fresh deck is made. */
+  resumeDeck?: SavedDeck,
+) {
+  const [items, setItems] = useState<ChatItem[]>(() =>
+    resumeDeck
+      ? [
+          { id: nextId('user'), type: 'user', text: resumeDeck.prompt },
+          { id: nextId('summary'), type: 'summary', text: `Reopened "${resumeDeck.title}".` },
+        ]
+      : [{ id: nextId('user'), type: 'user', text: initialPrompt }],
+  )
+  const [previewState, setPreviewState] = useState<PreviewState>(resumeDeck ? 'done' : 'idle')
+  // Normally populated incrementally by 'reveal-slide' stream events as each
+  // slide is written; a resumed deck never streams, so PreviewPane's "which
+  // slide is active" logic (which follows this list) would otherwise never
+  // advance past null and get stuck showing the generation placeholder.
+  const [revealedSlides, setRevealedSlides] = useState<number[]>(() =>
+    resumeDeck ? Array.from({ length: resumeDeck.deck.sections.length + 1 }, (_, i) => i) : [],
+  )
+  const [streamedDeck, setStreamedDeck] = useState<DeckData | null>(resumeDeck?.deck ?? null)
+  const [sessionId, setSessionId] = useState<string | null>(resumeDeck?.sessionId ?? null)
+  const [isWorking, setIsWorking] = useState(!resumeDeck)
   const [clarifyPending, setClarifyPending] = useState<{ id: string; questions: ClarifyQuestion[] } | null>(null)
   const [outlinePending, setOutlinePending] = useState<{ id: string; sections: OutlineSection[] } | null>(null)
   const [verifyFlags, setVerifyFlags] = useState<VerifyFlag[]>([])
@@ -58,7 +81,12 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
   const isDone = previewState === 'done'
   const deckEditor = useDeckEditor(streamedDeck, isDone, sessionId)
 
-  const sessionIdRef = useRef<string | null>(null)
+  const sessionIdRef = useRef<string | null>(resumeDeck?.sessionId ?? null)
+  // Kept in sync so the 'preview':'done' handler (a stable useCallback) can
+  // snapshot the just-finished deck into local history without a stale
+  // closure — same reasoning as deckEditorRef below.
+  const streamedDeckRef = useRef<DeckData | null>(resumeDeck?.deck ?? null)
+  const hasSavedToHistoryRef = useRef(!!resumeDeck)
   // Data-connect nudge is a standalone call-to-action (see DataNudgeCard),
   // not part of the backend protocol — injected client-side exactly once,
   // alongside the first clarify gate, never repeated on /regenerate etc.
@@ -123,11 +151,23 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
         break
       case 'preview':
         setPreviewState(event.state)
+        if (event.state === 'done' && !hasSavedToHistoryRef.current && streamedDeckRef.current) {
+          hasSavedToHistoryRef.current = true
+          saveDeckToHistory({
+            sessionId: sessionIdRef.current ?? nextId('session'),
+            title: streamedDeckRef.current.title,
+            prompt: initialPrompt,
+            aspectRatio: streamedDeckRef.current.aspectRatio ?? aspectRatio,
+            createdAt: new Date().toISOString(),
+            deck: streamedDeckRef.current,
+          })
+        }
         break
       case 'reveal-slide':
         setRevealedSlides(prev => (prev.includes(event.index) ? prev : [...prev, event.index]))
         break
       case 'deck':
+        streamedDeckRef.current = event.deck
         if (isEditingRef.current) {
           // Agent edit result — lands as ONE undoable step on the deck the
           // user is already editing, not through the pre-ownership mirror.
@@ -202,6 +242,7 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
     // sessions with colliding chat-item ids (and double OpenRouter spend).
     if (hasStartedRef.current) return
     hasStartedRef.current = true
+    if (resumeDeck) return // already hydrated synchronously from the saved snapshot above
     runStream('/generate', { prompt: initialPrompt, user: CURRENT_USER, aspectRatio, style: deckStyle })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

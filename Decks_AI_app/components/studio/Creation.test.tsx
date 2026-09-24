@@ -24,7 +24,7 @@ describe('creation screen', () => {
 
   it('selection pills expose their state and switch', async () => {
     const user = userEvent.setup()
-    render(<StudioLanding onSubmit={() => {}} />)
+    render(<StudioLanding onSubmit={() => {}} onResume={() => {}} />)
     const pro = screen.getByRole('button', { name: 'Professional' })
     const creative = screen.getByRole('button', { name: 'Creative' })
     expect(pro).toHaveAttribute('aria-pressed', 'true')
@@ -38,7 +38,7 @@ describe('creation screen', () => {
   it('a starter card fills the prompt and focuses it — without submitting', async () => {
     const user = userEvent.setup()
     const onSubmit = vi.fn()
-    render(<StudioLanding onSubmit={onSubmit} />)
+    render(<StudioLanding onSubmit={onSubmit} onResume={() => {}} />)
     await user.click(screen.getByRole('button', { name: SUGGESTED_PROMPTS[0] }))
     await waitFor(() => expect(prompt()).toHaveFocus())
     expect(prompt()).toHaveValue(SUGGESTED_PROMPTS[0])
@@ -53,7 +53,7 @@ describe('creation screen', () => {
     let resolveHealth!: (r: Response) => void
     fetchMock.mockReturnValue(new Promise<Response>(r => { resolveHealth = r }))
     const onSubmit = vi.fn()
-    render(<StudioLanding onSubmit={onSubmit} />)
+    render(<StudioLanding onSubmit={onSubmit} onResume={() => {}} />)
     await user.click(screen.getByRole('button', { name: 'Creative' }))
     await user.type(prompt(), 'A pitch for a bakery')
     await user.click(screen.getByRole('button', { name: 'Send' }))
@@ -72,7 +72,7 @@ describe('creation screen', () => {
     const user = userEvent.setup()
     fetchMock.mockRejectedValue(new TypeError('Failed to fetch'))
     const onSubmit = vi.fn()
-    render(<StudioLanding onSubmit={onSubmit} />)
+    render(<StudioLanding onSubmit={onSubmit} onResume={() => {}} />)
     await user.type(prompt(), 'A pitch for a bakery')
     await user.keyboard('{Enter}')
 
