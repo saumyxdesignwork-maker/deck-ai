@@ -87,6 +87,10 @@ export function useStudioSession(
   // closure — same reasoning as deckEditorRef below.
   const streamedDeckRef = useRef<DeckData | null>(resumeDeck?.deck ?? null)
   const hasSavedToHistoryRef = useRef(!!resumeDeck)
+  // The instruction behind the /edit run currently in flight — used to give
+  // the resulting deck-history entry a real label ("Make the tone punchier")
+  // instead of a generic "Agent edit".
+  const lastEditInstructionRef = useRef('')
   // Data-connect nudge is a standalone call-to-action (see DataNudgeCard),
   // not part of the backend protocol — injected client-side exactly once,
   // alongside the first clarify gate, never repeated on /regenerate etc.
@@ -171,7 +175,7 @@ export function useStudioSession(
         if (isEditingRef.current) {
           // Agent edit result — lands as ONE undoable step on the deck the
           // user is already editing, not through the pre-ownership mirror.
-          deckEditorRef.current.applyExternalDeck(event.deck)
+          deckEditorRef.current.applyExternalDeck(event.deck, lastEditInstructionRef.current || undefined)
         } else {
           setStreamedDeck(event.deck)
         }
@@ -298,6 +302,7 @@ export function useStudioSession(
       const deck = deckEditorRef.current.deck
       if (!instruction.trim() || !deck || isEditingRef.current) return
       setItems(prev => [...prev, { id: nextId('user'), type: 'user', text: instruction }])
+      lastEditInstructionRef.current = instruction.trim()
       isEditingRef.current = true
       setIsEditing(true)
       setEditFailed(false)
@@ -389,6 +394,8 @@ export function useStudioSession(
     canRedo: deckEditor.canRedo,
     undo: deckEditor.undo,
     redo: deckEditor.redo,
+    deckHistory: deckEditor.history,
+    restoreToHistoryPoint: deckEditor.restoreToHistoryPoint,
     insertBlock: deckEditor.insertBlock,
     insertSection: deckEditor.insertSection,
     deleteBlocks: deckEditor.deleteBlocks,

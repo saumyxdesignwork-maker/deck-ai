@@ -13,6 +13,8 @@ import { OutlineReviewPanel } from './OutlineReviewPanel'
 import { StorylineSkeleton, DeckSkeleton } from './GenerationSkeletons'
 import { FloatingChat, ChatSurfaceState } from './FloatingChat'
 import { EditStageChips } from './EditStageChips'
+import { HistoryPanel } from './HistoryPanel'
+import type { DeckHistoryEntry } from '@/lib/useDeckEditor'
 import { ResizeHandle } from '@/components/shared/ResizeHandle'
 import { MOCK_DECK, DeckData, LayoutType } from '@/lib/fixtures'
 import { ChatItem, OutlineSection, VerifyFlag } from '@/lib/studioScript'
@@ -44,6 +46,10 @@ interface PreviewPaneProps {
   canRedo: boolean
   onUndo: () => void
   onRedo: () => void
+  /** Named checkpoints of every change made to the deck since generation —
+   * powers the canvas's History panel. */
+  deckHistory: DeckHistoryEntry[]
+  onRestoreHistoryPoint: (id: string) => void
   onInsertBlock: (sectionIdx: number, blockType: string) => void
   onInsertSection: (index: number) => void
   onDeleteBlocks: (blockIds: Set<string>) => void
@@ -71,7 +77,7 @@ interface PreviewPaneProps {
 export function PreviewPane({
   previewState, revealedSlides, deck, isWorking, outlinePending, onApproveOutline, onRegenerateOutline,
   verifyFlags, isVerifying, onVerify, isRewriting, onRewriteBlock,
-  canUndo, canRedo, onUndo, onRedo,
+  canUndo, canRedo, onUndo, onRedo, deckHistory, onRestoreHistoryPoint,
   onInsertBlock, onInsertSection, onDeleteBlocks, onDuplicateBlocks, onApplyRewrite,
   onBeginBlockEdit, onUpdateBlockContent, onCommitBlockEdit, onSetSectionLayout,
   items, isEditing, editFailed, editGroupId, onRunEdit, changeHighlight,
@@ -83,6 +89,7 @@ export function PreviewPane({
   const [isPresenting, setIsPresenting] = useState(false)
   const [canvasMode, setCanvasMode] = useState<CanvasMode>('edit')
   const [selectedBlockIds, setSelectedBlockIds] = useState<Set<string>>(new Set())
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false)
   // Index into `items` where the latest floating-chat edit run begins (its
   // user message) — anchors the status chips even if the run fails before
   // the backend's progress group ever arrives.
@@ -270,6 +277,22 @@ export function PreviewPane({
           <>
             <button style={miniBtnStyle} onClick={() => setIsPresenting(true)}><Play size={12} fill="currentColor" /> Present</button>
             <button style={miniBtnStyle}><Download size={12} /> Export</button>
+            <div style={{ position: 'relative' }}>
+              <button
+                style={miniBtnStyle}
+                aria-pressed={isHistoryOpen}
+                onClick={() => setIsHistoryOpen(o => !o)}
+              >
+                <History size={12} /> History
+              </button>
+              {isHistoryOpen && (
+                <HistoryPanel
+                  history={deckHistory}
+                  onRestore={id => { onRestoreHistoryPoint(id); setIsHistoryOpen(false) }}
+                  onClose={() => setIsHistoryOpen(false)}
+                />
+              )}
+            </div>
             <button
               style={{ ...miniBtnStyle, padding: '5px 7px' }}
               title={insertCollapsed ? 'Show insert panel' : 'Hide insert panel'}
@@ -280,7 +303,6 @@ export function PreviewPane({
           </>
         ) : (
           <>
-            <button style={miniBtnStyle}><History size={12} /> History</button>
             <button style={{ ...miniBtnStyle, padding: '5px 7px' }}><FolderOpen size={12} /></button>
           </>
         )}

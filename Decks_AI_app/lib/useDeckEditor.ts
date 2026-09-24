@@ -10,7 +10,21 @@ interface DeckEditorState {
   future: DeckData[]
 }
 
+/** A named, timestamped snapshot for the History panel — an append-only log
+ * of "what changed", distinct from the past/future undo stack (which undo
+ * consumes as you step through it; this never shrinks except at the cap). */
+export interface DeckHistoryEntry {
+  id: string
+  label: string
+  timestamp: string
+  deck: DeckData
+}
+
 const MAX_HISTORY = 50
+
+function newHistoryId() {
+  return `hist-${Date.now()}-${Math.random().toString(36).slice(2)}`
+}
 
 function storageKeyFor(sessionId: string) {
   return `deckai-edited-deck-${sessionId}`
@@ -75,8 +89,20 @@ export function useDeckEditor(streamedDeck: DeckData | null, isDone: boolean, se
   // altered — drives a brief "changed" cue on just those blocks. Never set by
   // the user's own typing, undo, or redo.
   const [highlight, setHighlight] = useState<ChangeHighlight | null>(null)
+  const [history, setHistory] = useState<DeckHistoryEntry[]>([])
   const ownedRef = useRef(false)
   const pendingSnapshotRef = useRef<DeckData | null>(null)
+  // Mirrors state.deck so applyMutation can read the pre-mutation deck
+  // without going through setState's updater (needed to also snapshot the
+  // post-mutation deck into `history` in the same call).
+  const deckRef = useRef<DeckData | null>(null)
+  useEffect(() => {
+    deckRef.current = state.deck
+  }, [state.deck])
+
+  const logHistory = useCallback((label: string, deck: DeckData) => {
+    setHistory(prev => [...prev, { id: newHistoryId(), label, timestamp: new Date().toISOString(), deck }].slice(-MAX_HISTORY))
+  }, [])
 
   useEffect(() => {
     if (ownedRef.current) return
@@ -87,19 +113,25 @@ export function useDeckEditor(streamedDeck: DeckData | null, isDone: boolean, se
     if (!isDone || ownedRef.current) return
     ownedRef.current = true
     const restored = loadPersisted(sessionId)
-    if (restored) setState({ deck: restored, past: [], future: [] })
+    if (restored) {
+      setState({ deck: restored, past: [], future: [] })
+      logHistory('Restored your last session', restored)
+    } else if (streamedDeck) {
+      logHistory('Initial draft', streamedDeck)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDone, sessionId])
 
   const applyMutation = useCallback(
-    (mutate: (deck: DeckData) => DeckData) => {
-      setState(prev => {
-        if (!prev.deck) return prev
-        const next = mutate(prev.deck)
-        persist(sessionId, next)
-        return { deck: next, past: [...prev.past, prev.deck].slice(-MAX_HISTORY), future: [] }
-      })
+    (mutate: (deck: DeckData) => DeckData, label: string) => {
+      const current = deckRef.current
+      if (!current) return
+      const next = mutate(current)
+      persist(sessionId, next)
+      setState(prev => ({ deck: next, past: [...prev.past, current].slice(-MAX_HISTORY), future: [] }))
+      logHistory(label, next)
     },
-    [sessionId],
+    [sessionId, logHistory],
   )
 
   const undo = useCallback(() => {
@@ -125,7 +157,7 @@ export function useDeckEditor(streamedDeck: DeckData | null, isDone: boolean, se
       applyMutation(deck => ({
         ...deck,
         sections: deck.sections.map((s, i) => (i === sectionIdx ? { ...s, blocks: [...s.blocks, makeBlock(blockType)] } : s)),
-      }))
+      }), `Added a ${blockType.replace('-', ' ')} block`)
     },
     [applyMutation],
   )
@@ -136,14 +168,17 @@ export function useDeckEditor(streamedDeck: DeckData | null, isDone: boolean, se
         const sections = [...deck.sections]
         sections.splice(index, 0, makeDefaultSection())
         return { ...deck, sections }
-      })
+      }, 'Added a new slide')
     },
     [applyMutation],
   )
 
   const deleteBlocks = useCallback(
     (blockIds: Set<string>) => {
-      applyMutation(deck => ({ ...deck, sections: deck.sections.map(s => ({ ...s, blocks: s.blocks.filter(b => !blockIds.has(b.id)) })) }))
+      applyMutation(
+        deck => ({ ...deck, sections: deck.sections.map(s => ({ ...s, blocks: s.blocks.filter(b => !blockIds.has(b.id)) })) }),
+        `Deleted ${blockIds.size} block${blockIds.size === 1 ? '' : 's'}`,
+      )
     },
     [applyMutation],
   )
@@ -158,14 +193,17 @@ export function useDeckEditor(streamedDeck: DeckData | null, isDone: boolean, se
           const duplicates = toDuplicate.map(b => ({ ...b, id: newBlockId() }))
           return { ...s, blocks: [...s.blocks, ...duplicates] }
         }),
-      }))
+      }), `Duplicated ${blockIds.size} block${blockIds.size === 1 ? '' : 's'}`)
     },
     [applyMutation],
   )
 
   const setSectionLayout = useCallback(
     (sectionIdx: number, layout: LayoutType) => {
-      applyMutation(deck => ({ ...deck, sections: deck.sections.map((s, i) => (i === sectionIdx ? { ...s, layout } : s)) }))
+      applyMutation(
+        deck => ({ ...deck, sections: deck.sections.map((s, i) => (i === sectionIdx ? { ...s, layout } : s)) }),
+        `Changed layout to ${layout.replace('-', ' ')}`,
+      )
     },
     [applyMutation],
   )
@@ -175,7 +213,7 @@ export function useDeckEditor(streamedDeck: DeckData | null, isDone: boolean, se
       applyMutation(deck => ({
         ...deck,
         sections: deck.sections.map(s => ({ ...s, blocks: s.blocks.map(b => (b.id === blockId ? { ...b, content: text } : b)) })),
-      }))
+      }), 'Rewrote a block')
       setHighlight({ ids: new Set([blockId]), key: Date.now() })
     },
     [applyMutation],
@@ -212,21 +250,36 @@ export function useDeckEditor(streamedDeck: DeckData | null, isDone: boolean, se
       const snapshot = pendingSnapshotRef.current
       pendingSnapshotRef.current = null
       if (!snapshot || !prev.deck || snapshot === prev.deck) return prev
+      logHistory('Edited text', prev.deck)
       return { deck: prev.deck, past: [...prev.past, snapshot].slice(-MAX_HISTORY), future: [] }
     })
-  }, [])
+  }, [logHistory])
 
   // Adopts a whole deck returned by an agent edit (POST /edit) as ONE
   // undoable step — Cmd+Z reverts the entire edit, not each operation it
   // applied. Distinct from the streamedDeck mirror effect above: that one
   // only runs pre-ownership (first draft), this runs any time post-ownership.
   const applyExternalDeck = useCallback(
-    (next: DeckData) => {
+    (next: DeckData, label = 'Agent edit') => {
       const ids = changedBlockIds(state.deck, next)
-      applyMutation(() => next)
+      applyMutation(() => next, label)
       if (ids.size) setHighlight({ ids, key: Date.now() })
     },
     [applyMutation, state.deck],
+  )
+
+  // Jumps the deck straight to an earlier snapshot — logged as a new entry
+  // (never rewrites history), same as a real version-control revert.
+  const restoreToHistoryPoint = useCallback(
+    (id: string) => {
+      const entry = history.find(h => h.id === id)
+      const current = deckRef.current
+      if (!entry || !current) return
+      persist(sessionId, entry.deck)
+      setState(prev => ({ deck: entry.deck, past: [...prev.past, current].slice(-MAX_HISTORY), future: [] }))
+      logHistory(`Restored: ${entry.label}`, entry.deck)
+    },
+    [history, sessionId, logHistory],
   )
 
   return {
@@ -235,6 +288,8 @@ export function useDeckEditor(streamedDeck: DeckData | null, isDone: boolean, se
     canRedo: state.future.length > 0,
     undo,
     redo,
+    history,
+    restoreToHistoryPoint,
     insertBlock,
     insertSection,
     deleteBlocks,
