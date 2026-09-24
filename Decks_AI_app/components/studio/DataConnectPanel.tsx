@@ -3,14 +3,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { motionPresets } from '@/lib/motion'
-import { X, ClipboardPaste, Upload, Sheet, FileText, MessageSquare, Mail, ChevronLeft, Loader2, Check } from 'lucide-react'
+import { X, ClipboardPaste, Upload, FileText, Mail, ChevronLeft, Loader2, Check } from 'lucide-react'
+import { GoogleSheetsIcon, GoogleDocsIcon, SlackIcon } from '@/components/shared/BrandIcons'
 import { DeckDataset, DeckDatasetColumn, DeckDatasetRow, MAX_DATASET_ROWS, parseDelimitedTable } from '@/lib/dataset'
 import { SERVICE_BASE_URL } from '@/lib/deckStream'
 
 const COMING_SOON_PROVIDERS = [
-  { key: 'google-docs', label: 'Google Docs', icon: FileText },
+  { key: 'google-docs', label: 'Google Docs', icon: GoogleDocsIcon },
   { key: 'notion', label: 'Notion', icon: FileText },
-  { key: 'slack', label: 'Slack', icon: MessageSquare },
+  { key: 'slack', label: 'Slack', icon: SlackIcon },
   { key: 'email', label: 'Email', icon: Mail },
 ] as const
 
@@ -179,7 +180,7 @@ function ProvidersStep({ onPickPaste, onPickSheets }: { onPickPaste: () => void;
       </p>
 
       <ProviderTile icon={ClipboardPaste} label="Paste or upload a table" desc="CSV, TSV, or a table pasted from a spreadsheet" onClick={onPickPaste} />
-      <ProviderTile icon={Sheet} label="Google Sheets" desc="Connect your account and pick a sheet" onClick={onPickSheets} />
+      <ProviderTile icon={GoogleSheetsIcon} label="Google Sheets" desc="Connect your account and pick a sheet" onClick={onPickSheets} />
 
       <div style={{ margin: '8px 0 4px', fontSize: 11, fontWeight: 600, color: 'var(--text-disabled)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
         Coming soon
@@ -405,7 +406,7 @@ function SheetsStep({ sessionId, onImported }: { sessionId: string | null; onImp
           Connect a Google account with read-only access to Sheets. We only ever read the specific sheet and tab you pick.
         </p>
         <button onClick={handleConnect} disabled={isConnecting} style={primaryBtnStyle(!isConnecting)}>
-          {isConnecting ? <Loader2 size={13} className="animate-spin" /> : <Sheet size={13} />}
+          {isConnecting ? <Loader2 size={13} className="animate-spin" /> : <GoogleSheetsIcon size={13} />}
           {isConnecting ? 'Waiting for sign-in…' : 'Connect Google Sheets'}
         </button>
         {error && <div style={{ fontSize: 12, color: '#E8515A', fontFamily: 'var(--font-body)' }}>{error}</div>}
@@ -434,7 +435,7 @@ function SheetsStep({ sessionId, onImported }: { sessionId: string | null; onImp
       <p style={{ fontSize: 12.5, color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: '0 0 4px' }}>Choose a tab to import:</p>
       {tabs.map(tab => (
         <button key={tab} onClick={() => handleImportTab(tab)} disabled={isLoading} style={secondaryBtnStyle}>
-          {isLoading ? <Loader2 size={13} className="animate-spin" /> : <Sheet size={13} />} {tab}
+          {isLoading ? <Loader2 size={13} className="animate-spin" /> : <GoogleSheetsIcon size={13} />} {tab}
         </button>
       ))}
       {error && <div style={{ fontSize: 12, color: '#E8515A', fontFamily: 'var(--font-body)' }}>{error}</div>}

@@ -1,13 +1,14 @@
 'use client'
 
-import { Database, Sheet, ClipboardPaste, FileText, MessageSquare } from 'lucide-react'
+import { Database, ClipboardPaste } from 'lucide-react'
+import { GoogleSheetsIcon, GoogleDocsIcon, SlackIcon } from '@/components/shared/BrandIcons'
 import type { ConnectStep } from './DataConnectPanel'
 
 const CONNECTOR_CTAS = [
-  { key: 'sheets' as ConnectStep, icon: Sheet, label: 'Google Sheets', enabled: true },
+  { key: 'sheets' as ConnectStep, icon: GoogleSheetsIcon, label: 'Google Sheets', enabled: true },
   { key: 'paste' as ConnectStep, icon: ClipboardPaste, label: 'Paste / Upload', enabled: true },
-  { key: 'providers' as ConnectStep, icon: FileText, label: 'Google Docs', enabled: false },
-  { key: 'providers' as ConnectStep, icon: MessageSquare, label: 'Slack', enabled: false },
+  { key: 'providers' as ConnectStep, icon: GoogleDocsIcon, label: 'Google Docs', enabled: false },
+  { key: 'providers' as ConnectStep, icon: SlackIcon, label: 'Slack', enabled: false },
 ]
 
 interface DataNudgeCardProps {
