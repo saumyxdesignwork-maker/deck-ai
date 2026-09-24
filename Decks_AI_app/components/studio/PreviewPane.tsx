@@ -310,6 +310,24 @@ export function PreviewPane({
                 />
               )}
             </div>
+            {/* Insert panel toggle — same button/behavior as before, just
+                relocated here next to History instead of its own rail. The
+                ⌘/ caption is still the visible mention of the shortcut. */}
+            <button
+              onClick={() => setInsertCollapsed(c => !c)}
+              title={`${insertCollapsed ? 'Show' : 'Hide'} insert panel (⌘/)`}
+              aria-pressed={!insertCollapsed}
+              style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1,
+                padding: '3px 8px',
+                border: '1px solid var(--border)', borderRadius: 'var(--r-sm)',
+                background: 'transparent', cursor: 'pointer',
+                color: insertCollapsed ? 'var(--text-muted)' : 'var(--accent)',
+              }}
+            >
+              {insertCollapsed ? <PanelRightOpen size={14} /> : <PanelRightClose size={14} />}
+              <span style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: '0.02em' }}>⌘/</span>
+            </button>
           </>
         )}
       </div>
@@ -527,40 +545,16 @@ export function PreviewPane({
           </div>
         </div>
 
-        {isDone && (
+        {isDone && !insertCollapsed && (
           <>
-            {/* Single, persistent toggle for the insert panel — same icon,
-                same spot, whether it's open or closed (mirrors the chat
-                rail's pattern instead of also having a separate button in
-                the mini top bar). The ⌘/ caption is the visible mention of
-                the shortcut, not just a hover tooltip. */}
-            <button
-              onClick={() => setInsertCollapsed(c => !c)}
-              title={`${insertCollapsed ? 'Show' : 'Hide'} insert panel (⌘/)`}
-              aria-pressed={!insertCollapsed}
-              style={{
-                width: 40, flexShrink: 0, height: '100%',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', gap: 4, paddingTop: 16,
-                border: 'none', borderLeft: '1px solid var(--divider)',
-                background: 'var(--surface-panel, var(--surface))', cursor: 'pointer',
-                color: insertCollapsed ? 'var(--text-muted)' : 'var(--accent)',
-              }}
-            >
-              {insertCollapsed ? <PanelRightOpen size={16} /> : <PanelRightClose size={16} />}
-              <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.02em' }}>⌘/</span>
-            </button>
-            {!insertCollapsed && (
-              <>
-                <ResizeHandle isResizing={isResizingInsert} onPointerDown={handleInsertResizeStart} />
-                <InsertPanel
-                  width={insertWidth}
-                  activeSection={activeSection}
-                  onSetLayout={layout => { if (activeSectionIdx !== null) onSetSectionLayout(activeSectionIdx, layout) }}
-                  onRemix={instruction => { if (activeSection) handleRemix(instruction, activeSection.id) }}
-                  isEditing={isEditing}
-                />
-              </>
-            )}
+            <ResizeHandle isResizing={isResizingInsert} onPointerDown={handleInsertResizeStart} />
+            <InsertPanel
+              width={insertWidth}
+              activeSection={activeSection}
+              onSetLayout={layout => { if (activeSectionIdx !== null) onSetSectionLayout(activeSectionIdx, layout) }}
+              onRemix={instruction => { if (activeSection) handleRemix(instruction, activeSection.id) }}
+              isEditing={isEditing}
+            />
           </>
         )}
       </div>
