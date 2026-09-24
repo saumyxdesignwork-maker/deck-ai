@@ -59,9 +59,12 @@ export function StorylineSectionCard({
       onMouseLeave={() => setHovered(false)}
       style={{
         background: cardBackground,
-        border: `1px dotted ${cardBorderColor}`,
+        // 2px so the dots actually read as dots — at 1px they blur into
+        // what looks like a faint solid line. Padding is 1px smaller to
+        // compensate, so the card's outer size is unchanged.
+        border: `2px dotted ${cardBorderColor}`,
         borderRadius: isVL3 ? 'var(--r-card)' : 'var(--r-lg)',
-        padding: isVL3 ? '18px 20px' : '16px 18px',
+        padding: isVL3 ? '17px 19px' : '15px 17px',
         display: 'flex',
         flexDirection: 'column',
         gap: 12,
