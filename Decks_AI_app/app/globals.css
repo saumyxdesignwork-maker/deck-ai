@@ -400,6 +400,17 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--text-muted);
 }
 
+/* Scroll normally, just without the visible track/thumb — for surfaces
+   (e.g. the Studio canvas) where the scrollbar reads as visual clutter
+   rather than a useful affordance. */
+.dk-scroll-hidden {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* legacy Edge */
+}
+.dk-scroll-hidden::-webkit-scrollbar {
+  display: none;
+}
+
 /* ─── Utility: spin animation for Loader2 ─── */
 @keyframes spin {
   from { transform: rotate(0deg); }

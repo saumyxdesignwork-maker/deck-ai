@@ -318,15 +318,15 @@ export function PreviewPane({
               title={`${insertCollapsed ? 'Show' : 'Hide'} insert panel (⌘/)`}
               aria-pressed={!insertCollapsed}
               style={{
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1,
-                padding: '3px 8px',
+                display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5,
+                padding: '5px 10px',
                 border: '1px solid var(--border)', borderRadius: 'var(--r-sm)',
                 background: 'transparent', cursor: 'pointer',
                 color: insertCollapsed ? 'var(--text-muted)' : 'var(--accent)',
               }}
             >
-              {insertCollapsed ? <PanelRightOpen size={14} /> : <PanelRightClose size={14} />}
-              <span style={{ fontSize: 8.5, fontWeight: 600, letterSpacing: '0.02em' }}>⌘/</span>
+              {insertCollapsed ? <PanelRightOpen size={13} /> : <PanelRightClose size={13} />}
+              <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.02em' }}>⌘/</span>
             </button>
           </>
         )}
@@ -431,10 +431,14 @@ export function PreviewPane({
           )}
 
           <div
+            className="dk-scroll-hidden"
             style={{
               flex: 1,
               overflow: 'auto',
-              padding: isDone ? '56px 40px' : showOutlineReview ? '0 40px 28px' : '28px 40px',
+              // Extra top clearance in the isDone state — the floating
+              // toolbar sits at top:14 over the canvas, and the previous
+              // 56px of padding put the cover's top edge right underneath it.
+              padding: isDone ? '96px 40px 56px' : showOutlineReview ? '0 40px 28px' : '28px 40px',
               maxWidth: 820,
               width: '100%',
               margin: '0 auto',
