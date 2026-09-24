@@ -439,6 +439,19 @@ h1, h2, h3, h4, h5, h6 {
   40% { opacity: 1; }
 }
 
+/* ─── Studio: Ask AI compact prompt + edit-stage chips ─── */
+.studio-spin {
+  animation: spin 0.8s linear infinite;
+}
+/* Status meaning is always carried by icon + text, so stopping the spinner
+   under reduced motion loses nothing. Motion-driven layout/transform
+   animations are handled separately via <MotionConfig reducedMotion="user">. */
+@media (prefers-reduced-motion: reduce) {
+  .studio-spin {
+    animation: none;
+  }
+}
+
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);

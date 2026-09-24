@@ -17,8 +17,12 @@ interface ChainOfThoughtBlockProps {
 // (e.g. several "agents" writing individual slides) under one trigger,
 // matching the Reasoning/ReasoningTrigger/ReasoningContent pattern.
 export function ChainOfThoughtBlock({ label, steps }: ChainOfThoughtBlockProps) {
+  // A checklist with unchecked tasks (the /edit Editor stage) is in-flight
+  // work too — without this the block auto-collapsed mid-run, right after
+  // the planning tool finished and before the review step started.
   const isActive = steps.length === 0 || steps.some(
-    s => (s.type === 'tool' || s.type === 'verify') && s.status === 'running'
+    s => ((s.type === 'tool' || s.type === 'verify') && s.status === 'running')
+      || (s.type === 'checklist' && s.tasks.some(t => !t.done))
   )
   const hasReasoning = steps.some(s => s.type === 'reasoning')
   const [open, setOpen] = useState(true)

@@ -1,6 +1,12 @@
 'use client'
 
-import { MousePointer2, PenSquare, ShieldCheck, Loader2, Sparkles } from 'lucide-react'
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
+import { MousePointer2, PenSquare, ShieldCheck, Loader2, Sparkles, X } from 'lucide-react'
+import { isApplePlatform } from '@/lib/useDoubleMetaTap'
+import { ASK_AI_TRIGGER_ATTR } from './FloatingChat'
+
+export const ASK_AI_HINT_SEEN_KEY = 'deckai.askAiHintSeen'
+const noopSubscribe = () => () => {}
 
 const TOOLS = [
   { key: 'select', icon: MousePointer2, label: 'Select' },
@@ -16,9 +22,41 @@ interface PreviewToolbarProps {
   isVerifying: boolean
   flagCount: number | null
   onOpenAskAI: () => void
+  /** True while the Ask AI surface is expanded or compact. */
+  isChatOpen: boolean
 }
 
-export function PreviewToolbar({ mode, onModeChange, onVerify, isVerifying, flagCount, onOpenAskAI }: PreviewToolbarProps) {
+export function PreviewToolbar({ mode, onModeChange, onVerify, isVerifying, flagCount, onOpenAskAI, isChatOpen }: PreviewToolbarProps) {
+  // ⌘⌘ only exists on Apple platforms (see useDoubleMetaTap) — don't
+  // advertise a shortcut that can't work. Server snapshot is false.
+  const showShortcut = useSyncExternalStore(noopSubscribe, isApplePlatform, () => false)
+  const [hintSeen, setHintSeen] = useState(() => {
+    try { return window.localStorage.getItem(ASK_AI_HINT_SEEN_KEY) === '1' } catch { return true }
+  })
+  const dismissHint = useCallback(() => {
+    setHintSeen(true)
+    try { window.localStorage.setItem(ASK_AI_HINT_SEEN_KEY, '1') } catch {}
+  }, [])
+  const showCoachmark = showShortcut && !hintSeen && !isChatOpen
+
+  // Using Ask AI at all (button or ⌘⌘) counts as having learned it. State
+  // adjusted during render (React's documented pattern for deriving from a
+  // prop change); only the storage write — an external system — is an effect.
+  if (isChatOpen && !hintSeen) setHintSeen(true)
+  useEffect(() => {
+    if (!hintSeen) return
+    try { window.localStorage.setItem(ASK_AI_HINT_SEEN_KEY, '1') } catch {}
+  }, [hintSeen])
+
+  useEffect(() => {
+    if (!showCoachmark) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !e.isComposing) dismissHint()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [showCoachmark, dismissHint])
+
   return (
     <div
       style={{
@@ -96,7 +134,9 @@ export function PreviewToolbar({ mode, onModeChange, onVerify, isVerifying, flag
 
       <button
         onClick={onOpenAskAI}
-        title="Ask AI (⌘⌘)"
+        {...{ [ASK_AI_TRIGGER_ATTR]: '' }}
+        aria-describedby={showShortcut ? 'ask-ai-shortcut-desc' : undefined}
+        title={showShortcut ? 'Ask AI — press ⌘ twice. Opens a floating chat over the deck; no panel is added.' : 'Ask AI'}
         style={{
           display: 'flex', alignItems: 'center', gap: 5,
           padding: '5px 10px',
@@ -114,17 +154,62 @@ export function PreviewToolbar({ mode, onModeChange, onVerify, isVerifying, flag
         Ask AI
         {/* Visible shortcut hint — previously only in the hover title
             tooltip, which most people never see, so the ⌘⌘ gesture had no
-            on-screen discoverability at all. */}
-        <span
+            on-screen discoverability at all. Apple platforms only. */}
+        {showShortcut && (
+        <kbd
+          aria-hidden
           style={{
+            fontFamily: 'var(--font-body)',
             fontSize: 10.5, fontWeight: 600, color: 'var(--text-disabled)',
             padding: '1px 5px', borderRadius: 'var(--r-xs)',
             border: '1px solid var(--border)', letterSpacing: '0.02em',
           }}
         >
           ⌘⌘
-        </span>
+        </kbd>
+        )}
       </button>
+      {showShortcut && (
+        <span id="ask-ai-shortcut-desc" style={srOnly}>
+          Shortcut: press Command twice. Opens a floating chat over the deck without adding a panel.
+        </span>
+      )}
+
+      {showCoachmark && (
+        // Non-blocking first-use tip: not a dialog, no focus steal, no
+        // backdrop. Dismissed by ×, Escape, or simply using Ask AI once.
+        <div
+          role="note"
+          data-testid="ask-ai-coachmark"
+          style={{
+            position: 'absolute', top: 'calc(100% + 8px)', right: 0,
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '7px 8px 7px 12px', borderRadius: 'var(--r-md)',
+            background: 'var(--surface-solid)', border: '1px solid var(--border)',
+            boxShadow: 'var(--sh-2)', whiteSpace: 'nowrap',
+            fontSize: 12, color: 'var(--text)', fontFamily: 'var(--font-body)',
+          }}
+        >
+          <span>Press <kbd style={{ fontFamily: 'inherit', fontWeight: 600 }}>⌘</kbd> twice to ask AI — it floats over your deck.</span>
+          <button
+            type="button"
+            onClick={dismissHint}
+            aria-label="Dismiss tip"
+            style={{
+              width: 20, height: 20, borderRadius: '50%', border: 'none',
+              background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <X size={12} aria-hidden />
+          </button>
+        </div>
+      )}
     </div>
   )
+}
+
+const srOnly: React.CSSProperties = {
+  position: 'absolute', width: 1, height: 1, padding: 0, margin: -1,
+  overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap', border: 0,
 }

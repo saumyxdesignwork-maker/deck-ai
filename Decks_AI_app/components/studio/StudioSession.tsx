@@ -147,6 +147,7 @@ export function StudioSession({ initialPrompt, aspectRatio, onBackToLanding }: S
             onSetSectionLayout={session.setSectionLayout}
             items={session.items}
             isEditing={session.isEditing}
+            editFailed={session.editFailed}
             editGroupId={session.editGroupId}
             onRunEdit={session.runEdit}
           />

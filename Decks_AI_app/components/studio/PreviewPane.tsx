@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
+import { LayoutGroup, MotionConfig } from 'motion/react'
 import { BookOpen, History, FolderOpen, Play, Download, PanelLeft, PanelRight, Trash2, Copy, X } from 'lucide-react'
 import { CoverBlock } from '@/components/editor/blocks/CoverBlock'
 import { ContentSection } from '@/components/editor/blocks/ContentSection'
@@ -9,12 +10,15 @@ import { PresentationMode } from '@/components/editor/PresentationMode'
 import { PreviewToolbar, CanvasMode } from './PreviewToolbar'
 import { SlideThumbRail } from './SlideThumbRail'
 import { OutlineReviewPanel } from './OutlineReviewPanel'
-import { FloatingChat } from './FloatingChat'
+import { FloatingChat, ChatSurfaceState } from './FloatingChat'
+import { EditStageChips } from './EditStageChips'
 import { ResizeHandle } from '@/components/shared/ResizeHandle'
 import { MOCK_DECK, DeckData, LayoutType } from '@/lib/fixtures'
 import { ChatItem, OutlineSection, VerifyFlag } from '@/lib/studioScript'
 import { PreviewState } from '@/lib/useStudioSession'
 import { useResizableWidth } from '@/lib/useResizableWidth'
+import { useDoubleMetaTap } from '@/lib/useDoubleMetaTap'
+import { deriveEditRun } from '@/lib/editStages'
 
 const MIN_INSERT_WIDTH = 220
 const MAX_INSERT_WIDTH = 480
@@ -48,6 +52,7 @@ interface PreviewPaneProps {
   onSetSectionLayout: (sectionIdx: number, layout: LayoutType) => void
   items: ChatItem[]
   isEditing: boolean
+  editFailed: boolean
   editGroupId: string | null
   onRunEdit: (instruction: string, activeSectionId?: string) => void
 }
@@ -58,18 +63,22 @@ export function PreviewPane({
   canUndo, canRedo, onUndo, onRedo,
   onInsertBlock, onInsertSection, onDeleteBlocks, onDuplicateBlocks, onApplyRewrite,
   onBeginBlockEdit, onUpdateBlockContent, onCommitBlockEdit, onSetSectionLayout,
-  items, isEditing, editGroupId, onRunEdit,
+  items, isEditing, editFailed, editGroupId, onRunEdit,
 }: PreviewPaneProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const [autoFollow, setAutoFollow] = useState(true)
   const [isPresenting, setIsPresenting] = useState(false)
   const [canvasMode, setCanvasMode] = useState<CanvasMode>('edit')
   const [selectedBlockIds, setSelectedBlockIds] = useState<Set<string>>(new Set())
-  const [isAskAIOpen, setIsAskAIOpen] = useState(false)
+  // Ask AI surface: closed ⇄ expanded → compact (while a request runs).
+  const [chatState, setChatState] = useState<ChatSurfaceState>('closed')
+  // Index into `items` where the latest floating-chat edit run begins (its
+  // user message) — anchors the status chips even if the run fails before
+  // the backend's progress group ever arrives.
+  const [runAnchor, setRunAnchor] = useState<number | null>(null)
+  const [chipsVisible, setChipsVisible] = useState(false)
+  const detailOpenRef = useRef(false)
   const [insertCollapsed, setInsertCollapsed] = useState(false)
-  const metaHeldRef = useRef(false)
-  const metaCleanRef = useRef(true)
-  const lastCleanTapRef = useRef(0)
   const { width: insertWidth, isResizing: isResizingInsert, handlePointerDown: handleInsertResizeStart } =
     useResizableWidth(DEFAULT_INSERT_WIDTH, MIN_INSERT_WIDTH, MAX_INSERT_WIDTH, /* invert */ true)
 
@@ -94,50 +103,48 @@ export function PreviewPane({
     return () => window.removeEventListener('keydown', handler)
   }, [isDone, onUndo, onRedo])
 
-  // Ask AI — double-tap Cmd (⌘⌘) toggles the floating popup. Only live once
-  // a first draft exists. "Clean tap" tracking (metaHeldRef/metaCleanRef)
-  // means a tap only counts if no other key was pressed while Meta was held
-  // — so ⌘S ⌘S (save twice) never mis-fires this, unlike counting every
-  // Meta keydown. macOS/iOS only: Meta is OS-reserved on Windows/Linux, so
-  // there the visible "Ask AI" button (PreviewToolbar) is the only trigger.
-  useEffect(() => {
-    if (!isDone) return
-    const isApplePlatform = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent)
-    if (!isApplePlatform) return
+  // Ask AI — double-tap Cmd (⌘⌘) toggles the floating surface. Only live
+  // once a first draft exists (never during brief intake). Detection rules
+  // live in useDoubleMetaTap; from compact, ⌘⌘ closes (draft is kept).
+  const toggleAskAI = useCallback(() => {
+    setChatState(s => (s === 'closed' ? 'expanded' : 'closed'))
+  }, [])
+  useDoubleMetaTap(toggleAskAI, isDone)
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Meta') {
-        if (!e.repeat) {
-          metaHeldRef.current = true
-          metaCleanRef.current = true
-        }
-        return
-      }
-      if (metaHeldRef.current) metaCleanRef.current = false
-    }
-    const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.key !== 'Meta') return
-      const wasCleanTap = metaHeldRef.current && metaCleanRef.current
-      metaHeldRef.current = false
-      if (!wasCleanTap) return
-      const target = document.activeElement as HTMLElement | null
-      const isTyping = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
-      if (isTyping) return
-      const now = Date.now()
-      if (now - lastCleanTapRef.current < 350) {
-        setIsAskAIOpen(open => !open)
-        lastCleanTapRef.current = 0
-      } else {
-        lastCleanTapRef.current = now
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    window.addEventListener('keyup', handleKeyUp)
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown)
-      window.removeEventListener('keyup', handleKeyUp)
-    }
-  }, [isDone])
+  const openAskAI = useCallback(() => setChatState('expanded'), [])
+  const closeAskAI = useCallback(() => setChatState('closed'), [])
+
+  const handleAskAISubmit = useCallback(
+    (instruction: string, activeSectionId?: string) => {
+      setRunAnchor(items.length)
+      setChipsVisible(true)
+      setChatState('compact')
+      onRunEdit(instruction, activeSectionId)
+    },
+    [items.length, onRunEdit],
+  )
+
+  // Escape closes an open chip detail card first, not the whole chat. The
+  // close is reported before OR after our window listener depending on
+  // listener order, so release the guard a tick late.
+  const handleDetailOpenChange = useCallback((open: boolean) => {
+    if (open) detailOpenRef.current = true
+    else setTimeout(() => { detailOpenRef.current = false }, 0)
+  }, [])
+  const shouldIgnoreEscape = useCallback(() => detailOpenRef.current, [])
+
+  // Items of the latest run: anchored at the floating-chat submission, or —
+  // for an edit started from the left chat's composer — the live group.
+  const runItems = useMemo(() => {
+    if (runAnchor !== null) return items.slice(runAnchor)
+    const groupIdx = editGroupId ? items.findIndex(i => i.id === editGroupId) : -1
+    if (groupIdx === -1) return []
+    return items.slice(groupIdx > 0 && items[groupIdx - 1]?.type === 'user' ? groupIdx - 1 : groupIdx)
+  }, [items, runAnchor, editGroupId])
+  const run = useMemo(
+    () => (runAnchor !== null || editGroupId ? deriveEditRun(runItems, isEditing, editFailed) : null),
+    [runItems, isEditing, editFailed, runAnchor, editGroupId],
+  )
 
   // Follow the newest revealed slide while streaming (single-slide preview)
   useEffect(() => {
@@ -259,22 +266,38 @@ export function PreviewPane({
               onVerify={onVerify}
               isVerifying={isVerifying}
               flagCount={verifyFlags.length ? verifyFlags.length : null}
-              onOpenAskAI={() => setIsAskAIOpen(true)}
+              onOpenAskAI={openAskAI}
+              isChatOpen={chatState !== 'closed'}
             />
           )}
 
           {isDone && (
-            <FloatingChat
-              isOpen={isAskAIOpen}
-              onClose={() => setIsAskAIOpen(false)}
-              activeSection={activeSection}
-              items={items}
-              isEditing={isEditing}
-              editGroupId={editGroupId}
-              onSubmit={onRunEdit}
-              canUndo={canUndo}
-              onUndo={onUndo}
-            />
+            // reducedMotion="user": honors prefers-reduced-motion for every
+            // Motion animation below (layout/transform become instant).
+            <MotionConfig reducedMotion="user">
+              <LayoutGroup id="ask-ai">
+                <FloatingChat
+                  state={chatState}
+                  onExpand={openAskAI}
+                  onClose={closeAskAI}
+                  onSubmit={handleAskAISubmit}
+                  activeSection={activeSection}
+                  runItems={runItems}
+                  isEditing={isEditing}
+                  run={run}
+                  canUndo={canUndo}
+                  onUndo={onUndo}
+                  shouldIgnoreEscape={shouldIgnoreEscape}
+                />
+              </LayoutGroup>
+              {chipsVisible && run && (
+                <EditStageChips
+                  run={run}
+                  onDismiss={() => setChipsVisible(false)}
+                  onDetailOpenChange={handleDetailOpenChange}
+                />
+              )}
+            </MotionConfig>
           )}
 
           {isDone && canvasMode === 'select' && selectedBlockIds.size > 0 && (

@@ -71,6 +71,10 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
   const isEditingRef = useRef(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editGroupId, setEditGroupId] = useState<string | null>(null)
+  // True when the latest /edit run ended without completing (hard error,
+  // network failure, or the stream closing before `done`) — lets the status
+  // chips show an honest "Failed" instead of guessing from message text.
+  const [editFailed, setEditFailed] = useState(false)
 
   // applyEvent (below) is a stable useCallback with an empty dep array — it
   // reaches deckEditor.applyExternalDeck through this ref (kept current
@@ -141,6 +145,7 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
         if (HARD_ERROR_CODES.has(event.code)) {
           setClarifyPending(null)
           setOutlinePending(null)
+          if (isEditingRef.current) setEditFailed(true)
           isEditingRef.current = false
           setIsEditing(false)
           setItems(prev => [
@@ -173,6 +178,14 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
         console.error(message, err)
         setItems(prev => [...prev, { id: nextId('agent'), type: 'agent', text: "I couldn't reach the deck-generation service. Please check it's running and try again." }])
       } finally {
+        // An /edit stream that errored or closed before its `done` event
+        // would otherwise leave isEditing stuck true forever (composer
+        // disabled, status chips spinning).
+        if (isEditingRef.current) {
+          isEditingRef.current = false
+          setIsEditing(false)
+          setEditFailed(true)
+        }
         setIsWorking(false)
       }
     },
@@ -244,6 +257,7 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
       setItems(prev => [...prev, { id: nextId('user'), type: 'user', text: instruction }])
       isEditingRef.current = true
       setIsEditing(true)
+      setEditFailed(false)
       setEditGroupId(null)
       runStream('/edit', { sessionId: sessionIdRef.current, instruction, deck, activeSectionId })
     },
@@ -346,6 +360,7 @@ export function useStudioSession(initialPrompt: string, aspectRatio: AspectRatio
     regenerateOutline,
     sendFollowUp,
     isEditing,
+    editFailed,
     editGroupId,
     runEdit,
     verifyContent,
