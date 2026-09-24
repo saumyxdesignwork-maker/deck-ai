@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Circle, ChevronLeft, ChevronRight, Paperclip } from 'lucide-react'
 import { ClarifyQuestion } from '@/lib/studioScript'
 
@@ -14,6 +14,11 @@ export function ClarifyCard({ questions, answered, onSubmit }: ClarifyCardProps)
   const [step, setStep] = useState(0)
   const [answers, setAnswers] = useState<(string | null)[]>(() => questions.map(() => null))
   const [details, setDetails] = useState<string[]>(() => questions.map(() => ''))
+  const advanceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => () => {
+    if (advanceTimeoutRef.current) clearTimeout(advanceTimeoutRef.current)
+  }, [])
 
   // Already answered — render the compact Q/A echo bubble (matches reference)
   if (answered) {
@@ -46,9 +51,22 @@ export function ClarifyCard({ questions, answered, onSubmit }: ClarifyCardProps)
   const selected = answers[step]
   const percent = Math.round(((step + 1) / total) * 100)
 
+  // Picking an option both selects it AND advances — the manual "Next"
+  // button was the only way forward before, but it sits below the option
+  // list (and, with 4+ options, below the visible fold of the chat panel)
+  // so it wasn't reliably reachable right after a click. A short delay lets
+  // the selection highlight register before moving on; the "<" back arrow
+  // still works if someone wants to reconsider. Free-text (the "Additional
+  // details" field) intentionally does NOT auto-advance — see setDetail.
   const setSelected = (opt: string) => {
-    setAnswers(prev => prev.map((a, i) => (i === step ? opt : a)))
+    const nextAnswers = answers.map((a, i) => (i === step ? opt : a))
+    setAnswers(nextAnswers)
     setDetails(prev => prev.map((d, i) => (i === step ? '' : d)))
+    if (advanceTimeoutRef.current) clearTimeout(advanceTimeoutRef.current)
+    advanceTimeoutRef.current = setTimeout(() => {
+      if (isLast) finalize(nextAnswers)
+      else setStep(s => Math.min(total - 1, s + 1))
+    }, 280)
   }
 
   const setDetail = (val: string) => {
