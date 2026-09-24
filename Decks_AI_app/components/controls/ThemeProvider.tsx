@@ -18,10 +18,10 @@ interface ThemeContextValue {
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
-  vl: '1',
-  font: 'b',
+  vl: '2',
+  font: 'a',
   bgImg: 'Bg-image.webp',
-  flow: 'classic',
+  flow: 'studio',
   setVL: () => {},
   setFont: () => {},
   setBgImg: () => {},
@@ -36,17 +36,20 @@ function applyBgVar(img: string) {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [vl, setVLState] = useState<VL>('1')
-  const [font, setFontState] = useState<FontPreset>('b')
+  // Defaults: Studio flow, Night (dark) visual language, Hedvig font — a
+  // first-time visitor sees that combination without touching the Style
+  // controller; every value here is still overridable there, and persists.
+  const [vl, setVLState] = useState<VL>('2')
+  const [font, setFontState] = useState<FontPreset>('a')
   const [bgImg, setBgImgState] = useState<string>(DEFAULT_BG)
-  const [flow, setFlowState] = useState<Flow>('classic')
+  const [flow, setFlowState] = useState<Flow>('studio')
 
   // Hydrate from localStorage on mount
   useEffect(() => {
-    const savedVL   = (localStorage.getItem('deckai-vl')   as VL)         || '1'
-    const savedFont = (localStorage.getItem('deckai-font') as FontPreset)  || 'b'
+    const savedVL   = (localStorage.getItem('deckai-vl')   as VL)         || '2'
+    const savedFont = (localStorage.getItem('deckai-font') as FontPreset)  || 'a'
     const savedBg   = localStorage.getItem('deckai-bg')                    || DEFAULT_BG
-    const savedFlow = (localStorage.getItem('deckai-flow') as Flow)        || 'classic'
+    const savedFlow = (localStorage.getItem('deckai-flow') as Flow)        || 'studio'
 
     setVLState(savedVL)
     setFontState(savedFont)

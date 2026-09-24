@@ -17,10 +17,14 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      data-vl="1"
-      data-font="b"
-      data-flow="classic"
-      className={`${hedvigSerif.variable} ${hedvigSans.variable} ${geist.variable} ${instrumentSerif.variable}`}
+      data-vl="2"
+      data-font="a"
+      data-flow="studio"
+      // .dark alongside data-vl="2" server-side: without it, a first-time
+      // visitor sees a brief flash where shadcn's dark: utilities (the
+      // Button/Badge/Popover refinements) haven't applied yet, before
+      // ThemeProvider's mount effect adds it. Matches the vl="2" default below.
+      className={`dark ${hedvigSerif.variable} ${hedvigSans.variable} ${geist.variable} ${instrumentSerif.variable}`}
       suppressHydrationWarning
     >
       <head>
