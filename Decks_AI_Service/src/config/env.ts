@@ -51,7 +51,9 @@ export const env = parsed.data
 // them in any response body.
 export const config = {
   port: env.PORT,
-  corsOrigin: env.CORS_ORIGIN,
+  // Comma-separated so several frontend origins (e.g. multiple Vercel
+  // aliases) can be allowed; a single value keeps working unchanged.
+  corsOrigin: env.CORS_ORIGIN.split(',').map(o => o.trim()).filter(Boolean),
   servicePublicUrl: env.SERVICE_PUBLIC_URL,
   imagesEnabled: env.IMAGES_ENABLED,
   maxImagesPerDeck: env.MAX_IMAGES_PER_DECK,
