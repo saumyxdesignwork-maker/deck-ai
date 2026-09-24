@@ -111,7 +111,10 @@ export function DataConnectPanel({ sessionId, initialStep = 'providers', onClose
         style={{
           width: 460, maxWidth: 'calc(100% - 48px)', maxHeight: '85vh',
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
-          background: 'var(--surface)', border: '1px solid var(--border)',
+          // Solid, not the translucent/glass --surface some visual languages
+          // use — this modal floats over a blurred backdrop, so a glassy
+          // fill left its own text fighting the busy background behind it.
+          background: 'var(--surface-solid)', border: '1px solid var(--border)',
           borderRadius: 'var(--r-xl)', boxShadow: 'var(--sh-3)',
         }}
       >

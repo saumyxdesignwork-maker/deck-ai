@@ -56,7 +56,11 @@ export function DataNudgeCard({ onOpenConnectors }: DataNudgeCardProps) {
               borderRadius: 'var(--r-pill)',
               border: '1px solid var(--border)',
               background: enabled ? 'var(--surface-muted)' : 'var(--surface)',
-              color: enabled ? 'var(--text)' : 'var(--text-disabled)',
+              // text-disabled reads as near-invisible against these dark
+              // surfaces — text-muted keeps the label actually legible while
+              // still reading as secondary/inactive next to the enabled
+              // buttons' full-strength text color.
+              color: enabled ? 'var(--text)' : 'var(--text-muted)',
               fontSize: 12, fontWeight: 500,
               cursor: 'pointer',
               fontFamily: 'var(--font-body)',
@@ -66,7 +70,7 @@ export function DataNudgeCard({ onOpenConnectors }: DataNudgeCardProps) {
           >
             <Icon size={12} />
             {label}
-            {!enabled && <span style={{ fontSize: 10, color: 'var(--text-disabled)' }}>· soon</span>}
+            {!enabled && <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>· soon</span>}
           </button>
         ))}
       </div>
