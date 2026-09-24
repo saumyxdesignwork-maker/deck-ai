@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { GripVertical, Copy, Trash2, Plus, X } from 'lucide-react'
 import { StorylineSection, LayoutType } from '@/lib/fixtures'
 import { LayoutSelector } from './LayoutSelector'
-import { useGlassCard } from '@/lib/useGlassCard'
 import { useTheme } from '@/components/controls/ThemeProvider'
 
 interface StorylineSectionCardProps {
@@ -30,10 +29,20 @@ export function StorylineSectionCard({
   hideNumberBadge,
 }: StorylineSectionCardProps) {
   const [hovered, setHovered] = useState(false)
-  const glassClass = useGlassCard()
   const { vl } = useTheme()
   const isGlass = vl === '2'
   const isVL3 = vl === '3'
+
+  // Solid background (not the translucent/glass --surface VL2/VL3 otherwise
+  // use) with a dotted outline in every visual language — these cards sit
+  // over an ambient/meadow background, and a glassy fill made bullet text
+  // and the layout swatches behind them hard to read.
+  const cardBackground = isVL3 ? 'var(--surface-solid)' : isGlass ? 'var(--surface-solid)' : 'var(--surface)'
+  const cardBorderColor = isVL3
+    ? hovered ? 'var(--accent)' : 'rgba(160, 120, 90, 0.35)'
+    : isGlass
+    ? hovered ? 'var(--accent)' : 'rgba(255, 255, 255, 0.22)'
+    : hovered ? 'var(--accent)' : 'var(--border)'
 
   const updateTitle = (title: string) => onUpdate({ ...section, title })
   const updateLayout = (layout: LayoutType) => onUpdate({ ...section, layout })
@@ -48,40 +57,16 @@ export function StorylineSectionCard({
     <div
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className={isGlass ? glassClass : undefined}
       style={{
-        background: isVL3
-          ? 'rgba(255, 251, 247, 0.72)'
-          : isGlass
-          ? undefined
-          : 'var(--surface)',
-        border: isVL3
-          ? '1px solid rgba(160,120,90,0.14)'
-          : isGlass
-          ? 'none'
-          : '1px solid',
-        borderColor: isVL3
-          ? undefined
-          : isGlass
-          ? undefined
-          : hovered
-          ? 'var(--accent)'
-          : 'var(--border)',
+        background: cardBackground,
+        border: `1px dotted ${cardBorderColor}`,
         borderRadius: isVL3 ? 'var(--r-card)' : 'var(--r-lg)',
         padding: isVL3 ? '18px 20px' : '16px 18px',
         display: 'flex',
         flexDirection: 'column',
         gap: 12,
         transition: 'border-color 0.15s, box-shadow 0.15s',
-        boxShadow: isVL3
-          ? hovered
-            ? 'var(--sh-2)'
-            : 'var(--sh-1)'
-          : isGlass
-          ? undefined
-          : 'var(--sh-1)',
-        backdropFilter: isVL3 ? 'blur(12px) saturate(140%)' : undefined,
-        WebkitBackdropFilter: isVL3 ? 'blur(12px) saturate(140%)' : undefined,
+        boxShadow: hovered ? 'var(--sh-2)' : 'var(--sh-1)',
       }}
     >
       {/* Card header */}

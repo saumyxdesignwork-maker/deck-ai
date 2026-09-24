@@ -31,7 +31,10 @@ export function PreviewToolbar({ mode, onModeChange, onVerify, isVerifying, flag
         gap: 4,
         padding: 4,
         borderRadius: 'var(--r-pill)',
-        background: 'var(--surface)',
+        // Solid, not the translucent/glass --surface — this pill floats
+        // directly over the canvas in VL2/VL3, and a glassy background lets
+        // slide content bleed through behind it.
+        background: 'var(--surface-solid)',
         border: '1px solid var(--border)',
         boxShadow: 'var(--sh-2)',
         zIndex: 15,
@@ -109,6 +112,18 @@ export function PreviewToolbar({ mode, onModeChange, onVerify, isVerifying, flag
       >
         <Sparkles size={13} style={{ flexShrink: 0 }} />
         Ask AI
+        {/* Visible shortcut hint — previously only in the hover title
+            tooltip, which most people never see, so the ⌘⌘ gesture had no
+            on-screen discoverability at all. */}
+        <span
+          style={{
+            fontSize: 10.5, fontWeight: 600, color: 'var(--text-disabled)',
+            padding: '1px 5px', borderRadius: 'var(--r-xs)',
+            border: '1px solid var(--border)', letterSpacing: '0.02em',
+          }}
+        >
+          ⌘⌘
+        </span>
       </button>
     </div>
   )

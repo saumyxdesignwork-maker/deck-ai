@@ -10,6 +10,11 @@
   --bg-canvas: #F6F6F4;
   --surface: #FFFFFF;
   --surface-muted: #F2F2F0;
+  /* Opaque surface for floating UI that must stay legible over busy canvas
+     content (Ask AI popup, toolbar pill, storyline cards) — VL1 is already
+     solid, VL2/VL3 override this to their own solid tone (they otherwise
+     default --surface to a translucent glass value). */
+  --surface-solid: #FFFFFF;
 
   /* Borders */
   --border: #E8E8E6;
@@ -185,6 +190,7 @@ html[data-vl="3"] {
   --surface: rgba(255, 251, 247, 0.88);
   --surface-muted: rgba(250, 244, 237, 0.72);
   --surface-panel: rgba(255, 253, 250, 0.94);
+  --surface-solid: #FFFBF7;
 
   /* Borders — warm hairlines */
   --border: rgba(160, 120, 90, 0.12);
