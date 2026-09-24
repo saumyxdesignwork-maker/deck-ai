@@ -4,6 +4,7 @@ import { structuredCompletion, StructuredOutputError } from '../openrouter/json.
 import { OpenRouterError } from '../openrouter/client.js'
 import { logError } from '../lib/log.js'
 import type { SessionState } from '../session/store.js'
+import { styleGuidance } from '../contract/deck.js'
 
 const ClarifyQuestionSchema = z.object({
   topic: z.string().describe('A short 2-4 word label for this question, e.g. "Tone and stance" or "Length and shape".'),
@@ -110,7 +111,7 @@ export async function analyzeBrief(state: SessionState): Promise<{ result: Orche
 4. Emit a "designDirective" for a designer model: 1-6 mood keywords, a one-line palette hint, a cover hex color, and one hex color per content section (same count as sectionCount) for section thumbnails — all colors should read as a coherent, professional palette.
 Respond with ONLY the JSON object matching the required schema.`
 
-  const user = `User prompt: "${state.prompt}"\nUser name: ${state.user.name}${state.user.designation ? `\nUser designation: ${state.user.designation}` : ''}`
+  const user = `User prompt: "${state.prompt}"\nUser name: ${state.user.name}${state.user.designation ? `\nUser designation: ${state.user.designation}` : ''}\n${styleGuidance(state.style)} Reflect it in the copyDirective tone and the designDirective mood/palette.`
 
   try {
     const result = await structuredCompletion(

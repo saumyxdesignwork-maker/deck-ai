@@ -1,6 +1,6 @@
 import type { ChatMessage } from '../openrouter/types.js'
 import type { OutlineSection } from '../contract/chat.js'
-import type { AspectRatio, DeckData } from '../contract/deck.js'
+import type { AspectRatio, DeckData, DeckStyle } from '../contract/deck.js'
 import type { DeckDataset } from '../contract/data.js'
 // Type-only import — erased at compile time, so this doesn't create a
 // runtime circular dependency with tiers/orchestrator.ts (which imports
@@ -31,6 +31,8 @@ export interface SessionState {
   user: UserVars
   /** Locked in at /generate — every slide's canvas honors this shape. */
   aspectRatio: AspectRatio
+  /** Professional / Creative, chosen on the creation screen. */
+  style: DeckStyle
   /** Raw chat history handed to the Orchestrator across turns. */
   history: ChatMessage[]
   copyDirective?: CopyDirective
@@ -61,7 +63,7 @@ const SWEEP_INTERVAL_MS = 15 * 60 * 1000
 
 const sessions = new Map<string, SessionState>()
 
-export function createSession(id: string, prompt: string, user: UserVars, aspectRatio: AspectRatio): SessionState {
+export function createSession(id: string, prompt: string, user: UserVars, aspectRatio: AspectRatio, style: DeckStyle = 'professional'): SessionState {
   const now = Date.now()
   const state: SessionState = {
     id,
@@ -70,6 +72,7 @@ export function createSession(id: string, prompt: string, user: UserVars, aspect
     prompt,
     user,
     aspectRatio,
+    style,
     history: [],
   }
   sessions.set(id, state)

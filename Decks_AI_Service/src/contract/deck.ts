@@ -4,6 +4,17 @@
 export type LayoutType = 'statement' | 'key-points' | 'heading-media' | 'media-text' | 'bento' | 'data'
 export type AspectRatio = '16:9' | '4:3'
 
+/** The Studio creation screen's Professional / Creative choice. */
+export type DeckStyle = 'professional' | 'creative'
+
+/** One prompt line describing the chosen style, shared by every tier that
+ * writes or directs content so the choice is applied consistently. */
+export function styleGuidance(style: DeckStyle): string {
+  return style === 'creative'
+    ? 'Requested style: Creative — vivid, expressive language with a distinct voice and memorable phrasing; bolder structure and visual direction are welcome, but stay accurate and never invent facts.'
+    : 'Requested style: Professional — measured, precise, evidence-led language; restrained wording and a conventional, easy-to-scan structure.'
+}
+
 export interface BlockCard {
   icon: string
   title: string

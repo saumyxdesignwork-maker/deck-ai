@@ -7,6 +7,7 @@ import { newId } from '../lib/ids.js'
 import type { SessionState } from '../session/store.js'
 import type { OutlineSection } from '../contract/chat.js'
 import type { LayoutType, Block } from '../contract/deck.js'
+import { styleGuidance } from '../contract/deck.js'
 import type { DeckDataset } from '../contract/data.js'
 
 const LAYOUTS: LayoutType[] = ['statement', 'key-points', 'heading-media', 'media-text', 'bento', 'data']
@@ -87,7 +88,7 @@ export async function draftStoryline(state: SessionState, notes?: string): Promi
   const system = `You are the copywriter for an AI deck-generation product. Draft a presentation storyline: a sequence of sections, each with a punchy title and 2-5 concise, high-impact bullet points. Write for ${directive?.audienceGoal ?? 'a general professional audience'} in a ${directive?.tone ?? 'clear, confident'} tone. Avoid repetitive phrasing across sections.${state.dataset ? ` ${GROUNDING_INSTRUCTIONS}` : ''} Call the emit_storyline tool with your result — do not respond in prose.`
 
   const clarifyAnswers = state.clarifyAnswers?.join('; ') ?? 'unspecified'
-  const userParts = [`Deck topic: "${state.prompt}"`, `Answers to clarifying questions: "${clarifyAnswers}"`, `Target section count: ${sectionCount}`]
+  const userParts = [`Deck topic: "${state.prompt}"`, styleGuidance(state.style), `Answers to clarifying questions: "${clarifyAnswers}"`, `Target section count: ${sectionCount}`]
   if (notes) userParts.push(`Additional notes for this revision: ${notes}`)
   if (state.dataset) userParts.push(formatDatasetForPrompt(state.dataset))
 
@@ -225,6 +226,7 @@ export async function expandDeck(state: SessionState): Promise<{ deck: DeckSkele
 
   const userParts = [
     `Deck topic: "${state.prompt}"`,
+    styleGuidance(state.style),
     `Approved storyline (expand each section in this exact order):\n${storyline
       .map((s, i) => `${i + 1}. ${s.title}${s.layout ? ` (layout: ${s.layout})` : ''}\n   - ${s.bullets.join('\n   - ')}`)
       .join('\n')}`,
