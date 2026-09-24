@@ -34,6 +34,10 @@ interface ComposerProps {
    */
   onSubmit: (text: string) => void | boolean | Promise<void | boolean>
   placeholder?: string
+  /** Accessible name for the textarea, if it needs to differ from the
+   * placeholder (e.g. the placeholder changes with state but the name
+   * shouldn't). Defaults to `placeholder`. */
+  ariaLabel?: string
   variant?: 'hero' | 'session'
   disabled?: boolean
   /** Controlled input — pass both to let a parent (e.g. a template click) fill the field. */
@@ -47,12 +51,19 @@ interface ComposerProps {
   errorMessage?: string | null
   /** Label announced/shown while a returned promise is pending. */
   pendingLabel?: string
+  /** Blocks sending without disabling the field — unlike `disabled`, typing
+   * (and editing a draft) stays live; only Send (click or Enter) is a no-op.
+   * For e.g. "you can draft your next ask, but not send it yet". */
+  sendDisabled?: boolean
+  /** aria-label/title for the Send button while `sendDisabled` is true. */
+  sendDisabledLabel?: string
   inputRef?: Ref<HTMLTextAreaElement>
 }
 
 export function Composer({
-  onSubmit, placeholder = 'Enter your slides request here', variant = 'session', disabled,
-  value: controlledValue, onChange: controlledOnChange, onOpenConnectors, errorMessage, pendingLabel = 'Sending…', inputRef,
+  onSubmit, placeholder = 'Enter your slides request here', ariaLabel, variant = 'session', disabled,
+  value: controlledValue, onChange: controlledOnChange, onOpenConnectors, errorMessage, pendingLabel = 'Sending…',
+  sendDisabled, sendDisabledLabel, inputRef,
 }: ComposerProps) {
   const [internalValue, setInternalValue] = useState('')
   const isControlled = controlledValue !== undefined
@@ -122,7 +133,7 @@ export function Composer({
   }
 
   const busy = disabled || pending
-  const canSend = !!value.trim() && !busy
+  const canSend = !!value.trim() && !busy && !sendDisabled
 
   const submit = async () => {
     if (!canSend) return
@@ -179,7 +190,7 @@ export function Composer({
           placeholder={speech.listening ? 'Listening…' : placeholder}
           disabled={disabled}
           readOnly={pending}
-          aria-label={placeholder}
+          aria-label={ariaLabel ?? placeholder}
           aria-describedby={message || pending ? statusId : undefined}
           aria-invalid={errorMessage ? true : undefined}
           rows={isHero ? 2 : 1}
@@ -329,7 +340,7 @@ export function Composer({
             type="button"
             onClick={submit}
             disabled={!canSend}
-            aria-label={pending ? pendingLabel : 'Send'}
+            aria-label={sendDisabled ? (sendDisabledLabel ?? 'Send') : pending ? pendingLabel : 'Send'}
             aria-busy={pending || undefined}
             className="dk-press dk-focus-ring"
             style={{
@@ -341,7 +352,7 @@ export function Composer({
               cursor: canSend ? 'pointer' : pending ? 'wait' : 'not-allowed',
               flexShrink: 0,
             }}
-            title={pending ? pendingLabel : 'Send'}
+            title={sendDisabled ? (sendDisabledLabel ?? 'Send') : pending ? pendingLabel : 'Send'}
           >
             {pending ? <Loader2 size={15} className="studio-spin" aria-hidden /> : <ArrowUp size={15} aria-hidden />}
           </button>

@@ -32,6 +32,8 @@ function Chat({ state }: { state: ChatSurfaceState }) {
           run={deriveEditRun([], true, false)}
           canUndo={false}
           onUndo={noop}
+          instruction=""
+          onInstructionChange={noop}
         />
       </LayoutGroup>
     </MotionConfig>

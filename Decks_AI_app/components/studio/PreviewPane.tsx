@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { AnimatePresence, LayoutGroup, MotionConfig, motion, useReducedMotion } from 'motion/react'
-import { BookOpen, History, FolderOpen, Play, Download, PanelLeft, PanelRight, Trash2, Copy, X } from 'lucide-react'
+import { BookOpen, History, FolderOpen, Play, Download, PanelRightOpen, PanelRightClose, Trash2, Copy, X } from 'lucide-react'
 import { CoverBlock } from '@/components/editor/blocks/CoverBlock'
 import { ContentSection } from '@/components/editor/blocks/ContentSection'
 import { InsertPanel } from '@/components/editor/InsertPanel'
@@ -60,6 +60,12 @@ interface PreviewPaneProps {
   onRunEdit: (instruction: string, activeSectionId?: string) => void
   /** Blocks the latest agent edit / AI rewrite changed (see useDeckEditor). */
   changeHighlight?: ChangeHighlight | null
+  /** Ask AI popup state and draft — owned by StudioSession so it can hand
+   * off to/from the persistent left chat's composer. */
+  chatState: ChatSurfaceState
+  onChatStateChange: (state: ChatSurfaceState) => void
+  chatDraft: string
+  onChatDraftChange: (value: string) => void
 }
 
 export function PreviewPane({
@@ -69,6 +75,7 @@ export function PreviewPane({
   onInsertBlock, onInsertSection, onDeleteBlocks, onDuplicateBlocks, onApplyRewrite,
   onBeginBlockEdit, onUpdateBlockContent, onCommitBlockEdit, onSetSectionLayout,
   items, isEditing, editFailed, editGroupId, onRunEdit, changeHighlight,
+  chatState, onChatStateChange, chatDraft, onChatDraftChange,
 }: PreviewPaneProps) {
   const m = motionPresets(useReducedMotion())
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
@@ -76,15 +83,15 @@ export function PreviewPane({
   const [isPresenting, setIsPresenting] = useState(false)
   const [canvasMode, setCanvasMode] = useState<CanvasMode>('edit')
   const [selectedBlockIds, setSelectedBlockIds] = useState<Set<string>>(new Set())
-  // Ask AI surface: closed ⇄ expanded → compact (while a request runs).
-  const [chatState, setChatState] = useState<ChatSurfaceState>('closed')
   // Index into `items` where the latest floating-chat edit run begins (its
   // user message) — anchors the status chips even if the run fails before
   // the backend's progress group ever arrives.
   const [runAnchor, setRunAnchor] = useState<number | null>(null)
   const [chipsVisible, setChipsVisible] = useState(false)
   const detailOpenRef = useRef(false)
-  const [insertCollapsed, setInsertCollapsed] = useState(false)
+  // Starts hidden — the user brings it in via the rail/toggle rather than
+  // it always occupying width by default.
+  const [insertCollapsed, setInsertCollapsed] = useState(true)
   const { width: insertWidth, isResizing: isResizingInsert, handlePointerDown: handleInsertResizeStart } =
     useResizableWidth(DEFAULT_INSERT_WIDTH, MIN_INSERT_WIDTH, MAX_INSERT_WIDTH, /* invert */ true)
 
@@ -113,21 +120,21 @@ export function PreviewPane({
   // once a first draft exists (never during brief intake). Detection rules
   // live in useDoubleMetaTap; from compact, ⌘⌘ closes (draft is kept).
   const toggleAskAI = useCallback(() => {
-    setChatState(s => (s === 'closed' ? 'expanded' : 'closed'))
-  }, [])
+    onChatStateChange(chatState === 'closed' ? 'expanded' : 'closed')
+  }, [chatState, onChatStateChange])
   useDoubleMetaTap(toggleAskAI, isDone)
 
-  const openAskAI = useCallback(() => setChatState('expanded'), [])
-  const closeAskAI = useCallback(() => setChatState('closed'), [])
+  const openAskAI = useCallback(() => onChatStateChange('expanded'), [onChatStateChange])
+  const closeAskAI = useCallback(() => onChatStateChange('closed'), [onChatStateChange])
 
   const handleAskAISubmit = useCallback(
     (instruction: string, activeSectionId?: string) => {
       setRunAnchor(items.length)
       setChipsVisible(true)
-      setChatState('compact')
+      onChatStateChange('compact')
       onRunEdit(instruction, activeSectionId)
     },
-    [items.length, onRunEdit],
+    [items.length, onRunEdit, onChatStateChange],
   )
 
   // Inspector Remix actions run through the same real /edit pipeline, scoped
@@ -256,7 +263,6 @@ export function PreviewPane({
           background: 'var(--surface-panel, var(--surface))',
         }}
       >
-        <PanelLeft size={14} style={{ color: 'var(--text-muted)' }} />
         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font-body)', flex: 1 }}>
           {deck?.title ?? MOCK_DECK.title}
         </span>
@@ -269,7 +275,7 @@ export function PreviewPane({
               title={insertCollapsed ? 'Show insert panel' : 'Hide insert panel'}
               onClick={() => setInsertCollapsed(c => !c)}
             >
-              <PanelRight size={12} />
+              {insertCollapsed ? <PanelRightOpen size={12} /> : <PanelRightClose size={12} />}
             </button>
           </>
         ) : (
@@ -317,6 +323,8 @@ export function PreviewPane({
                   canUndo={canUndo}
                   onUndo={onUndo}
                   shouldIgnoreEscape={shouldIgnoreEscape}
+                  instruction={chatDraft}
+                  onInstructionChange={onChatDraftChange}
                 />
               </LayoutGroup>
               <AnimatePresence>
@@ -504,7 +512,7 @@ export function PreviewPane({
                 color: 'var(--text-muted)',
               }}
             >
-              <PanelRight size={16} />
+              <PanelRightOpen size={16} />
             </button>
           ) : (
             <>

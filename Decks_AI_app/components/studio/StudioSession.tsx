@@ -2,13 +2,15 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence } from 'motion/react'
-import { ArrowLeft, MessageSquare, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { ArrowLeft, MessageSquare } from 'lucide-react'
 import { useStudioSession, DeckStyle } from '@/lib/useStudioSession'
 import { useResizableWidth } from '@/lib/useResizableWidth'
 import { ResizeHandle } from '@/components/shared/ResizeHandle'
 import { AspectRatio } from '@/lib/fixtures'
+import { SavedDeck } from '@/lib/deckHistory'
 import { ChatPane } from './ChatPane'
 import { PreviewPane } from './PreviewPane'
+import { ChatSurfaceState } from './FloatingChat'
 import { DataConnectPanel, ConnectStep } from './DataConnectPanel'
 
 const MIN_CHAT_WIDTH = 300
@@ -20,11 +22,13 @@ interface StudioSessionProps {
   initialPrompt: string
   aspectRatio: AspectRatio
   deckStyle?: DeckStyle
+  /** Reopening a deck from the landing page's "Your slides" tab. */
+  resumeDeck?: SavedDeck
   onBackToLanding: () => void
 }
 
-export function StudioSession({ initialPrompt, aspectRatio, deckStyle = 'professional', onBackToLanding }: StudioSessionProps) {
-  const session = useStudioSession(initialPrompt, aspectRatio, deckStyle)
+export function StudioSession({ initialPrompt, aspectRatio, deckStyle = 'professional', resumeDeck, onBackToLanding }: StudioSessionProps) {
+  const session = useStudioSession(initialPrompt, aspectRatio, deckStyle, resumeDeck)
   const { width: chatWidth, isResizing, handlePointerDown } =
     useResizableWidth(DEFAULT_CHAT_WIDTH, MIN_CHAT_WIDTH, MAX_CHAT_WIDTH)
   const [connectStep, setConnectStep] = useState<ConnectStep | null>(null)
@@ -41,6 +45,29 @@ export function StudioSession({ initialPrompt, aspectRatio, deckStyle = 'profess
       setChatCollapsed(true)
     }
   }, [session.previewState])
+
+  // One shared draft + one Ask AI surface state, owned here (the lowest
+  // common ancestor of the persistent left chat and the floating popup) so
+  // an in-progress prompt can hand off between them instead of either
+  // silently discarding it.
+  const [chatDraft, setChatDraft] = useState('')
+  const [askAIState, setAskAIState] = useState<ChatSurfaceState>('closed')
+
+  const handleToggleChat = () => {
+    setChatCollapsed(wasCollapsed => {
+      if (wasCollapsed) {
+        // Opening the full chat view — the draft is already shared state, so
+        // it's simply visible there now; just close the popup so there's
+        // only one composer active at a time.
+        if (askAIState !== 'closed') setAskAIState('closed')
+      } else if (chatDraft.trim()) {
+        // Closing the full chat view with an unsent draft — bring the
+        // popup back up with that draft still in it rather than hiding it.
+        setAskAIState('expanded')
+      }
+      return !wasCollapsed
+    })
+  }
 
   return (
     <div style={{ height: '100vh', overflow: 'hidden', background: 'var(--bg-canvas)' }}>
@@ -76,39 +103,30 @@ export function StudioSession({ initialPrompt, aspectRatio, deckStyle = 'profess
           <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', fontFamily: 'var(--font-body)' }}>
             Studio
           </span>
-          {session.previewState !== 'idle' && (
-            <button
-              onClick={() => setChatCollapsed(c => !c)}
-              title={chatCollapsed ? 'Show chat' : 'Hide chat'}
-              style={{
-                marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 5,
-                border: 'none', background: 'transparent', cursor: 'pointer',
-                fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-body)',
-                padding: '5px 8px', borderRadius: 'var(--r-sm)',
-              }}
-            >
-              {chatCollapsed ? <PanelLeftOpen size={14} /> : <PanelLeftClose size={14} />}
-            </button>
-          )}
         </div>
 
         {/* Two panes + resize handle */}
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-          {chatCollapsed ? (
+          {session.previewState !== 'idle' && (
+            // Single, persistent control for the chat panel — same icon,
+            // same spot, whether it's open or closed. Replaces the old
+            // top-bar toggle (a separate open/close icon pair) so there's
+            // exactly one affordance to learn.
             <button
-              onClick={() => setChatCollapsed(false)}
-              title="Show chat"
+              onClick={handleToggleChat}
+              title={chatCollapsed ? 'Show chat' : 'Hide chat'}
               style={{
                 width: CHAT_RAIL_WIDTH, flexShrink: 0, height: '100%',
                 display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 16,
                 border: 'none', borderRight: '1px solid var(--divider)',
                 background: 'var(--surface-panel, var(--surface))', cursor: 'pointer',
-                color: 'var(--text-muted)',
+                color: chatCollapsed ? 'var(--text-muted)' : 'var(--accent)',
               }}
             >
               <MessageSquare size={16} />
             </button>
-          ) : (
+          )}
+          {(session.previewState === 'idle' || !chatCollapsed) && (
             <>
               <ChatPane
                 width={chatWidth}
@@ -117,6 +135,8 @@ export function StudioSession({ initialPrompt, aspectRatio, deckStyle = 'profess
                 onAnswerClarify={session.answerClarify}
                 onSendFollowUp={session.sendFollowUp}
                 onOpenConnectors={(initialStep = 'providers') => setConnectStep(initialStep)}
+                draft={chatDraft}
+                onDraftChange={setChatDraft}
               />
               <ResizeHandle isResizing={isResizing} onPointerDown={handlePointerDown} />
             </>
@@ -153,6 +173,10 @@ export function StudioSession({ initialPrompt, aspectRatio, deckStyle = 'profess
             changeHighlight={session.changeHighlight}
             editGroupId={session.editGroupId}
             onRunEdit={session.runEdit}
+            chatState={askAIState}
+            onChatStateChange={setAskAIState}
+            chatDraft={chatDraft}
+            onChatDraftChange={setChatDraft}
           />
         </div>
       </div>

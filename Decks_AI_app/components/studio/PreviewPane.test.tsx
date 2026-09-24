@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { useEffect, useState } from 'react'
 import { MotionGlobalConfig } from 'motion/react'
 import { PreviewPane } from './PreviewPane'
+import type { ChatSurfaceState } from './FloatingChat'
 import { MOCK_DECK } from '@/lib/fixtures'
 import type { ChatItem } from '@/lib/studioScript'
 import type { PreviewState } from '@/lib/useStudioSession'
@@ -30,6 +31,8 @@ function Harness({ previewState = 'done' as PreviewState }) {
   const [items, setItems] = useState<ChatItem[]>([{ id: 'u0', type: 'user', text: 'Make a deck' }])
   const [isEditing, setIsEditing] = useState(false)
   const [editFailed, setEditFailed] = useState(false)
+  const [chatState, setChatState] = useState<ChatSurfaceState>('closed')
+  const [chatDraft, setChatDraft] = useState('')
   useEffect(() => {
     controlsRef.current = { setItems, setIsEditing, setEditFailed }
   }, [])
@@ -72,6 +75,10 @@ function Harness({ previewState = 'done' as PreviewState }) {
         setIsEditing(true)
         setEditFailed(false)
       }}
+      chatState={chatState}
+      onChatStateChange={setChatState}
+      chatDraft={chatDraft}
+      onChatDraftChange={setChatDraft}
     />
   )
 }

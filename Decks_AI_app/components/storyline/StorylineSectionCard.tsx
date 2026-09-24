@@ -63,7 +63,11 @@ export function StorylineSectionCard({
         // what looks like a faint solid line. Padding is 1px smaller to
         // compensate, so the card's outer size is unchanged.
         border: `2px dotted ${cardBorderColor}`,
-        borderRadius: isVL3 ? 'var(--r-card)' : 'var(--r-lg)',
+        // --r-card only exists under html[data-vl="3"] — the explicit
+        // fallback means this can never collapse to a square corner (the
+        // CSS initial value) if this card ever renders before/while that
+        // attribute is out of sync with the `vl` context value.
+        borderRadius: isVL3 ? 'var(--r-card, 18px)' : 'var(--r-lg)',
         padding: isVL3 ? '17px 19px' : '15px 17px',
         display: 'flex',
         flexDirection: 'column',

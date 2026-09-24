@@ -2,15 +2,15 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { Sparkles, Send, X, Undo2, RotateCcw, Loader2, CheckCircle2, AlertCircle, Maximize2 } from 'lucide-react'
+import { Sparkles, X, Undo2, RotateCcw, Loader2, CheckCircle2, AlertCircle, Maximize2 } from 'lucide-react'
 import { ChatItem } from '@/lib/studioScript'
 import { DeckSection } from '@/lib/fixtures'
 import { EditRun } from '@/lib/editStages'
 import { DOUBLE_META_ALLOW_ATTR } from '@/lib/useDoubleMetaTap'
 import { motionPresets } from '@/lib/motion'
 import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
 import { ChatItemView } from './ChatItem'
+import { Composer } from './Composer'
 
 export type ChatSurfaceState = 'closed' | 'expanded' | 'compact'
 
@@ -34,6 +34,11 @@ interface FloatingChatProps {
   onUndo: () => void
   /** Return true to swallow an Escape (e.g. a status-chip detail card is closing). */
   shouldIgnoreEscape?: () => boolean
+  /** Controlled draft — lifted to StudioSession so the same in-progress
+   * prompt can hand off to/from the persistent left chat's composer when
+   * one panel opens as the other closes. */
+  instruction: string
+  onInstructionChange: (value: string) => void
 }
 
 /**
@@ -43,13 +48,13 @@ interface FloatingChatProps {
  * components the persistent chat uses (real events from POST /edit).
  *
  * Three states: closed → expanded (compose / run) → compact (while a
- * request runs). The draft lives here and survives closing/reopening; it is
- * only cleared when sent.
+ * request runs). The draft is controlled by the parent so it can survive a
+ * hand-off to the persistent chat's composer; it's only cleared when sent.
  */
 export function FloatingChat({
   state, onExpand, onClose, onSubmit, activeSection, runItems, isEditing, run, canUndo, onUndo, shouldIgnoreEscape,
+  instruction, onInstructionChange,
 }: FloatingChatProps) {
-  const [instruction, setInstruction] = useState('')
   const [viewMode, setViewMode] = useState<'compose' | 'run'>('compose')
   const [lastInstruction, setLastInstruction] = useState('')
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -115,12 +120,14 @@ export function FloatingChat({
   const hasSummary = runItems.some(i => i.type === 'summary')
   const hasError = !isEditing && (run?.phase === 'failed' || (runItems.some(i => i.type === 'agent') && !hasSummary))
 
-  const handleSubmit = () => {
-    const text = instruction.trim()
-    if (!text || isEditing) return
+  // Passed to Composer as its onSubmit — returning `false` keeps the text
+  // in the field (Composer's own contract) instead of clearing it, which is
+  // what we want while a run is already in flight.
+  const handleComposerSubmit = (raw: string) => {
+    const text = raw.trim()
+    if (!text || isEditing) return false
     setLastInstruction(text)
     scopeSectionRef.current = activeSection
-    setInstruction('')
     setViewMode('run')
     onSubmit(text, activeSection?.id)
   }
@@ -138,8 +145,17 @@ export function FloatingChat({
   // expanded ⇄ compact box change uses the longer morph.
   const transition = { ...presets.overlay, layout: presets.morph }
   const fade = presets.menu
-  const canSend = !!instruction.trim() && !isEditing
   const isExpanded = state === 'expanded'
+
+  // Composer doesn't expose a way to pass extra DOM attributes to its
+  // underlying textarea, so this input opts back into ⌘⌘-while-focused
+  // (closing the popup) imperatively. Composer (and its textarea) only
+  // exists in the DOM while `state === 'expanded'` — re-running this on
+  // every state change (not just on FloatingChat's own mount) is what
+  // catches the textarea actually appearing.
+  useEffect(() => {
+    inputRef.current?.setAttribute(DOUBLE_META_ALLOW_ATTR, '')
+  }, [state])
 
   return (
     // Full-width, click-through positioning rail: centering lives here (flex)
@@ -221,42 +237,17 @@ export function FloatingChat({
                       <Undo2 size={12} aria-hidden /> Undo this edit
                     </button>
                   )}
-                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
-                    <Textarea
-                      ref={inputRef}
-                      {...{ [DOUBLE_META_ALLOW_ATTR]: '' }}
-                      aria-label="Describe a change to the deck"
-                      value={instruction}
-                      onChange={e => setInstruction(e.target.value)}
-                      onKeyDown={e => {
-                        if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
-                          e.preventDefault()
-                          handleSubmit()
-                        }
-                      }}
-                      placeholder={isEditing ? 'Draft your next change…' : 'Ask AI to change this deck…'}
-                      rows={1}
-                      className="min-h-9 max-h-[100px] resize-none md:text-[13px]"
-                      style={{
-                        flex: 1, borderColor: 'var(--border)', borderRadius: 'var(--r-md)',
-                        padding: '8px 10px', background: 'var(--surface-muted)', color: 'var(--text)',
-                        fontSize: 13, fontFamily: 'var(--font-body)',
-                      }}
-                    />
-                    <Button
-                      size="icon"
-                      onClick={handleSubmit}
-                      disabled={!canSend}
-                      aria-label={isEditing ? 'Send (available when the current edit finishes)' : 'Send'}
-                      style={{
-                        borderRadius: '50%',
-                        background: canSend ? 'var(--primary)' : 'var(--surface-muted)',
-                        color: canSend ? 'var(--primary-fg)' : 'var(--text-disabled)',
-                      }}
-                    >
-                      <Send size={14} />
-                    </Button>
-                  </div>
+                  <Composer
+                    inputRef={inputRef}
+                    value={instruction}
+                    onChange={onInstructionChange}
+                    onSubmit={handleComposerSubmit}
+                    placeholder={isEditing ? 'Draft your next change…' : 'Ask AI to change this deck…'}
+                    ariaLabel="Describe a change to the deck"
+                    variant="session"
+                    sendDisabled={isEditing}
+                    sendDisabledLabel="Send (available when the current edit finishes)"
+                  />
                 </div>
               </motion.div>
             ) : (

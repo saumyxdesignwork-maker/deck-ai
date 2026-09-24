@@ -13,6 +13,10 @@ interface ChatPaneProps {
   onSendFollowUp: (text: string) => void
   onOpenConnectors: (initialStep?: ConnectStep) => void
   width: number
+  /** Controlled composer draft — shared with the Ask AI popup so a prompt
+   * started in one hands off to the other instead of getting lost. */
+  draft: string
+  onDraftChange: (value: string) => void
 }
 
 function hasActiveProgress(items: ChatItem[]): boolean {
@@ -23,7 +27,7 @@ function hasActiveProgress(items: ChatItem[]): boolean {
   )
 }
 
-export function ChatPane({ items, isWorking, onAnswerClarify, onSendFollowUp, onOpenConnectors, width }: ChatPaneProps) {
+export function ChatPane({ items, isWorking, onAnswerClarify, onSendFollowUp, onOpenConnectors, width, draft, onDraftChange }: ChatPaneProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -80,6 +84,8 @@ export function ChatPane({ items, isWorking, onAnswerClarify, onSendFollowUp, on
 
       <div style={{ padding: '12px 14px', borderTop: '1px solid var(--divider)' }}>
         <Composer
+          value={draft}
+          onChange={onDraftChange}
           onSubmit={onSendFollowUp}
           placeholder="Enter your slides request here"
           variant="session"
