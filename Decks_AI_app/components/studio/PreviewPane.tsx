@@ -528,10 +528,10 @@ export function PreviewPane({
                   <div style={{
                     height: '100%', minHeight: 320,
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    gap: 10, color: 'var(--text-muted)',
+                    gap: 10, color: 'var(--text-muted)', textAlign: 'center', padding: '0 24px',
                   }}>
                     <BookOpen size={28} strokeWidth={1.5} />
-                    <span style={{ fontSize: 13, fontFamily: 'var(--font-body)' }}>Waiting to start…</span>
+                    <span style={{ fontSize: 13, fontFamily: 'var(--font-body)' }}>Answer the question on the left to continue</span>
                   </div>
                 )
               ) : (

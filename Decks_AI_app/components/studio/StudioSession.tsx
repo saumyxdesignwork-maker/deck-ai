@@ -138,6 +138,7 @@ export function StudioSession({ initialPrompt, aspectRatio, deckStyle = 'profess
                 onOpenConnectors={(initialStep = 'providers') => setConnectStep(initialStep)}
                 draft={chatDraft}
                 onDraftChange={setChatDraft}
+                clarifyPending={session.clarifyPending}
               />
               <ResizeHandle isResizing={isResizing} onPointerDown={handlePointerDown} />
             </>

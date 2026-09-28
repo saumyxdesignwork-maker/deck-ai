@@ -61,13 +61,17 @@ export function ChatItemView({ item, onAnswerClarify, onOpenConnectors }: ChatIt
       return <TaskChecklist title={item.title} tasks={item.tasks} />
 
     case 'clarify':
-      return (
+      // Unanswered: rendered as a flap anchored above the composer instead
+      // (see ChatPane), so it can't scroll out of view — nothing to show
+      // here until it's answered, at which point this becomes the
+      // permanent compact Q/A record in the transcript.
+      return item.answered ? (
         <ClarifyCard
           questions={item.questions}
           answered={item.answered}
           onSubmit={onAnswerClarify}
         />
-      )
+      ) : null
 
     case 'data-nudge':
       return <DataNudgeCard onOpenConnectors={onOpenConnectors} />

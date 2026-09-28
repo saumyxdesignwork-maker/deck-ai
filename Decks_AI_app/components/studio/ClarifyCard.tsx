@@ -10,9 +10,14 @@ interface ClarifyCardProps {
   questions: ClarifyQuestion[]
   answered?: string[]
   onSubmit: (answers: string[]) => void
+  /** 'flap': anchored directly above the composer (see ChatPane) instead of
+   * floating as a chat bubble — flush bottom edge and no drop shadow, so it
+   * visually reads as attached to the composer rather than sitting in the
+   * scrolling transcript. Defaults to the chat-bubble look. */
+  variant?: 'chat' | 'flap'
 }
 
-export function ClarifyCard({ questions, answered, onSubmit }: ClarifyCardProps) {
+export function ClarifyCard({ questions, answered, onSubmit, variant = 'chat' }: ClarifyCardProps) {
   const [step, setStep] = useState(0)
   const [answers, setAnswers] = useState<(string | null)[]>(() => questions.map(() => null))
   const [details, setDetails] = useState<string[]>(() => questions.map(() => ''))
@@ -94,13 +99,16 @@ export function ClarifyCard({ questions, answered, onSubmit }: ClarifyCardProps)
     else setStep(step + 1)
   }
 
+  const isFlap = variant === 'flap'
+
   return (
     <div
       style={{
         border: '1px solid var(--border)',
-        borderRadius: 'var(--r-lg)',
-        background: 'var(--surface)',
-        boxShadow: 'var(--sh-1)',
+        borderBottom: isFlap ? 'none' : '1px solid var(--border)',
+        borderRadius: isFlap ? 'var(--r-lg) var(--r-lg) 0 0' : 'var(--r-lg)',
+        background: isFlap ? 'var(--surface-solid)' : 'var(--surface)',
+        boxShadow: isFlap ? 'none' : 'var(--sh-1)',
         overflow: 'hidden',
       }}
     >
@@ -122,7 +130,13 @@ export function ClarifyCard({ questions, answered, onSubmit }: ClarifyCardProps)
           {question.topic}
         </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 11.5, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>{step + 1}/{total}</span>
+          {/* Only meaningful with more than one question — a lone question
+              doesn't need to announce its own position in a sequence. */}
+          {total > 1 && (
+            <span style={{ fontSize: 11.5, color: 'var(--text-muted)', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap' }}>
+              Question {step + 1} of {total}
+            </span>
+          )}
           <button
             onClick={() => setStep(s => Math.max(0, s - 1))}
             disabled={step === 0}

@@ -1,9 +1,12 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { ChatItem } from '@/lib/studioScript'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { ChatItem, ClarifyQuestion } from '@/lib/studioScript'
 import { ChatItemView } from './ChatItem'
+import { ClarifyCard } from './ClarifyCard'
 import { Composer } from './Composer'
+import { motionPresets } from '@/lib/motion'
 import type { ConnectStep } from './DataConnectPanel'
 
 interface ChatPaneProps {
@@ -17,6 +20,10 @@ interface ChatPaneProps {
    * started in one hands off to the other instead of getting lost. */
   draft: string
   onDraftChange: (value: string) => void
+  /** The live, unanswered clarify question(s) — rendered as a flap directly
+   * above the composer (never inside the scrolling transcript, so it can't
+   * be missed by scrolling past it). Null once answered/skipped. */
+  clarifyPending: { id: string; questions: ClarifyQuestion[] } | null
 }
 
 function hasActiveProgress(items: ChatItem[]): boolean {
@@ -27,8 +34,9 @@ function hasActiveProgress(items: ChatItem[]): boolean {
   )
 }
 
-export function ChatPane({ items, isWorking, onAnswerClarify, onSendFollowUp, onOpenConnectors, width, draft, onDraftChange }: ChatPaneProps) {
+export function ChatPane({ items, isWorking, onAnswerClarify, onSendFollowUp, onOpenConnectors, width, draft, onDraftChange, clarifyPending }: ChatPaneProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const m = motionPresets(useReducedMotion())
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
@@ -81,6 +89,28 @@ export function ChatPane({ items, isWorking, onAnswerClarify, onSendFollowUp, on
           </div>
         )}
       </div>
+
+      {/* Anchored directly above the composer — outside the scroll
+          container above, so it's always visible and never something the
+          user has to scroll back up to find. */}
+      <AnimatePresence initial={false}>
+        {clarifyPending && (
+          <motion.div
+            key={clarifyPending.id}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, transition: m.exit }}
+            transition={m.content}
+            style={{ padding: '0 14px', flexShrink: 0 }}
+          >
+            <ClarifyCard
+              questions={clarifyPending.questions}
+              onSubmit={onAnswerClarify}
+              variant="flap"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div style={{ padding: '12px 14px', borderTop: '1px solid var(--divider)' }}>
         <Composer
