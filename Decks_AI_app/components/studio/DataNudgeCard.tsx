@@ -37,7 +37,7 @@ export function DataNudgeCard({ onOpenConnectors }: DataNudgeCardProps) {
         </div>
         <div>
           <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font-body)' }}>
-            Ground this deck in real data?
+            Add context to your decks
           </div>
           <div style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginTop: 2 }}>
             Connect a source and I'll use its actual figures — and call out anything it doesn't cover instead of guessing.
