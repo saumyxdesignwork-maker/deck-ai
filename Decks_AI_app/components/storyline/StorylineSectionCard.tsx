@@ -98,17 +98,20 @@ export function StorylineSectionCard({
       {/* Card header */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: slideLabel ? 8 : 0 }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-          {/* Drag handle — only in VL1/VL2 (VL3 uses the spine marker as handle) */}
+          {/* Drag handle — only in VL1/VL2 (VL3 uses the spine marker as handle).
+              Always visible (not hover-only): it's the only affordance that
+              tells someone the list is reorderable at all, so hiding it by
+              default meant that wasn't discoverable without stumbling onto
+              hover first. */}
           {!isVL3 && (
             <div
               {...(dragHandleProps || {})}
               style={{
                 cursor: 'grab',
-                color: 'var(--text-disabled)',
+                color: hovered ? 'var(--text-muted)' : 'var(--text-disabled)',
                 marginTop: 2,
                 flexShrink: 0,
-                opacity: hovered ? 1 : 0,
-                transition: 'opacity 0.15s',
+                transition: 'color 0.15s',
               }}
             >
               <GripVertical size={16} />
