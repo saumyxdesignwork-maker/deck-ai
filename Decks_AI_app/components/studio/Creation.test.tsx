@@ -69,17 +69,21 @@ describe('creation screen', () => {
     expect(fetchMock.mock.calls[0][0]).toMatch(/\/health$/)
   })
 
-  it('picking a deck template changes what Send hands off, and remembers the pick', async () => {
+  it('picking a deck theme from the composer dropdown changes what Send hands off, and remembers the pick', async () => {
     const user = userEvent.setup()
     fetchMock.mockResolvedValue(new Response('{}', { status: 200 }))
     const onSubmit = vi.fn()
     render(<StudioLanding onSubmit={onSubmit} onResume={() => {}} />)
 
-    const riso = screen.getByRole('button', { name: /riso/i })
+    const themeButton = screen.getByRole('button', { name: /theme: meridian/i })
+    await user.click(themeButton)
+    const riso = screen.getByRole('menuitem', { name: 'Riso' })
     expect(riso).toHaveAttribute('aria-pressed', 'false')
     await user.click(riso)
-    expect(riso).toHaveAttribute('aria-pressed', 'true')
-    expect(screen.getByRole('button', { name: /meridian/i })).toHaveAttribute('aria-pressed', 'false')
+
+    // The dropdown closes and the trigger label updates to reflect the pick.
+    expect(screen.queryByRole('menuitem', { name: 'Riso' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /theme: riso/i })).toBeInTheDocument()
 
     await user.type(prompt(), 'A pitch for a bakery')
     await user.click(screen.getByRole('button', { name: 'Send' }))

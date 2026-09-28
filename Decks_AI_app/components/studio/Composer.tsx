@@ -6,6 +6,7 @@ import { Plus, Mic, ArrowUp, ChevronDown, Upload, FolderOpenDot, Plug, Loader2, 
 import { useAutosizeTextarea } from '@/lib/useAutosizeTextarea'
 import { useSpeechInput } from '@/lib/useSpeechInput'
 import { motionPresets } from '@/lib/motion'
+import { ThemeMenu } from './ThemeMenu'
 
 // Simple three-tone Drive mark — no brand asset dependency, just a recognizable shape.
 // Accepts the same size/style props as the lucide icons it sits alongside in ATTACH_OPTIONS.
@@ -71,12 +72,19 @@ interface ComposerProps {
   /** Attached context (e.g. a selected slide element) shown as removable
    * chips above the field. Empty/omitted renders nothing extra. */
   contextChips?: ComposerContextChip[]
+  /** Shows the "Theme: <name>" dropdown in the toolbar when present — only
+   * meaningful before generation (there's no re-theming an existing deck
+   * from chat yet), so only the Studio landing composer passes this. */
+  themePicker?: {
+    selectedId: string
+    onSelect: (id: string) => void
+  }
 }
 
 export function Composer({
   onSubmit, placeholder = 'Enter your slides request here', ariaLabel, variant = 'session', disabled,
   value: controlledValue, onChange: controlledOnChange, onOpenConnectors, errorMessage, pendingLabel = 'Sending…',
-  sendDisabled, sendDisabledLabel, inputRef, contextChips,
+  sendDisabled, sendDisabledLabel, inputRef, contextChips, themePicker,
 }: ComposerProps) {
   const [internalValue, setInternalValue] = useState('')
   const isControlled = controlledValue !== undefined
@@ -354,6 +362,8 @@ export function Composer({
             {model}
             <ChevronDown size={12} style={{ color: 'var(--text-muted)' }} />
           </button>
+
+          {themePicker && <ThemeMenu selectedId={themePicker.selectedId} onSelect={themePicker.onSelect} />}
 
           <div style={{ flex: 1 }} />
 
