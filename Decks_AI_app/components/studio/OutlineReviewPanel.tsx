@@ -212,7 +212,10 @@ export function OutlineReviewPanel({ sections, onApprove, onRegenerate }: Outlin
         width: '100%',
         border: '1px solid var(--border)',
         borderRadius: 'var(--r-xl)',
-        background: 'var(--surface)',
+        // Solid, not the translucent/glass --surface some visual languages
+        // use — this panel floats over the canvas's own ambient background,
+        // and a glassy fill let that bleed through and washed the header out.
+        background: 'var(--surface-solid)',
         boxShadow: '0 8px 24px rgba(0, 0, 0, 0.1)',
         // Not `overflow: hidden` — that would make this box (rather than
         // the canvas's own scroll container) the sticky header's containing
@@ -231,7 +234,7 @@ export function OutlineReviewPanel({ sections, onApprove, onRegenerate }: Outlin
           position: 'sticky', top: 0, zIndex: 2,
           display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16,
           padding: '20px 24px 16px',
-          background: 'var(--surface)',
+          background: 'var(--surface-solid)',
           borderBottom: '1px solid var(--divider)',
           borderTopLeftRadius: 'var(--r-xl)',
           borderTopRightRadius: 'var(--r-xl)',
