@@ -48,8 +48,15 @@ export function StorylineSectionCard({
   // Solid background (not the translucent/glass --surface VL2/VL3 otherwise
   // use) with a dotted outline in every visual language — these cards sit
   // over an ambient/meadow background, and a glassy fill made bullet text
-  // and the layout swatches behind them hard to read.
-  const cardBackground = isVL3 ? 'var(--surface-solid)' : isGlass ? 'var(--surface-solid)' : 'var(--surface)'
+  // and the layout swatches behind them hard to read. In VL2's actual dark
+  // theme, the card also sits ON TOP of an opaque dark panel (the outline
+  // review's own solid background, or Classic's near-opaque surface-panel) —
+  // Material's dark-theme elevation guidance is to make a higher surface
+  // LIGHTER than what's beneath it, not the same shade, so it reads as
+  // raised rather than just outlined. --surface-muted is a translucent white
+  // wash in VL2, so layering it here composites into a lighter opaque card
+  // over that solid parent instead of literally repeating its color.
+  const cardBackground = isVL3 ? 'var(--surface-solid)' : isGlass ? 'var(--surface-muted)' : 'var(--surface)'
   const cardBorderColor = isVL3
     ? hovered ? 'var(--accent)' : 'rgba(160, 120, 90, 0.35)'
     : isGlass
