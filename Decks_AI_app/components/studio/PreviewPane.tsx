@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback, useMemo, useRef, useSyncExternalStore } from 'react'
 import { AnimatePresence, LayoutGroup, MotionConfig, motion, useReducedMotion } from 'motion/react'
-import { BookOpen, History, Play, Download, PanelRightOpen, PanelRightClose, Trash2, Copy, X } from 'lucide-react'
+import { BookOpen, History, Play, PanelRightOpen, PanelRightClose, Trash2, Copy, X } from 'lucide-react'
+import { ExportMenu } from './ExportMenu'
 import { CoverBlock } from '@/components/editor/blocks/CoverBlock'
 import { ContentSection } from '@/components/editor/blocks/ContentSection'
 import { InsertPanel } from '@/components/editor/InsertPanel'
@@ -345,7 +346,7 @@ export function PreviewPane({
         {isDone && (
           <>
             <button style={miniBtnStyle} onClick={() => setIsPresenting(true)}><Play size={12} fill="currentColor" /> Present</button>
-            <button style={miniBtnStyle}><Download size={12} /> Export</button>
+            <ExportMenu />
             <div style={{ position: 'relative' }}>
               <button
                 style={miniBtnStyle}

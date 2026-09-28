@@ -9,7 +9,7 @@ import {
   Heading1, AlignLeft, Quote, Flame, Hash,
   GripVertical, ChevronDown, ChevronRight,
   LayoutList, Columns2, Grid2x2, LayoutPanelTop, Quote as QuoteIcon, Loader2,
-  Download, Printer, Copy, Archive,
+  Printer, Copy, Archive,
 } from 'lucide-react'
 
 export const BLOCK_GROUPS = [
@@ -85,12 +85,14 @@ export const REMIX_OPTIONS = [
   { emoji: '🎯', label: 'Sharpen CTA',  desc: 'Strengthen call-to-action', instruction: 'Make the call to action on this slide clearer and more direct.' },
 ]
 
+// Export lives as its own primary top-bar action now (see ExportMenu),
+// not buried in here — this list is routine utilities only. `dividerBefore`
+// sets the destructive/archive-style actions apart from Print, which is a
+// safe, everyday utility.
 const MORE_ITEMS = [
-  { icon: Download, label: 'Export as PDF',  action: 'pdf' },
-  { icon: Download, label: 'Export as PPTX', action: 'pptx' },
-  { icon: Printer,  label: 'Print',          action: 'print' },
-  { icon: Copy,     label: 'Duplicate deck', action: 'duplicate' },
-  { icon: Archive,  label: 'Archive',        action: 'archive' },
+  { icon: Printer, label: 'Print',          action: 'print' as const,     available: true },
+  { icon: Copy,    label: 'Duplicate deck', action: 'duplicate' as const, available: false, dividerBefore: true },
+  { icon: Archive, label: 'Archive',        action: 'archive' as const,   available: false },
 ]
 
 const TABS = ['Insert', 'Layout', 'Remix', 'More'] as const
@@ -395,30 +397,48 @@ export function InsertPanel({ width, activeSection = null, onSetLayout, onRemix,
           </div>
         ) : (
           <div style={{ padding: '4px 8px' }}>
-            {MORE_ITEMS.map(({ icon: Icon, label, action }) => (
-              <button
-                key={action}
-                onClick={() => { if (action === 'print') window.print() }}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                  padding: '8px 8px',
-                  borderRadius: 'var(--r-sm)',
-                  border: 'none',
-                  background: 'transparent',
-                  cursor: 'pointer',
-                  fontFamily: 'var(--font-body)',
-                  textAlign: 'left',
-                  transition: 'background 0.1s',
-                }}
-                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'var(--surface-muted)')}
-                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
-              >
-                <Icon size={15} style={{ color: 'var(--text-muted)' }} />
-                <span style={{ fontSize: 13, color: 'var(--text)' }}>{label}</span>
-              </button>
+            {MORE_ITEMS.map(({ icon: Icon, label, action, available, dividerBefore }) => (
+              <div key={action}>
+                {dividerBefore && (
+                  <div style={{ height: 1, background: 'var(--divider)', margin: '4px 4px' }} />
+                )}
+                <button
+                  onClick={() => { if (action === 'print') window.print() }}
+                  disabled={!available}
+                  aria-disabled={!available || undefined}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    padding: '8px 8px',
+                    borderRadius: 'var(--r-sm)',
+                    border: 'none',
+                    background: 'transparent',
+                    cursor: available ? 'pointer' : 'not-allowed',
+                    fontFamily: 'var(--font-body)',
+                    textAlign: 'left',
+                    transition: 'background 0.1s',
+                    opacity: available ? 1 : 0.65,
+                  }}
+                  onMouseEnter={e => { if (available) (e.currentTarget as HTMLElement).style.background = 'var(--surface-muted)' }}
+                  onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
+                >
+                  <Icon size={15} style={{ color: 'var(--text-muted)' }} />
+                  <span style={{ fontSize: 13, color: 'var(--text)', flex: 1 }}>{label}</span>
+                  {!available && (
+                    <span
+                      style={{
+                        fontSize: 10, fontWeight: 600, color: 'var(--text-muted)',
+                        padding: '2px 7px', borderRadius: 'var(--r-pill)',
+                        background: 'var(--surface-muted)', flexShrink: 0,
+                      }}
+                    >
+                      Soon
+                    </span>
+                  )}
+                </button>
+              </div>
             ))}
           </div>
         )}
