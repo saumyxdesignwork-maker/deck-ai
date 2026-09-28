@@ -62,7 +62,6 @@ export function ClarifyCard({ questions, answered, onSubmit }: ClarifyCardProps)
   const isLast = step === total - 1
   const question = questions[step]
   const selected = answers[step]
-  const percent = Math.round(((step + 1) / total) * 100)
 
   // Selecting an option only highlights it and enables Next/the chevron —
   // it does not advance on its own. The user reviews (or changes) their pick
@@ -123,7 +122,7 @@ export function ClarifyCard({ questions, answered, onSubmit }: ClarifyCardProps)
           {question.topic}
         </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 11.5, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>{percent}%</span>
+          <span style={{ fontSize: 11.5, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>{step + 1}/{total}</span>
           <button
             onClick={() => setStep(s => Math.max(0, s - 1))}
             disabled={step === 0}
