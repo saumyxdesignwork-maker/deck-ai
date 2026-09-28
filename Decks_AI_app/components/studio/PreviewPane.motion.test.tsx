@@ -34,6 +34,8 @@ function Chat({ state }: { state: ChatSurfaceState }) {
           onUndo={noop}
           instruction=""
           onInstructionChange={noop}
+          selectedBlock={null}
+          onClearSelectedBlock={noop}
         />
       </LayoutGroup>
     </MotionConfig>

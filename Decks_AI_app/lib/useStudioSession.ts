@@ -74,7 +74,6 @@ export function useStudioSession(
   const [outlinePending, setOutlinePending] = useState<{ id: string; sections: OutlineSection[] } | null>(null)
   const [verifyFlags, setVerifyFlags] = useState<VerifyFlag[]>([])
   const [isVerifying, setIsVerifying] = useState(false)
-  const [isRewriting, setIsRewriting] = useState(false)
   const [dataset, setDataset] = useState<DeckDataset | null>(null)
   const [isAttachingDataset, setIsAttachingDataset] = useState(false)
 
@@ -298,7 +297,7 @@ export function useStudioSession(
   // (same chip/checklist components as first-draft generation); the result
   // comes back as a single `deck` event applied as ONE undoable step.
   const runEdit = useCallback(
-    (instruction: string, activeSectionId?: string) => {
+    (instruction: string, activeSectionId?: string, activeBlockId?: string) => {
       const deck = deckEditorRef.current.deck
       if (!instruction.trim() || !deck || isEditingRef.current) return
       setItems(prev => [...prev, { id: nextId('user'), type: 'user', text: instruction }])
@@ -307,7 +306,7 @@ export function useStudioSession(
       setIsEditing(true)
       setEditFailed(false)
       setEditGroupId(null)
-      runStream('/edit', { sessionId: sessionIdRef.current, instruction, deck, activeSectionId })
+      runStream('/edit', { sessionId: sessionIdRef.current, instruction, deck, activeSectionId, activeBlockId })
     },
     [runStream],
   )
@@ -333,20 +332,6 @@ export function useStudioSession(
       setIsVerifying(false)
     }
   }, [deckEditor.deck, isVerifying])
-
-  const rewriteBlock = useCallback(async (text: string, instruction: string, sectionTitle?: string): Promise<string | null> => {
-    setIsRewriting(true)
-    try {
-      const res = await postJson<{ text: string }>('/rewrite', { sessionId: sessionIdRef.current, text, instruction, sectionTitle })
-      return res.text
-    } catch (err) {
-      const message = err instanceof DeckServiceError ? err.message : 'Could not reach Decks AI Service — is it running?'
-      console.error(message, err)
-      return null
-    } finally {
-      setIsRewriting(false)
-    }
-  }, [])
 
   const attachDataset = useCallback(async (next: DeckDataset) => {
     if (!sessionIdRef.current) return
@@ -389,7 +374,6 @@ export function useStudioSession(
     outlinePending,
     verifyFlags,
     isVerifying,
-    isRewriting,
     canUndo: deckEditor.canUndo,
     canRedo: deckEditor.canRedo,
     undo: deckEditor.undo,
@@ -401,7 +385,6 @@ export function useStudioSession(
     deleteBlocks: deckEditor.deleteBlocks,
     duplicateBlocks: deckEditor.duplicateBlocks,
     setSectionLayout: deckEditor.setSectionLayout,
-    applyRewrite: deckEditor.applyRewrite,
     beginBlockEdit: deckEditor.beginBlockEdit,
     updateBlockContent: deckEditor.updateBlockContent,
     commitBlockEdit: deckEditor.commitBlockEdit,
@@ -415,7 +398,6 @@ export function useStudioSession(
     editGroupId,
     runEdit,
     verifyContent,
-    rewriteBlock,
     updateItem,
   }
 }

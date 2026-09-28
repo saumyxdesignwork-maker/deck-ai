@@ -49,8 +49,6 @@ function Harness({ previewState = 'done' as PreviewState }) {
       verifyFlags={[]}
       isVerifying={false}
       onVerify={noop}
-      isRewriting={false}
-      onRewriteBlock={async () => null}
       canUndo={false}
       canRedo={false}
       onUndo={noop}
@@ -61,7 +59,6 @@ function Harness({ previewState = 'done' as PreviewState }) {
       onInsertSection={noop}
       onDeleteBlocks={noop}
       onDuplicateBlocks={noop}
-      onApplyRewrite={noop}
       onBeginBlockEdit={noop}
       onUpdateBlockContent={noop}
       onCommitBlockEdit={noop}

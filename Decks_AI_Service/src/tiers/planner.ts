@@ -85,17 +85,19 @@ function planTool() {
 /** Compact, token-cheap outline of the deck for the planner prompt — titles,
  * layouts, and block ids/content previews, not the full deck (images/colors
  * are irrelevant to planning a copy/structure edit). */
-function summarizeDeck(deck: DeckData, activeSectionId?: string): string {
+function summarizeDeck(deck: DeckData, activeSectionId?: string, activeBlockId?: string): string {
+  const blockMarker = (blockId: string) => (blockId === activeBlockId ? ' [ACTIVE BLOCK]' : '')
+
   const cover =
     `Slide 0 (COVER) — sectionId=${COVER_SECTION_ID}\n` +
-    `    - blockId=${COVER_TITLE_BLOCK_ID} type=heading content="${deck.title.slice(0, 120)}"\n` +
-    `    - blockId=${COVER_SUBTITLE_BLOCK_ID} type=paragraph content="${deck.subtitle.slice(0, 120)}"`
+    `    - blockId=${COVER_TITLE_BLOCK_ID} type=heading content="${deck.title.slice(0, 120)}"${blockMarker(COVER_TITLE_BLOCK_ID)}\n` +
+    `    - blockId=${COVER_SUBTITLE_BLOCK_ID} type=paragraph content="${deck.subtitle.slice(0, 120)}"${blockMarker(COVER_SUBTITLE_BLOCK_ID)}`
 
   const rest = deck.sections
     .map((s, i) => {
       const marker = s.id === activeSectionId ? ' [ACTIVE SLIDE]' : ''
       const blocks = s.blocks
-        .map(b => `    - blockId=${b.id} type=${b.type} content="${(b.content || (b.cards ?? []).map(c => `${c.title}: ${c.value}`).join('; ')).slice(0, 120)}"`)
+        .map(b => `    - blockId=${b.id} type=${b.type} content="${(b.content || (b.cards ?? []).map(c => `${c.title}: ${c.value}`).join('; ')).slice(0, 120)}"${blockMarker(b.id)}`)
         .join('\n')
       return `Slide ${i + 1} — sectionId=${s.id} title="${s.title}" layout=${s.layout}${marker}\n${blocks}`
     })
@@ -111,7 +113,7 @@ function summarizeDeck(deck: DeckData, activeSectionId?: string): string {
  * operations array (not an error) when the instruction doesn't map to a
  * real change — callers should treat that as "nothing to do", not a failure.
  */
-export async function planEdit(instruction: string, deck: DeckData, activeSectionId?: string): Promise<{ plan: PlanResult; usedFallback: boolean }> {
+export async function planEdit(instruction: string, deck: DeckData, activeSectionId?: string, activeBlockId?: string): Promise<{ plan: PlanResult; usedFallback: boolean }> {
   const system = `You are the Coordinator for an AI deck-editing product. The user has a finished slide deck open and typed a free-form instruction asking for a change. Your job is to turn that instruction into a short ordered plan of concrete operations over the deck's existing sections and blocks — you do not write the new copy yourself, you only decide WHAT should change and WHERE.
 
 Available operations:
@@ -124,7 +126,8 @@ Available operations:
 The deck outline below numbers the cover as Slide 0 and content slides starting at Slide 1 — "the first content slide"/"first slide" (as opposed to "the cover") means Slide 1. The cover has its own fixed ids (sectionId="cover", blockId="cover-title"/"cover-subtitle") — use those for a rewrite when the instruction is about the cover title or subtitle; it has no other operations available (no add-block/delete-block/set-layout on the cover).
 
 Rules:
-- Prefer the section marked [ACTIVE SLIDE] when the instruction is ambiguous about scope (e.g. "make this shorter" means the active slide); only touch other slides when the instruction clearly means the whole deck (e.g. "tighten the whole deck", "renumber the sections").
+- If a block is marked [ACTIVE BLOCK], the user selected it directly before asking — a vague instruction ("make this shorter", "polish this") means a single "rewrite" op targeting exactly that blockId, not the whole slide or deck. Only target other blocks too if the instruction clearly asks for something broader (e.g. "tighten the whole slide").
+- Otherwise, prefer the section marked [ACTIVE SLIDE] when the instruction is ambiguous about scope (e.g. "make this shorter" means the active slide); only touch other slides when the instruction clearly means the whole deck (e.g. "tighten the whole deck", "renumber the sections").
 - Only emit operations for things you can see in the deck outline below — use the exact sectionId/blockId values given, never invent ids.
 - Image edits and color/theme edits are OUT OF SCOPE — never emit an operation for them; if the instruction ONLY asks for one of those, return an empty operations array and say so in the summary.
 - If the instruction is a pure review/check ask ("does this look right?", "check my deck") with nothing to change, return an empty operations array.
@@ -132,7 +135,7 @@ Rules:
 - Write "summary" as one short sentence in first person describing what you're about to do (or why nothing changes), for display to the user.
 Call the emit_plan tool — do not respond in prose.`
 
-  const user = `Deck outline:\n${summarizeDeck(deck, activeSectionId)}\n\nUser instruction: "${instruction}"`
+  const user = `Deck outline:\n${summarizeDeck(deck, activeSectionId, activeBlockId)}\n\nUser instruction: "${instruction}"`
 
   try {
     const result = await structuredCompletion(

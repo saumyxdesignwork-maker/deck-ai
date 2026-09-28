@@ -4,7 +4,6 @@ import { DeckSection, Block, AspectRatio, LayoutType, aspectRatioCss } from '@/l
 import { Plus, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { AIEditPopover } from './AIEditPopover'
 import type { ChangeHighlight } from '@/lib/deckDiff'
 import { motionPresets } from '@/lib/motion'
 
@@ -263,10 +262,6 @@ interface ContentSectionProps {
   /** Content-verification issues found for this section (see PreviewToolbar's
    * "Verify content") — shown as a small warning badge, not inline per block. */
   flagCount?: number
-  /** AI text-edit popover — shown under the single selected block (see
-   * AIEditPopover). Not offered for card-group blocks (no single text field). */
-  onRewriteBlock?: (blockId: string, instruction: string) => void
-  isRewriting?: boolean
   /** Inline text editing — controlled off the authoritative deck (see
    * lib/useDeckEditor.ts) so edits are captured, undoable, and never lost. */
   onUpdateBlockContent?: (blockId: string, text: string) => void
@@ -277,7 +272,7 @@ interface ContentSectionProps {
   highlight?: ChangeHighlight | null
 }
 
-export function ContentSection({ section, isActive, onClick, onInsertBefore, aspectRatio, onDropBlock, mode = 'edit', selectedBlockIds, onToggleBlockSelect, onClearSelection, flagCount = 0, onRewriteBlock, isRewriting = false, onUpdateBlockContent, onBeginBlockEdit, onCommitBlockEdit, highlight }: ContentSectionProps) {
+export function ContentSection({ section, isActive, onClick, onInsertBefore, aspectRatio, onDropBlock, mode = 'edit', selectedBlockIds, onToggleBlockSelect, onClearSelection, flagCount = 0, onUpdateBlockContent, onBeginBlockEdit, onCommitBlockEdit, highlight }: ContentSectionProps) {
   const [hovered, setHovered] = useState(false)
   const [dragOver, setDragOver] = useState(false)
   // Blocks present at first render never animate in; only blocks added
@@ -394,7 +389,6 @@ export function ContentSection({ section, isActive, onClick, onInsertBefore, asp
         >
         {section.blocks.map(block => {
           const isSelected = selectedBlockIds?.has(block.id) ?? false
-          const showEditPopover = mode === 'select' && isSelected && selectedBlockIds?.size === 1 && block.type !== 'card-group'
           const isNew = !initialBlockIds.has(block.id)
           const isChanged = !!highlight?.ids.has(block.id)
           return (
@@ -432,13 +426,6 @@ export function ContentSection({ section, isActive, onClick, onInsertBefore, asp
                     outline: isSelected ? '2px solid var(--accent)' : '2px solid transparent',
                     transition: 'all 0.1s',
                   }}
-                />
-              )}
-              {showEditPopover && (
-                <AIEditPopover
-                  isLoading={isRewriting}
-                  onCancel={() => onClearSelection?.()}
-                  onSubmit={instruction => onRewriteBlock?.(block.id, instruction)}
                 />
               )}
             </motion.div>

@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { Sparkles, X, Undo2, RotateCcw, Loader2, CheckCircle2, AlertCircle, Maximize2 } from 'lucide-react'
+import { Sparkles, X, Undo2, RotateCcw, Loader2, CheckCircle2, AlertCircle, Maximize2, Heading, Pilcrow, Image as ImageIcon, Quote, LayoutGrid, MessageSquareQuote } from 'lucide-react'
 import { ChatItem } from '@/lib/studioScript'
-import { DeckSection } from '@/lib/fixtures'
+import { DeckSection, Block } from '@/lib/fixtures'
 import { EditRun } from '@/lib/editStages'
 import { DOUBLE_META_ALLOW_ATTR } from '@/lib/useDoubleMetaTap'
 import { motionPresets } from '@/lib/motion'
@@ -13,6 +13,37 @@ import { ChatItemView } from './ChatItem'
 import { Composer } from './Composer'
 
 export type ChatSurfaceState = 'closed' | 'expanded' | 'compact'
+
+/** A single slide element selected in the canvas's Select mode, carried into
+ * the SAME Ask AI composer as a removable context chip — see PreviewPane,
+ * which derives this from its existing `selectedBlockIds` (no new selection
+ * state; this is just a read-friendly view of it). */
+export interface SelectedBlockContext {
+  blockId: string
+  sectionId: string
+  blockType: Block['type']
+  preview: string
+}
+
+const BLOCK_TYPE_ICON: Record<Block['type'], typeof Heading> = {
+  heading: Heading,
+  paragraph: Pilcrow,
+  'card-group': LayoutGrid,
+  image: ImageIcon,
+  callout: MessageSquareQuote,
+  quote: Quote,
+}
+
+const BLOCK_TYPE_LABEL: Record<Block['type'], string> = {
+  heading: 'Heading',
+  paragraph: 'Text',
+  'card-group': 'Cards',
+  image: 'Image',
+  callout: 'Callout',
+  quote: 'Quote',
+}
+
+const QUICK_BLOCK_ACTIONS = ['Polish', 'Make longer', 'Make shorter'] as const
 
 /** Shared layoutId — the expanded popup and compact prompt are one surface morphing between two sizes. */
 export const ASK_AI_LAYOUT_ID = 'ask-ai-surface'
@@ -24,7 +55,7 @@ interface FloatingChatProps {
   onExpand: () => void
   onClose: () => void
   /** Called on send; the parent switches to `compact` and starts the run. */
-  onSubmit: (instruction: string, activeSectionId?: string) => void
+  onSubmit: (instruction: string, activeSectionId?: string, activeBlockId?: string) => void
   activeSection: DeckSection | null
   /** Chat items belonging to the current/latest edit run (user message onward). */
   runItems: ChatItem[]
@@ -39,6 +70,13 @@ interface FloatingChatProps {
    * one panel opens as the other closes. */
   instruction: string
   onInstructionChange: (value: string) => void
+  /** The single element selected on the canvas (Select mode), if any — shown
+   * as a removable chip above the field and used to scope the next ask to
+   * that exact block instead of the whole active slide. Selecting a block
+   * elsewhere also opens/focuses this SAME composer; there is no separate
+   * selection popup. */
+  selectedBlock: SelectedBlockContext | null
+  onClearSelectedBlock: () => void
 }
 
 /**
@@ -53,7 +91,7 @@ interface FloatingChatProps {
  */
 export function FloatingChat({
   state, onExpand, onClose, onSubmit, activeSection, runItems, isEditing, run, canUndo, onUndo, shouldIgnoreEscape,
-  instruction, onInstructionChange,
+  instruction, onInstructionChange, selectedBlock, onClearSelectedBlock,
 }: FloatingChatProps) {
   const [viewMode, setViewMode] = useState<'compose' | 'run'>('compose')
   const [lastInstruction, setLastInstruction] = useState('')
@@ -61,7 +99,8 @@ export function FloatingChat({
   const compactRef = useRef<HTMLButtonElement>(null)
   const railRef = useRef<HTMLDivElement>(null)
   const previouslyFocusedRef = useRef<HTMLElement | null>(null)
-  const scopeSectionRef = useRef<DeckSection | null>(null)
+  const scopeSectionIdRef = useRef<string | undefined>(undefined)
+  const scopeBlockIdRef = useRef<string | undefined>(undefined)
   const prevStateRef = useRef<ChatSurfaceState>('closed')
   const reduceMotion = useReducedMotion()
 
@@ -127,14 +166,32 @@ export function FloatingChat({
     const text = raw.trim()
     if (!text || isEditing) return false
     setLastInstruction(text)
-    scopeSectionRef.current = activeSection
+    // A selected block's own section is the real scope — it may not be
+    // whichever slide happened to be "active" (last clicked) beforehand.
+    const sectionId = selectedBlock?.sectionId ?? activeSection?.id
+    scopeSectionIdRef.current = sectionId
+    scopeBlockIdRef.current = selectedBlock?.blockId
     setViewMode('run')
-    onSubmit(text, activeSection?.id)
+    onSubmit(text, sectionId, selectedBlock?.blockId)
+    // The instruction now targets a specific edit — clear the chip so the
+    // NEXT ask (once this one finishes) defaults back to slide/deck scope
+    // rather than silently reusing a stale selection.
+    if (selectedBlock) onClearSelectedBlock()
   }
 
   const handleRetry = () => {
     if (!lastInstruction || isEditing) return
-    onSubmit(lastInstruction, scopeSectionRef.current?.id)
+    onSubmit(lastInstruction, scopeSectionIdRef.current, scopeBlockIdRef.current)
+  }
+
+  const runQuickAction = (action: string) => {
+    if (isEditing || !selectedBlock) return
+    setLastInstruction(action)
+    scopeSectionIdRef.current = selectedBlock.sectionId
+    scopeBlockIdRef.current = selectedBlock.blockId
+    setViewMode('run')
+    onSubmit(action, selectedBlock.sectionId, selectedBlock.blockId)
+    onClearSelectedBlock()
   }
 
   const noop = () => {}
@@ -181,8 +238,7 @@ export function FloatingChat({
             layoutId={ASK_AI_LAYOUT_ID}
             role={isExpanded ? 'dialog' : 'group'}
             aria-modal={isExpanded ? 'false' : undefined}
-            aria-labelledby={isExpanded ? 'ask-ai-title' : undefined}
-            aria-label={isExpanded ? undefined : 'Ask AI (running in background)'}
+            aria-label={isExpanded ? 'Ask AI' : 'Ask AI (running in background)'}
             data-motion={reduceMotion ? 'reduced' : 'full'}
             data-state={state}
             initial={{ opacity: 0, y: presets.rise }}
@@ -193,10 +249,13 @@ export function FloatingChat({
           >
             {isExpanded ? (
               <motion.div key="expanded-content" layout="position" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={fade} style={{ display: 'flex', flexDirection: 'column', minHeight: 0, flex: 1 }}>
-                {/* Header */}
+                {/* Header — no literal "Ask AI" title: the surface's own
+                    aria-label carries the accessible name, and once it's
+                    open the label would just repeat what the user already
+                    knows. The scope pill (which slide, if any) is the one
+                    thing worth keeping visible here. */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderBottom: viewMode === 'run' ? '1px solid var(--divider)' : 'none' }}>
                   <Sparkles size={13} aria-hidden style={{ color: 'var(--accent)', flexShrink: 0 }} />
-                  <span id="ask-ai-title" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font-body)', flex: 1 }}>Ask AI</span>
                   <span
                     title={activeSection ? `Editing: ${activeSection.title}` : 'Whole deck'}
                     style={{
@@ -207,6 +266,7 @@ export function FloatingChat({
                   >
                     {activeSection ? activeSection.title : 'Whole deck'}
                   </span>
+                  <div style={{ flex: 1 }} />
                   <Button variant="ghost" size="icon-xs" onClick={onClose} aria-label="Close Ask AI" style={{ color: 'var(--text-muted)', borderRadius: '50%' }}>
                     <X size={13} />
                   </Button>
@@ -237,16 +297,45 @@ export function FloatingChat({
                       <Undo2 size={12} aria-hidden /> Undo this edit
                     </button>
                   )}
+                  {/* Quick actions for a selected element — the one bit of the
+                      old per-block popover worth keeping, now just canned
+                      instructions through the SAME submit path as typing. */}
+                  {viewMode === 'compose' && selectedBlock && (
+                    <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                      {QUICK_BLOCK_ACTIONS.map(action => (
+                        <button
+                          key={action}
+                          type="button"
+                          onClick={() => runQuickAction(action)}
+                          disabled={isEditing}
+                          style={{
+                            padding: '4px 10px', borderRadius: 'var(--r-pill)',
+                            border: '1px solid var(--border)', background: 'var(--surface-muted)',
+                            color: 'var(--text)', fontSize: 11.5, fontWeight: 500,
+                            cursor: isEditing ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-body)',
+                          }}
+                        >
+                          {action}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                   <Composer
                     inputRef={inputRef}
                     value={instruction}
                     onChange={onInstructionChange}
                     onSubmit={handleComposerSubmit}
-                    placeholder={isEditing ? 'Draft your next change…' : 'Ask AI to change this deck…'}
+                    placeholder={selectedBlock ? `Describe a change to this ${BLOCK_TYPE_LABEL[selectedBlock.blockType].toLowerCase()}…` : isEditing ? 'Draft your next change…' : 'Ask AI to change this deck…'}
                     ariaLabel="Describe a change to the deck"
                     variant="session"
                     sendDisabled={isEditing}
                     sendDisabledLabel="Send (available when the current edit finishes)"
+                    contextChips={selectedBlock ? [{
+                      id: selectedBlock.blockId,
+                      icon: (() => { const Icon = BLOCK_TYPE_ICON[selectedBlock.blockType]; return <Icon size={11} aria-hidden /> })(),
+                      label: `${BLOCK_TYPE_LABEL[selectedBlock.blockType]}: ${selectedBlock.preview}`,
+                      onRemove: onClearSelectedBlock,
+                    }] : undefined}
                   />
                 </div>
               </motion.div>
@@ -319,10 +408,16 @@ const expandedSurfaceStyle: React.CSSProperties = {
   // this popup floats directly over live canvas content, so a glassy
   // background lets that text bleed through and turns illegible fast.
   background: 'var(--surface-solid)',
+  // Slightly stronger than a plain 1px hairline: on VL1's light theme, a
+  // slide card behind this popup is the SAME white as --surface-solid, so a
+  // faint border + the theme's own soft --sh-3 alone isn't enough separation
+  // — this fixed dark drop-shadow layer (harmless/near-invisible on dark
+  // themes, where their own --sh-3 is already heavy) guarantees the popup
+  // reads as floating above the slide regardless of visual language.
   border: '1px solid var(--border)',
   // Numeric radius so Motion can correct it during the layout (scale) morph.
   borderRadius: 20,
-  boxShadow: 'var(--sh-3)',
+  boxShadow: '0 20px 48px -12px rgba(0, 0, 0, 0.28), var(--sh-3)',
   overflow: 'hidden',
 }
 
@@ -333,7 +428,7 @@ const compactSurfaceStyle: React.CSSProperties = {
   background: 'var(--surface-solid)',
   border: '1px solid var(--border)',
   borderRadius: 999,
-  boxShadow: 'var(--sh-2)',
+  boxShadow: '0 10px 28px -8px rgba(0, 0, 0, 0.22), var(--sh-2)',
   maxWidth: '100%',
   overflow: 'hidden',
 }

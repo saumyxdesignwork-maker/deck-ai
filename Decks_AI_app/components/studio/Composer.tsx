@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useId, useImperativeHandle, useRef, useState, KeyboardEvent, Ref } from 'react'
+import { ReactNode, useEffect, useId, useImperativeHandle, useRef, useState, KeyboardEvent, Ref } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { Plus, Mic, ArrowUp, ChevronDown, Upload, FolderOpenDot, Plug, Loader2, Square } from 'lucide-react'
+import { Plus, Mic, ArrowUp, ChevronDown, Upload, FolderOpenDot, Plug, Loader2, Square, X } from 'lucide-react'
 import { useAutosizeTextarea } from '@/lib/useAutosizeTextarea'
 import { useSpeechInput } from '@/lib/useSpeechInput'
 import { motionPresets } from '@/lib/motion'
@@ -25,6 +25,16 @@ const ATTACH_OPTIONS = [
   { key: 'google-drive', icon: GoogleDriveIcon, label: 'Choose from Google Drive' },
   { key: 'connectors', icon: Plug, label: 'Connectors' },
 ] as const
+
+/** A single attached-context chip (e.g. a slide element the user selected
+ * before asking) — shown above the field, removable without discarding the
+ * typed draft or closing the composer. */
+export interface ComposerContextChip {
+  id: string
+  icon?: ReactNode
+  label: string
+  onRemove: () => void
+}
 
 interface ComposerProps {
   /**
@@ -58,12 +68,15 @@ interface ComposerProps {
   /** aria-label/title for the Send button while `sendDisabled` is true. */
   sendDisabledLabel?: string
   inputRef?: Ref<HTMLTextAreaElement>
+  /** Attached context (e.g. a selected slide element) shown as removable
+   * chips above the field. Empty/omitted renders nothing extra. */
+  contextChips?: ComposerContextChip[]
 }
 
 export function Composer({
   onSubmit, placeholder = 'Enter your slides request here', ariaLabel, variant = 'session', disabled,
   value: controlledValue, onChange: controlledOnChange, onOpenConnectors, errorMessage, pendingLabel = 'Sending…',
-  sendDisabled, sendDisabledLabel, inputRef,
+  sendDisabled, sendDisabledLabel, inputRef, contextChips,
 }: ComposerProps) {
   const [internalValue, setInternalValue] = useState('')
   const isControlled = controlledValue !== undefined
@@ -206,6 +219,43 @@ export function Composer({
             opacity: pending ? 0.7 : 1,
           }}
         />
+
+        {!!contextChips?.length && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {contextChips.map(chip => (
+              <span
+                key={chip.id}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
+                  maxWidth: '100%',
+                  padding: '3px 4px 3px 8px',
+                  borderRadius: 'var(--r-pill)',
+                  border: '1px solid var(--border)',
+                  background: 'var(--surface-muted)',
+                  fontSize: 11.5, color: 'var(--text)', fontFamily: 'var(--font-body)',
+                }}
+              >
+                {chip.icon}
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 220 }}>
+                  {chip.label}
+                </span>
+                <button
+                  type="button"
+                  onClick={chip.onRemove}
+                  aria-label={`Remove ${chip.label}`}
+                  style={{
+                    width: 16, height: 16, borderRadius: '50%', border: 'none',
+                    background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  }}
+                >
+                  <X size={10} aria-hidden />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div ref={attachRef} style={{ position: 'relative' }}>
             <button

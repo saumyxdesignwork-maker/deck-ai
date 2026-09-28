@@ -11,7 +11,7 @@ import { PreviewToolbar, CanvasMode } from './PreviewToolbar'
 import { SlideThumbRail } from './SlideThumbRail'
 import { OutlineReviewPanel } from './OutlineReviewPanel'
 import { StorylineSkeleton, DeckSkeleton } from './GenerationSkeletons'
-import { FloatingChat, ChatSurfaceState } from './FloatingChat'
+import { FloatingChat, ChatSurfaceState, SelectedBlockContext } from './FloatingChat'
 import { EditStageChips } from './EditStageChips'
 import { HistoryPanel } from './HistoryPanel'
 import { ShortcutWalkthrough, WalkthroughStep } from './ShortcutWalkthrough'
@@ -43,8 +43,6 @@ interface PreviewPaneProps {
   verifyFlags: VerifyFlag[]
   isVerifying: boolean
   onVerify: () => void
-  isRewriting: boolean
-  onRewriteBlock: (text: string, instruction: string, sectionTitle?: string) => Promise<string | null>
   canUndo: boolean
   canRedo: boolean
   onUndo: () => void
@@ -57,7 +55,6 @@ interface PreviewPaneProps {
   onInsertSection: (index: number) => void
   onDeleteBlocks: (blockIds: Set<string>) => void
   onDuplicateBlocks: (blockIds: Set<string>) => void
-  onApplyRewrite: (blockId: string, text: string) => void
   onBeginBlockEdit: () => void
   onUpdateBlockContent: (blockId: string, text: string) => void
   onCommitBlockEdit: () => void
@@ -66,7 +63,7 @@ interface PreviewPaneProps {
   isEditing: boolean
   editFailed: boolean
   editGroupId: string | null
-  onRunEdit: (instruction: string, activeSectionId?: string) => void
+  onRunEdit: (instruction: string, activeSectionId?: string, activeBlockId?: string) => void
   /** Blocks the latest agent edit / AI rewrite changed (see useDeckEditor). */
   changeHighlight?: ChangeHighlight | null
   /** Ask AI popup state and draft — owned by StudioSession so it can hand
@@ -79,9 +76,9 @@ interface PreviewPaneProps {
 
 export function PreviewPane({
   previewState, revealedSlides, deck, isWorking, outlinePending, onApproveOutline, onRegenerateOutline,
-  verifyFlags, isVerifying, onVerify, isRewriting, onRewriteBlock,
+  verifyFlags, isVerifying, onVerify,
   canUndo, canRedo, onUndo, onRedo, deckHistory, onRestoreHistoryPoint,
-  onInsertBlock, onInsertSection, onDeleteBlocks, onDuplicateBlocks, onApplyRewrite,
+  onInsertBlock, onInsertSection, onDeleteBlocks, onDuplicateBlocks,
   onBeginBlockEdit, onUpdateBlockContent, onCommitBlockEdit, onSetSectionLayout,
   items, isEditing, editFailed, editGroupId, onRunEdit, changeHighlight,
   chatState, onChatStateChange, chatDraft, onChatDraftChange,
@@ -191,11 +188,11 @@ export function PreviewPane({
   }, [showWalkthrough, walkthroughStep, insertCollapsed, dismissWalkthrough])
 
   const handleAskAISubmit = useCallback(
-    (instruction: string, activeSectionId?: string) => {
+    (instruction: string, activeSectionId?: string, activeBlockId?: string) => {
       setRunAnchor(items.length)
       setChipsVisible(true)
       onChatStateChange('compact')
-      onRunEdit(instruction, activeSectionId)
+      onRunEdit(instruction, activeSectionId, activeBlockId)
     },
     [items.length, onRunEdit, onChatStateChange],
   )
@@ -255,14 +252,18 @@ export function PreviewPane({
     setSelectedBlockIds(new Set())
   }, [])
 
+  // Selecting exactly one block opens/focuses the SAME Ask AI composer
+  // (below) instead of a separate popup anchored under the block — one
+  // editing surface for both entry points, per the unified design.
   const handleToggleBlockSelect = useCallback((blockId: string, additive: boolean) => {
     setSelectedBlockIds(prev => {
       const next = additive ? new Set(prev) : new Set<string>()
       if (prev.has(blockId) && additive) next.delete(blockId)
       else next.add(blockId)
+      if (next.size === 1) openAskAI()
       return next
     })
-  }, [])
+  }, [openAskAI])
 
   const handleClearSelection = useCallback(() => setSelectedBlockIds(new Set()), [])
 
@@ -276,22 +277,28 @@ export function PreviewPane({
     setSelectedBlockIds(new Set())
   }, [selectedBlockIds, onDuplicateBlocks])
 
-  const handleRewriteBlock = useCallback(
-    async (sectionIdx: number, blockId: string, instruction: string) => {
-      const section = sections[sectionIdx]
-      const block = section?.blocks.find(b => b.id === blockId)
-      if (!block) return
-      const newText = await onRewriteBlock(block.content, instruction, section.title)
-      if (newText === null) return
-      onApplyRewrite(blockId, newText)
-    },
-    [sections, onRewriteBlock, onApplyRewrite],
-  )
-
   // The slide Ask AI targets — whichever slide was active when it opened.
   // null for the cover (no editable blocks) or when nothing is active yet.
   const activeSectionIdx = activeIndex !== null && activeIndex > 0 ? activeIndex - 1 : null
   const activeSection = activeSectionIdx !== null ? sections[activeSectionIdx] ?? null : null
+
+  // A single-block selection, described for the Ask AI composer's context
+  // chip — derived from `selectedBlockIds` (the one existing source of
+  // selection truth), not a second parallel piece of state.
+  const selectedBlock: SelectedBlockContext | null = useMemo(() => {
+    if (selectedBlockIds.size !== 1) return null
+    const [blockId] = selectedBlockIds
+    for (const section of sections) {
+      const block = section.blocks.find(b => b.id === blockId)
+      if (block) {
+        const preview = block.content?.trim()
+          || (block.cards?.length ? `${block.cards.length} card${block.cards.length > 1 ? 's' : ''}` : '')
+          || 'Untitled'
+        return { blockId, sectionId: section.id, blockType: block.type, preview: preview.slice(0, 60) }
+      }
+    }
+    return null
+  }, [selectedBlockIds, sections])
 
   const flagCountBySection = new Map<string, number>()
   for (const flag of verifyFlags) {
@@ -419,6 +426,8 @@ export function PreviewPane({
                   shouldIgnoreEscape={shouldIgnoreEscape}
                   instruction={chatDraft}
                   onInstructionChange={onChatDraftChange}
+                  selectedBlock={selectedBlock}
+                  onClearSelectedBlock={handleClearSelection}
                 />
               </LayoutGroup>
               <AnimatePresence>
@@ -561,8 +570,6 @@ export function PreviewPane({
                       onToggleBlockSelect={handleToggleBlockSelect}
                       onClearSelection={handleClearSelection}
                       flagCount={flagCountBySection.get(section.id) ?? 0}
-                      onRewriteBlock={(blockId, instruction) => handleRewriteBlock(i, blockId, instruction)}
-                      isRewriting={isRewriting}
                       onUpdateBlockContent={onUpdateBlockContent}
                       onBeginBlockEdit={onBeginBlockEdit}
                       onCommitBlockEdit={onCommitBlockEdit}

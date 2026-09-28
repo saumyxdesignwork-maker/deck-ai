@@ -208,17 +208,6 @@ export function useDeckEditor(streamedDeck: DeckData | null, isDone: boolean, se
     [applyMutation],
   )
 
-  const applyRewrite = useCallback(
-    (blockId: string, text: string) => {
-      applyMutation(deck => ({
-        ...deck,
-        sections: deck.sections.map(s => ({ ...s, blocks: s.blocks.map(b => (b.id === blockId ? { ...b, content: text } : b)) })),
-      }), 'Rewrote a block')
-      setHighlight({ ids: new Set([blockId]), key: Date.now() })
-    },
-    [applyMutation],
-  )
-
   // Inline text editing: keystrokes update the deck live (so the field stays
   // controlled and responsive) without spamming undo history — the pre-edit
   // snapshot is captured once on focus and committed as ONE history entry
@@ -295,7 +284,6 @@ export function useDeckEditor(streamedDeck: DeckData | null, isDone: boolean, se
     deleteBlocks,
     duplicateBlocks,
     setSectionLayout,
-    applyRewrite,
     beginBlockEdit,
     updateBlockContent,
     commitBlockEdit,
