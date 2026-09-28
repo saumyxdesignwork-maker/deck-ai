@@ -122,7 +122,13 @@ export function ThemeMenu({ selectedId, onSelect }: ThemeMenuProps) {
               width: 'min(640px, 90vw)',
               maxHeight: 'min(460px, calc(100vh - 96px))',
               overflowY: 'auto',
-              background: 'var(--surface)',
+              // A dark/near-opaque glass instead of the Attach menu's
+              // translucent-white --surface — this panel is much bigger and
+              // sits over busy page content (the "Try these" gallery), so it
+              // needs the same solid backing as the sidebar/topbar chrome to
+              // stay legible. Falls back to --surface where --surface-panel
+              // isn't defined (VL1, already solid white, so no regression).
+              background: 'var(--surface-panel, var(--surface))',
               border: '1px solid var(--border)',
               borderRadius: 'var(--r-lg)',
               boxShadow: 'var(--sh-3)',
