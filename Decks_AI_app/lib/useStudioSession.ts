@@ -51,12 +51,19 @@ export function useStudioSession(
   initialPrompt: string,
   aspectRatio: AspectRatio,
   deckStyle: DeckStyle = 'professional',
+  /** The deck template picked on the landing page — sent to /generate so the
+   * backend can stamp it onto the resulting DeckData. Rendering picks it up
+   * automatically from `deck.templateId` once the deck arrives (see
+   * PreviewPane's DeckTemplateProvider); nothing else here needs it. */
+  templateId?: string,
   /** Reopens a deck saved from a previous session (Studio landing's "Your
    * slides" tab) instead of generating a new one. The original backend
    * session has almost certainly expired by then, so this hydrates
    * everything client-side and skips /generate entirely — viewing,
    * presenting, and manual editing all work offline; Ask AI/Verify degrade
-   * to the existing "session expired" messaging until a fresh deck is made. */
+   * to the existing "session expired" messaging until a fresh deck is made.
+   * Its saved `deck.templateId` (if any) travels with the snapshot, so the
+   * resumed deck keeps whatever template it was generated/switched to. */
   resumeDeck?: SavedDeck,
 ) {
   const [items, setItems] = useState<ChatItem[]>(() =>
@@ -288,7 +295,7 @@ export function useStudioSession(
     if (hasStartedRef.current) return
     hasStartedRef.current = true
     if (resumeDeck) return // already hydrated synchronously from the saved snapshot above
-    runStream('/generate', { prompt: initialPrompt, user: CURRENT_USER, aspectRatio, style: deckStyle })
+    runStream('/generate', { prompt: initialPrompt, user: CURRENT_USER, aspectRatio, style: deckStyle, templateId })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

@@ -27,6 +27,7 @@ import { useDoubleMetaTap, isApplePlatform } from '@/lib/useDoubleMetaTap'
 import { deriveEditRun } from '@/lib/editStages'
 import { motionPresets } from '@/lib/motion'
 import { ChangeHighlight, COVER_SUBTITLE_ID, COVER_TITLE_ID } from '@/lib/deckDiff'
+import { DeckTemplateProvider } from '@/components/deck/DeckThemeScope'
 
 const MIN_INSERT_WIDTH = 220
 const MAX_INSERT_WIDTH = 480
@@ -112,6 +113,12 @@ export function PreviewPane({
   const isDone = previewState === 'done'
   const sections = deck?.sections ?? []
   const slideRefs = useRef<Array<HTMLDivElement | null>>([])
+
+  // The landing page's template picker sets this on the deck at generation
+  // time (see useStudioSession's /generate call); DeckTemplateProvider falls
+  // back to the default template when it's absent (legacy/resumed decks
+  // from before templates existed).
+  const effectiveTemplateId = deck?.templateId
 
   // Undo/redo — only meaningful once the deck is editable, and never while
   // the user is typing in a field (native Cmd+Z there must stay untouched).
@@ -511,6 +518,7 @@ export function PreviewPane({
               boxSizing: 'border-box',
             }}
           >
+            <DeckTemplateProvider templateId={effectiveTemplateId}>
             <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={canvasView}
@@ -610,6 +618,7 @@ export function PreviewPane({
             ) : null}
             </motion.div>
             </AnimatePresence>
+            </DeckTemplateProvider>
           </div>
         </div>
 

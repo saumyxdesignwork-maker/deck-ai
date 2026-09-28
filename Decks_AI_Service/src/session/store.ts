@@ -33,6 +33,11 @@ export interface SessionState {
   aspectRatio: AspectRatio
   /** Professional / Creative, chosen on the creation screen. */
   style: DeckStyle
+  /** The deck template chosen on the creation screen (an id from
+   * Decks_AI_app/lib/deckTemplates — not validated against that list here,
+   * see the comment in routes/generate.ts). Stamped onto the final DeckData
+   * in pipeline.ts's runApprove; undefined renders as the default template. */
+  templateId?: string
   /** Raw chat history handed to the Orchestrator across turns. */
   history: ChatMessage[]
   copyDirective?: CopyDirective
@@ -63,7 +68,7 @@ const SWEEP_INTERVAL_MS = 15 * 60 * 1000
 
 const sessions = new Map<string, SessionState>()
 
-export function createSession(id: string, prompt: string, user: UserVars, aspectRatio: AspectRatio, style: DeckStyle = 'professional'): SessionState {
+export function createSession(id: string, prompt: string, user: UserVars, aspectRatio: AspectRatio, style: DeckStyle = 'professional', templateId?: string): SessionState {
   const now = Date.now()
   const state: SessionState = {
     id,
@@ -73,6 +78,7 @@ export function createSession(id: string, prompt: string, user: UserVars, aspect
     user,
     aspectRatio,
     style,
+    templateId,
     history: [],
   }
   sessions.set(id, state)

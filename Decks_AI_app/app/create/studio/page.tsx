@@ -9,6 +9,7 @@ import { StudioLanding, DeckStyle } from '@/components/studio/StudioLanding'
 import { StudioSession } from '@/components/studio/StudioSession'
 import { AspectRatio } from '@/lib/fixtures'
 import { SavedDeck } from '@/lib/deckHistory'
+import { DEFAULT_TEMPLATE_ID } from '@/lib/deckTemplates'
 
 type Phase = 'landing' | 'session'
 
@@ -19,6 +20,7 @@ export default function StudioPage() {
   const [prompt, setPrompt] = useState('')
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9')
   const [deckStyle, setDeckStyle] = useState<DeckStyle>('professional')
+  const [templateId, setTemplateId] = useState<string>(DEFAULT_TEMPLATE_ID)
   const [resumeDeck, setResumeDeck] = useState<SavedDeck | undefined>(undefined)
 
   // Keep the Controls "Create Flow" pill in sync if this route is reached directly.
@@ -27,11 +29,12 @@ export default function StudioPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const handleSubmit = (text: string, ratio: AspectRatio, style: DeckStyle) => {
+  const handleSubmit = (text: string, ratio: AspectRatio, style: DeckStyle, template: string) => {
     setInput(text)
     setPrompt(text)
     setAspectRatio(ratio)
     setDeckStyle(style)
+    setTemplateId(template)
     setResumeDeck(undefined)
     setPhase('session')
   }
@@ -61,6 +64,7 @@ export default function StudioPage() {
           initialPrompt={prompt}
           aspectRatio={aspectRatio}
           deckStyle={deckStyle}
+          templateId={templateId}
           resumeDeck={resumeDeck}
           onBackToLanding={handleBackToLanding}
         />

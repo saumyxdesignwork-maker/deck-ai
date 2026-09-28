@@ -8,6 +8,7 @@ import { useResizableWidth } from '@/lib/useResizableWidth'
 import { ResizeHandle } from '@/components/shared/ResizeHandle'
 import { AspectRatio } from '@/lib/fixtures'
 import { SavedDeck } from '@/lib/deckHistory'
+import { DEFAULT_TEMPLATE_ID } from '@/lib/deckTemplates'
 import { ChatPane } from './ChatPane'
 import { PreviewPane } from './PreviewPane'
 import { ChatSurfaceState } from './FloatingChat'
@@ -22,13 +23,14 @@ interface StudioSessionProps {
   initialPrompt: string
   aspectRatio: AspectRatio
   deckStyle?: DeckStyle
+  templateId?: string
   /** Reopening a deck from the landing page's "Your slides" tab. */
   resumeDeck?: SavedDeck
   onBackToLanding: () => void
 }
 
-export function StudioSession({ initialPrompt, aspectRatio, deckStyle = 'professional', resumeDeck, onBackToLanding }: StudioSessionProps) {
-  const session = useStudioSession(initialPrompt, aspectRatio, deckStyle, resumeDeck)
+export function StudioSession({ initialPrompt, aspectRatio, deckStyle = 'professional', templateId = DEFAULT_TEMPLATE_ID, resumeDeck, onBackToLanding }: StudioSessionProps) {
+  const session = useStudioSession(initialPrompt, aspectRatio, deckStyle, templateId, resumeDeck)
   const { width: chatWidth, isResizing, handlePointerDown } =
     useResizableWidth(DEFAULT_CHAT_WIDTH, MIN_CHAT_WIDTH, MAX_CHAT_WIDTH)
   const [connectStep, setConnectStep] = useState<ConnectStep | null>(null)

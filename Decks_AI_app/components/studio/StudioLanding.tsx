@@ -7,6 +7,8 @@ import { STUDIO_TEMPLATES, AspectRatio } from '@/lib/fixtures'
 import { SERVICE_BASE_URL } from '@/lib/deckStream'
 import { getSavedDecks, SavedDeck } from '@/lib/deckHistory'
 import type { DeckStyle } from '@/lib/useStudioSession'
+import { TEMPLATES, DEFAULT_TEMPLATE_ID } from '@/lib/deckTemplates'
+import type { DeckTemplate } from '@/lib/deckTemplates'
 
 export type { DeckStyle }
 
@@ -40,9 +42,20 @@ const RATIO_OPTIONS = [
 ]
 
 interface StudioLandingProps {
-  onSubmit: (prompt: string, aspectRatio: AspectRatio, style: DeckStyle) => void
+  onSubmit: (prompt: string, aspectRatio: AspectRatio, style: DeckStyle, templateId: string) => void
   /** Reopens a deck from the "Your slides" tab. */
   onResume: (saved: SavedDeck) => void
+}
+
+const LAST_TEMPLATE_KEY = 'deckai.lastTemplate'
+
+function readLastTemplate(): string {
+  try {
+    const saved = localStorage.getItem(LAST_TEMPLATE_KEY)
+    return saved && TEMPLATES.some(t => t.id === saved) ? saved : DEFAULT_TEMPLATE_ID
+  } catch {
+    return DEFAULT_TEMPLATE_ID
+  }
 }
 
 /** Rough, dependency-free "3 days ago" / "Just now" formatting — decks are
@@ -66,6 +79,25 @@ export function StudioLanding({ onSubmit, onResume }: StudioLandingProps) {
   const [sendError, setSendError] = useState<string | null>(null)
   const composerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+
+  // Starts at the default (Meridian) for a consistent server render, then
+  // picks up the user's last choice right after mount — same pattern as the
+  // temp `?template=` override elsewhere, but for real persisted intent
+  // instead of a dev flag.
+  const [templateId, setTemplateId] = useState<string>(DEFAULT_TEMPLATE_ID)
+  useEffect(() => {
+    setTemplateId(readLastTemplate())
+  }, [])
+  const selectTemplate = (id: string) => {
+    setTemplateId(id)
+    try {
+      localStorage.setItem(LAST_TEMPLATE_KEY, id)
+    } catch {
+      // Private browsing / storage disabled — the pick still works for this session.
+    }
+  }
+  const corporateTemplates = TEMPLATES.filter(t => t.category === 'corporate')
+  const creativeTemplates = TEMPLATES.filter(t => t.category === 'creative')
 
   // "Your slides" only exists once there's something to show — reads once on
   // mount (a fresh save during this same visit only matters after a full
@@ -98,7 +130,7 @@ export function StudioLanding({ onSubmit, onResume }: StudioLandingProps) {
       setSendError(SERVICE_UNREACHABLE_MESSAGE)
       return false
     }
-    onSubmit(text, aspectRatio, mode)
+    onSubmit(text, aspectRatio, mode, templateId)
     return true
   }
 
@@ -193,6 +225,16 @@ export function StudioLanding({ onSubmit, onResume }: StudioLandingProps) {
             {label}
           </button>
         ))}
+      </div>
+
+      {/* Deck template — drives the actual palette/type/layout of the
+          generated slides, not just a thumbnail choice. Grouped the same
+          way as the template library (corporate | creative), with a
+          divider matching the mode/ratio pill row above. */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 28, flexWrap: 'wrap', justifyContent: 'center' }}>
+        <TemplateSwatchGroup templates={corporateTemplates} selectedId={templateId} onSelect={selectTemplate} />
+        <span style={{ width: 1, height: 52, background: 'var(--divider)', marginTop: 6 }} />
+        <TemplateSwatchGroup templates={creativeTemplates} selectedId={templateId} onSelect={selectTemplate} />
       </div>
 
       {/* Composer */}
@@ -315,6 +357,65 @@ export function StudioLanding({ onSubmit, onResume }: StudioLandingProps) {
         )}
       </div>
     </div>
+  )
+}
+
+/** A row of one category's templates (corporate or creative), each a small
+ * two-tone swatch (cover color + accent) so a user can tell templates apart
+ * at a glance without rendering a real slide preview here. */
+function TemplateSwatchGroup({
+  templates, selectedId, onSelect,
+}: {
+  templates: DeckTemplate[]
+  selectedId: string
+  onSelect: (id: string) => void
+}) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+      <span style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'var(--text-disabled)' }}>
+        {templates[0]?.category === 'corporate' ? 'Corporate' : 'Creative'}
+      </span>
+      <div style={{ display: 'flex', gap: 8 }}>
+        {templates.map(t => (
+          <TemplateSwatch key={t.id} template={t} selected={t.id === selectedId} onSelect={() => onSelect(t.id)} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function TemplateSwatch({
+  template, selected, onSelect,
+}: {
+  template: DeckTemplate
+  selected: boolean
+  onSelect: () => void
+}) {
+  const coverBg = template.surfaces.cover.kind === 'deck-color' ? template.colors.accent : template.surfaces.cover.background
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-pressed={selected}
+      title={template.blurb}
+      className="dk-select dk-focus-ring"
+      style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
+        padding: 5, borderRadius: 'var(--r-md)',
+        border: '1.5px solid',
+        borderColor: selected ? 'var(--accent)' : 'transparent',
+        background: selected ? 'var(--accent-soft)' : 'transparent',
+        cursor: 'pointer',
+      }}
+    >
+      <div style={{ width: 52, height: 32, borderRadius: 6, overflow: 'hidden', display: 'flex', border: '1px solid var(--border)' }}>
+        <div style={{ flex: 2, background: coverBg }} />
+        <div style={{ flex: 1, background: template.colors.accent }} />
+      </div>
+      <span style={{ fontSize: 11, fontWeight: selected ? 600 : 500, color: selected ? 'var(--text)' : 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>
+        {template.name}
+      </span>
+    </button>
   )
 }
 

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import { hedvigSerif, hedvigSans, geist, instrumentSerif } from '@/lib/fonts'
+import { hedvigSerif, hedvigSans, geist, instrumentSerif, bricolageGrotesque, sourceSerif4, ibmPlexSans, ibmPlexMono, fraunces, anton } from '@/lib/fonts'
 import { ThemeProvider } from '@/components/controls/ThemeProvider'
 import { CreateProvider } from '@/lib/createContext'
 
@@ -24,7 +24,7 @@ export default function RootLayout({
       // visitor sees a brief flash where shadcn's dark: utilities (the
       // Button/Badge/Popover refinements) haven't applied yet, before
       // ThemeProvider's mount effect adds it. Matches the vl="2" default below.
-      className={`dark ${hedvigSerif.variable} ${hedvigSans.variable} ${geist.variable} ${instrumentSerif.variable}`}
+      className={`dark ${hedvigSerif.variable} ${hedvigSans.variable} ${geist.variable} ${instrumentSerif.variable} ${bricolageGrotesque.variable} ${sourceSerif4.variable} ${ibmPlexSans.variable} ${ibmPlexMono.variable} ${fraunces.variable} ${anton.variable}`}
       suppressHydrationWarning
     >
       <head>

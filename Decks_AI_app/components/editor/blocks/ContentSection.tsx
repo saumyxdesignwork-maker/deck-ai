@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import type { ChangeHighlight } from '@/lib/deckDiff'
 import { motionPresets } from '@/lib/motion'
+import { DeckThemeScope, useDeckTemplate, CornerMarks } from '@/components/deck/DeckThemeScope'
 
 interface BlockEditHandlers {
   onChange: (text: string) => void
@@ -31,12 +32,14 @@ function HeadingBlock({ block, onChange, onFocus, onBlur, align = 'left' }: { bl
         outline: 'none',
         background: 'transparent',
         fontFamily: 'var(--font-heading)',
-        fontSize: align === 'center' ? 28 : 22,
-        fontWeight: 700,
+        fontSize: align === 'center' ? 'var(--dt-h1, 28px)' : 'var(--dt-h2, 22px)',
+        fontWeight: 'var(--dt-h-weight, 700)' as unknown as number,
+        textTransform: 'var(--dt-h-case, none)' as React.CSSProperties['textTransform'],
+        letterSpacing: 'var(--dt-h-track, normal)',
         color: 'var(--text)',
         lineHeight: 1.25,
         padding: 0,
-        marginBottom: 12,
+        marginBottom: 'var(--dt-gap, 12px)',
       }}
     />
   )
@@ -59,12 +62,12 @@ function ParagraphBlock({ block, onChange, onFocus, onBlur, align = 'left' }: { 
         outline: 'none',
         background: 'transparent',
         fontFamily: 'var(--font-body)',
-        fontSize: 16,          // ← was 13; body text min 16px
+        fontSize: 'var(--dt-body, 16px)',          // ← was 13; body text min 16px
         color: 'var(--text)',
         lineHeight: 1.65,
         padding: 0,
         resize: 'none',
-        marginBottom: 12,
+        marginBottom: 'var(--dt-gap, 12px)',
       }}
     />
   )
@@ -78,7 +81,7 @@ function CalloutBlock({ block, onChange, onFocus, onBlur, align = 'left' }: { bl
         paddingLeft: 14,
         paddingTop: 8,
         paddingBottom: 8,
-        marginBottom: 12,
+        marginBottom: 'var(--dt-gap, 12px)',
         background: 'var(--accent-soft)',
         borderRadius: '0 var(--r-sm) var(--r-sm) 0',
       }}
@@ -114,7 +117,7 @@ function CalloutBlock({ block, onChange, onFocus, onBlur, align = 'left' }: { bl
 // read as a statement rather than supporting detail.
 function QuoteBlock({ block, onChange, onFocus, onBlur, align = 'left' }: { block: Block } & BlockEditHandlers) {
   return (
-    <div style={{ marginBottom: 12 }}>
+    <div style={{ marginBottom: 'var(--dt-gap, 12px)' }}>
       <span
         aria-hidden
         style={{
@@ -162,10 +165,14 @@ function ImageBlock({ block }: { block: Block }) {
         style={{
           width: '100%',
           height: 180,
-          borderRadius: 'var(--r-md)',
+          borderRadius: 'var(--dt-img-radius, var(--r-md))',
+          border: 'var(--dt-img-frame, none)',
+          filter: 'var(--dt-img-filter, none)',
+          mixBlendMode: 'var(--dt-img-blend, normal)' as React.CSSProperties['mixBlendMode'],
           objectFit: 'cover',
-          marginBottom: 12,
+          marginBottom: 'var(--dt-gap, 12px)',
           display: 'block',
+          boxSizing: 'border-box',
         }}
       />
     )
@@ -175,13 +182,13 @@ function ImageBlock({ block }: { block: Block }) {
     <div
       style={{
         height: 180,
-        borderRadius: 'var(--r-md)',
+        borderRadius: 'var(--dt-img-radius, var(--r-md))',
         background: 'var(--surface-muted)',
         border: '1px dashed var(--border)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 12,
+        marginBottom: 'var(--dt-gap, 12px)',
         color: 'var(--text-muted)',
         fontSize: 14,           // ← was 12; raise to 14
       }}
@@ -202,7 +209,7 @@ function CardGroupBlock({ block }: { block: Block }) {
           ? `repeat(${block.cards.length}, 1fr)`
           : 'repeat(3, 1fr)',
         gap: 10,
-        marginBottom: 12,
+        marginBottom: 'var(--dt-gap, 12px)',
       }}
     >
       {block.cards.map((card, i) => (
@@ -210,9 +217,10 @@ function CardGroupBlock({ block }: { block: Block }) {
           key={i}
           style={{
             padding: '14px 14px',
-            borderRadius: 'var(--r-md)',
-            background: 'var(--surface-muted)',
-            border: '1px solid var(--border)',
+            borderRadius: 'var(--dt-card-radius, var(--r-md))',
+            background: 'var(--dt-card-bg, var(--surface-muted))',
+            border: 'var(--dt-card-border, 1px solid var(--border))',
+            boxShadow: 'var(--dt-card-shadow, none)',
           }}
         >
           <div style={{ fontSize: 18, marginBottom: 6 }}>{card.icon}</div>
@@ -222,8 +230,8 @@ function CardGroupBlock({ block }: { block: Block }) {
           <div style={{
             fontSize: isStats ? 24 : 14,  // ← label was 12; raise to 14
             fontWeight: isStats ? 700 : 400,
-            color: isStats ? 'var(--accent)' : 'var(--text-muted)',
-            fontFamily: isStats ? 'var(--font-heading)' : 'var(--font-body)',
+            color: isStats ? 'var(--dt-stat-color, var(--accent))' : 'var(--text-muted)',
+            fontFamily: isStats ? 'var(--dt-numeric-font, var(--font-heading))' : 'var(--font-body)',
           }}>
             {card.value}
           </div>
@@ -341,6 +349,7 @@ export function ContentSection({ section, isActive, onClick, onInsertBefore, asp
   // later (Insert panel drop, duplicate, agent add-block) get an entrance.
   const [initialBlockIds] = useState(() => new Set(section.blocks.map(b => b.id)))
   const m = motionPresets(useReducedMotion())
+  const template = useDeckTemplate()
   const layout = section.layout ?? 'key-points'
   const align = layout === 'statement' || layout === 'closing' ? 'center' : 'left'
 
@@ -405,17 +414,17 @@ export function ContentSection({ section, isActive, onClick, onInsertBefore, asp
         }}
         style={{
           position: 'relative',
-          // --surface-solid, not --surface: in VL2/VL3 --surface is a
-          // translucent glass fill (by design, for floating chrome like the
-          // toolbar/chat), so using it here let the deck's own slide content
-          // pick up the app's ambient glass-panel look. A slide is content,
-          // not chrome — it should render as a plain, opaque, theme-colored
-          // card (near-black/near-white in VL2's dark mode) regardless.
-          background: 'var(--surface-solid)',
-          borderRadius: 'var(--r-xl)',
-          padding: '36px 44px',
+          // Border/radius/frame styling come from the deck TEMPLATE (not
+          // the app's Craft/Night/Warm theme) via `template.*` directly in
+          // JS — this frame div sits OUTSIDE the DeckThemeScope below, so a
+          // CSS-var override inside the scope (for slide content) can't
+          // reach it either way; reading the template object here keeps the
+          // frame's own accent/border in sync with the content without
+          // relying on variable cascade. The flag-orange for verify issues
+          // stays a fixed, template-independent warning color.
+          borderRadius: template.surfaces.slideRadius,
           border: '1.5px solid',
-          borderColor: dragOver ? 'var(--accent)' : flagCount > 0 ? '#E8963C' : isActive ? 'var(--accent)' : 'var(--border)',
+          borderColor: dragOver ? template.colors.accent : flagCount > 0 ? '#E8963C' : isActive ? template.colors.accent : template.colors.border,
           borderStyle: dragOver ? 'dashed' : 'solid',
           marginBottom: 6,
           transition: 'border-color 0.15s',
@@ -439,6 +448,10 @@ export function ContentSection({ section, isActive, onClick, onInsertBefore, asp
             {flagCount}
           </div>
         )}
+        {template.surfaces.cornerMarks && <CornerMarks color={template.colors.border} />}
+        {/* Everything below is slide CONTENT, themed by the deck template —
+            not the app's own theme. */}
+        <DeckThemeScope layout={layout}>
         {/* Layout change = quick crossfade of this slide's content only. */}
         <AnimatePresence mode="wait" initial={false}>
         <motion.div
@@ -502,6 +515,7 @@ export function ContentSection({ section, isActive, onClick, onInsertBefore, asp
         })()}
         </motion.div>
         </AnimatePresence>
+        </DeckThemeScope>
       </div>
     </div>
   )

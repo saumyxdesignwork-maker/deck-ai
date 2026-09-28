@@ -5,6 +5,7 @@ import { MotionGlobalConfig } from 'motion/react'
 import { StudioLanding, SERVICE_UNREACHABLE_MESSAGE } from './StudioLanding'
 import { Composer } from './Composer'
 import { SUGGESTED_PROMPTS } from '@/lib/fixtures'
+import { DEFAULT_TEMPLATE_ID } from '@/lib/deckTemplates'
 
 beforeAll(() => {
   MotionGlobalConfig.skipAnimations = true
@@ -48,7 +49,7 @@ describe('creation screen', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
-  it('Send shows inline progress, then hands off prompt + ratio + style', async () => {
+  it('Send shows inline progress, then hands off prompt + ratio + style + template', async () => {
     const user = userEvent.setup()
     let resolveHealth!: (r: Response) => void
     fetchMock.mockReturnValue(new Promise<Response>(r => { resolveHealth = r }))
@@ -64,8 +65,26 @@ describe('creation screen', () => {
     expect(onSubmit).not.toHaveBeenCalled()
 
     await act(async () => resolveHealth(new Response('{}', { status: 200 })))
-    await waitFor(() => expect(onSubmit).toHaveBeenCalledWith('A pitch for a bakery', '16:9', 'creative'))
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledWith('A pitch for a bakery', '16:9', 'creative', DEFAULT_TEMPLATE_ID))
     expect(fetchMock.mock.calls[0][0]).toMatch(/\/health$/)
+  })
+
+  it('picking a deck template changes what Send hands off, and remembers the pick', async () => {
+    const user = userEvent.setup()
+    fetchMock.mockResolvedValue(new Response('{}', { status: 200 }))
+    const onSubmit = vi.fn()
+    render(<StudioLanding onSubmit={onSubmit} onResume={() => {}} />)
+
+    const riso = screen.getByRole('button', { name: /riso/i })
+    expect(riso).toHaveAttribute('aria-pressed', 'false')
+    await user.click(riso)
+    expect(riso).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: /meridian/i })).toHaveAttribute('aria-pressed', 'false')
+
+    await user.type(prompt(), 'A pitch for a bakery')
+    await user.click(screen.getByRole('button', { name: 'Send' }))
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledWith('A pitch for a bakery', '16:9', 'professional', 'riso'))
+    expect(localStorage.getItem('deckai.lastTemplate')).toBe('riso')
   })
 
   it('an unreachable service shows an inline error and keeps the prompt', async () => {

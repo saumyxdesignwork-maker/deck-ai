@@ -141,6 +141,7 @@ export async function runApprove(state: SessionState, emit: Emit): Promise<void>
     coverColor,
     sections,
     aspectRatio: state.aspectRatio,
+    templateId: state.templateId,
   }
   state.deck = deck
 

@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
+import { DeckTemplateProvider } from '@/components/deck/DeckThemeScope'
 import { EditorTopBar } from '@/components/editor/EditorTopBar'
 import { SectionNavigator } from '@/components/editor/SectionNavigator'
 import { CoverBlock } from '@/components/editor/blocks/CoverBlock'
@@ -24,6 +25,14 @@ export default function EditorPage() {
   const [isPresenting, setIsPresenting] = useState(false)
   const { width: insertWidth, isResizing: isResizingInsert, handlePointerDown: handleInsertResizeStart } =
     useResizableWidth(DEFAULT_INSERT_WIDTH, MIN_INSERT_WIDTH, MAX_INSERT_WIDTH, /* invert */ true)
+
+  // TEMP (Phase 2 checkpoint only): `?template=riso` previews a deck
+  // template here without needing the generator wired up yet. Remove once
+  // the real picker/switcher exist.
+  const [templateOverride, setTemplateOverride] = useState<string | undefined>(undefined)
+  useEffect(() => {
+    setTemplateOverride(new URLSearchParams(window.location.search).get('template') ?? undefined)
+  }, [])
 
   // Build a new block from a dropped block type
   const makeBlock = (blockType: string): Block => {
@@ -128,26 +137,28 @@ export default function EditorPage() {
             boxSizing: 'border-box',
           }}
         >
-          {/* Cover block */}
-          <CoverBlock
-            title={MOCK_DECK.title}
-            subtitle={MOCK_DECK.subtitle}
-            author={MOCK_DECK.author}
-            coverColor={MOCK_DECK.coverColor}
-          />
-
-          {/* Content sections */}
-          {sections.map((section, i) => (
-            <ContentSection
-              key={section.id}
-              section={section}
-              isActive={activeSectionId === section.id}
-              onClick={() => setActiveSectionId(section.id)}
-              onInsertBefore={() => handleInsertSectionAt(i)}
-              onDropBlock={blockType => handleDropOnSection(section.id, blockType)}
-              onUpdateBlockContent={handleUpdateBlockContent}
+          <DeckTemplateProvider templateId={templateOverride}>
+            {/* Cover block */}
+            <CoverBlock
+              title={MOCK_DECK.title}
+              subtitle={MOCK_DECK.subtitle}
+              author={MOCK_DECK.author}
+              coverColor={MOCK_DECK.coverColor}
             />
-          ))}
+
+            {/* Content sections */}
+            {sections.map((section, i) => (
+              <ContentSection
+                key={section.id}
+                section={section}
+                isActive={activeSectionId === section.id}
+                onClick={() => setActiveSectionId(section.id)}
+                onInsertBefore={() => handleInsertSectionAt(i)}
+                onDropBlock={blockType => handleDropOnSection(section.id, blockType)}
+                onUpdateBlockContent={handleUpdateBlockContent}
+              />
+            ))}
+          </DeckTemplateProvider>
 
           <div style={{ height: 60 }} />
         </div>
