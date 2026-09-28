@@ -1,7 +1,22 @@
 'use client'
 
 import { ReactElement } from 'react'
+import {
+  AlignLeft, ListTree, LayoutTemplate, Columns2, LayoutGrid, BarChart3,
+} from 'lucide-react'
 import { LayoutType, LAYOUT_OPTIONS } from '@/lib/fixtures'
+
+// Small, literal icons for the compact variant — a control, not a preview
+// thumbnail of what the slide will look like (that's what the SVG mini-
+// layouts below read as, which is the thing being deliberately avoided here).
+const COMPACT_ICONS: Record<LayoutType, ReactElement> = {
+  statement: <AlignLeft size={13} />,
+  'key-points': <ListTree size={13} />,
+  'heading-media': <LayoutTemplate size={13} />,
+  'media-text': <Columns2 size={13} />,
+  bento: <LayoutGrid size={13} />,
+  data: <BarChart3 size={13} />,
+}
 
 // Mini SVG thumbnails for each layout type
 const LAYOUT_SVGS: Record<LayoutType, ReactElement> = {
@@ -60,9 +75,55 @@ const LAYOUT_SVGS: Record<LayoutType, ReactElement> = {
 interface LayoutSelectorProps {
   selected: LayoutType
   onChange: (l: LayoutType) => void
+  /** 'thumbnail' (default): Classic's storyline page — a mini SVG preview
+   * stacked above the label. 'compact': Studio's outline review — a single-
+   * row segmented control (small icon + label side by side) so it reads as
+   * a control, not as a thumbnail image of the slide. */
+  variant?: 'thumbnail' | 'compact'
 }
 
-export function LayoutSelector({ selected, onChange }: LayoutSelectorProps) {
+export function LayoutSelector({ selected, onChange, variant = 'thumbnail' }: LayoutSelectorProps) {
+  if (variant === 'compact') {
+    return (
+      <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+        {LAYOUT_OPTIONS.map(({ id, label }) => (
+          <button
+            key={id}
+            onClick={() => onChange(id)}
+            title={label}
+            aria-pressed={selected === id}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 5,
+              padding: '5px 10px',
+              borderRadius: 'var(--r-pill)',
+              border: '1px solid',
+              borderColor: selected === id ? 'var(--accent)' : 'var(--border)',
+              background: selected === id ? 'var(--accent-soft)' : 'transparent',
+              cursor: 'pointer',
+              transition: 'all 0.12s',
+              color: selected === id ? 'var(--accent)' : 'var(--text-muted)',
+              fontFamily: 'var(--font-body)',
+              fontSize: 11.5,
+              fontWeight: 500,
+              whiteSpace: 'nowrap',
+            }}
+            onMouseEnter={e => {
+              if (selected !== id) (e.currentTarget as HTMLElement).style.borderColor = 'var(--accent)'
+            }}
+            onMouseLeave={e => {
+              if (selected !== id) (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'
+            }}
+          >
+            {COMPACT_ICONS[id]}
+            {label}
+          </button>
+        ))}
+      </div>
+    )
+  }
+
   return (
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       {LAYOUT_OPTIONS.map(({ id, label }) => (

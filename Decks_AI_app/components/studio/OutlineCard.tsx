@@ -10,7 +10,7 @@ interface OutlineCardProps {
 }
 
 // Compact chat-pane indicator only — the interactive review (section list +
-// Generate Slides / Rethink Storyline) lives in the preview pane on the
+// Generate Slides / Rethink Outline) lives in the preview pane on the
 // right, where there's room to actually read it.
 export function OutlineCard({ sectionCount, approved }: OutlineCardProps) {
   const m = motionPresets(useReducedMotion())
@@ -56,7 +56,7 @@ export function OutlineCard({ sectionCount, approved }: OutlineCardProps) {
       }}
     >
       <ListChecks size={14} style={{ flexShrink: 0 }} />
-      I've drafted a storyline — review it on the right
+      I've drafted an outline — review it on the right
       <ArrowRight size={12} style={{ marginLeft: 'auto', flexShrink: 0 }} />
     </div>
   )

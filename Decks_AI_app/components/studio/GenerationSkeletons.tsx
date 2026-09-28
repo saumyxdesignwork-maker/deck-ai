@@ -41,7 +41,7 @@ function SkeletonShell({ label, maxWidth, children }: { label: string; maxWidth?
  */
 export function StorylineSkeleton() {
   return (
-    <SkeletonShell label="Drafting your storyline…" maxWidth={620}>
+    <SkeletonShell label="Drafting your outline…" maxWidth={620}>
       {[0, 1, 2].map(i => (
         <div
           key={i}

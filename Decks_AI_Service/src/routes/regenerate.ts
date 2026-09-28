@@ -33,7 +33,7 @@ regenerateRoute.post('/regenerate', async c => {
       await runRegenerate(state, body.data.notes, emit)
     } catch (err) {
       logError('route.regenerate', err)
-      await emit({ t: 'error', message: 'Something went wrong regenerating your storyline. Please try again.', code: 'PIPELINE_ERROR' })
+      await emit({ t: 'error', message: 'Something went wrong regenerating your outline. Please try again.', code: 'PIPELINE_ERROR' })
     }
   })
 })

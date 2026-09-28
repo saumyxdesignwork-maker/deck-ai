@@ -257,7 +257,7 @@ export function useStudioSession(
       setItems(prev => prev.map(it => (it.id === clarifyPending.id ? { ...it, answered: answers } : it)))
       setItems(prev => [
         ...prev,
-        { id: nextId('agent'), type: 'agent', text: `Locking in "${answers.join('", "')}". I'll draft a storyline for you to review before building the slides.` },
+        { id: nextId('agent'), type: 'agent', text: `Locking in "${answers.join('", "')}". I'll draft an outline for you to review before building the slides.` },
       ])
       setClarifyPending(null)
       runStream('/clarify', { sessionId: sessionIdRef.current, answers })

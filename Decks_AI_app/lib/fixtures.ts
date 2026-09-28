@@ -179,7 +179,7 @@ export const MOCK_DECK: DeckData = {
           content: '',
           cards: [
             { icon: '1', title: 'Input', value: 'Prompt, paste text, or import a URL or file' },
-            { icon: '2', title: 'Storyline', value: 'Review and edit the AI-generated outline' },
+            { icon: '2', title: 'Outline', value: 'Review and edit the AI-generated outline' },
             { icon: '3', title: 'Generate', value: 'Full deck builds in under 90 seconds' },
             { icon: '4', title: 'Refine', value: 'Edit blocks, themes, and layouts' },
           ],

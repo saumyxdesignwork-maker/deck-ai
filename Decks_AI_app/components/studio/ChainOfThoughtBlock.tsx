@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { ChevronDown, Sparkles } from 'lucide-react'
 import { ChatItem } from '@/lib/studioScript'
 import { ToolChip } from './ToolChip'
@@ -16,26 +16,18 @@ interface ChainOfThoughtBlockProps {
 // reasoning moment and for grouping a run of tool calls / checklists
 // (e.g. several "agents" writing individual slides) under one trigger,
 // matching the Reasoning/ReasoningTrigger/ReasoningContent pattern.
+// Collapsed by default (intermediate steps are noise most people never
+// need); a subtly pulsing icon is the only "processing" signal until
+// someone clicks to expand and see the actual tool/checklist/reasoning
+// steps underneath.
 export function ChainOfThoughtBlock({ label, steps }: ChainOfThoughtBlockProps) {
   // A checklist with unchecked tasks (the /edit Editor stage) is in-flight
-  // work too — without this the block auto-collapsed mid-run, right after
-  // the planning tool finished and before the review step started.
+  // work too.
   const isActive = steps.length === 0 || steps.some(
     s => ((s.type === 'tool' || s.type === 'verify') && s.status === 'running')
       || (s.type === 'checklist' && s.tasks.some(t => !t.done))
   )
-  const hasReasoning = steps.some(s => s.type === 'reasoning')
-  const [open, setOpen] = useState(true)
-  const autoCollapsedRef = useRef(false)
-
-  useEffect(() => {
-    if (!isActive && !autoCollapsedRef.current) {
-      autoCollapsedRef.current = true
-      // Give reasoning text a moment to finish streaming before folding away.
-      const t = setTimeout(() => setOpen(false), hasReasoning ? 1400 : 700)
-      return () => clearTimeout(t)
-    }
-  }, [isActive, hasReasoning])
+  const [open, setOpen] = useState(false)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -54,6 +46,10 @@ export function ChainOfThoughtBlock({ label, steps }: ChainOfThoughtBlockProps) 
           style={{
             flexShrink: 0,
             color: isActive ? 'var(--accent)' : 'var(--text-muted)',
+            // The one "processing" signal visible by default — a slow,
+            // subtle breathing opacity, not a spin (reserved for individual
+            // running tool chips once expanded).
+            animation: isActive ? 'studio-blink 1.6s ease-in-out infinite' : 'none',
           }}
         />
         {isActive ? `${label}…` : label}

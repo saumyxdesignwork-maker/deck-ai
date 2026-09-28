@@ -34,7 +34,7 @@ clarifyRoute.post('/clarify', async c => {
       await runClarify(state, body.data.answers, emit)
     } catch (err) {
       logError('route.clarify', err)
-      await emit({ t: 'error', message: 'Something went wrong drafting your storyline. Please try again.', code: 'PIPELINE_ERROR' })
+      await emit({ t: 'error', message: 'Something went wrong drafting your outline. Please try again.', code: 'PIPELINE_ERROR' })
     }
   })
 })

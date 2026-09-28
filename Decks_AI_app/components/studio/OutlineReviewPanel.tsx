@@ -70,12 +70,64 @@ function SortableCard({ section, index, onUpdate, onDuplicate, onDelete, onAddBe
         onDuplicate={onDuplicate}
         onDelete={onDelete}
         onAddBelow={onAddBelow}
+        slideLabel={`Slide ${index + 1}`}
+        compactLayoutPicker
       />
     </div>
   )
 }
 
-// The interactive storyline review — lives in the preview pane (not the
+interface PrimaryCTAProps {
+  onClick: () => void
+  children: React.ReactNode
+  /** The small sticky-header copy vs. the full-width bottom-row copy —
+   * same gradient/states, different size. */
+  compact?: boolean
+  disabled?: boolean
+  fullWidth?: boolean
+}
+
+// Shared "Generate Slides" button style for both CTA placements (sticky
+// header + bottom row), so a fix here (or a future accent-color change)
+// never has to be kept in sync by hand across two copies. Keeps
+// `border: 'none'` on the gradient background deliberately — a real border
+// on top of an inline gradient is what caused the white-hairline corner
+// leak fixed elsewhere in this app (see FloatingChat's Send button); this
+// button avoids that bug the same way. Hover/active/disabled are handled
+// with a brightness filter rather than swapping the gradient itself, so
+// the "visual color language" (the gradient) never changes, only its
+// intensity — and it keeps working whether --primary is a gradient or a
+// flat color, depending on visual language.
+function PrimaryCTA({ onClick, children, compact, disabled, fullWidth }: PrimaryCTAProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="dk-press dk-focus-ring"
+      style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: compact ? 6 : 7,
+        flex: fullWidth ? 1 : undefined,
+        padding: compact ? '7px 14px' : '11px 18px',
+        borderRadius: 'var(--r-pill)',
+        border: 'none', background: 'var(--primary)', color: 'var(--primary-fg)',
+        fontSize: compact ? 12.5 : 13.5, fontWeight: 600,
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        fontFamily: 'var(--font-body)', boxShadow: 'var(--sh-1)',
+        opacity: disabled ? 0.55 : 1,
+        filter: disabled ? 'none' : undefined,
+        transition: 'filter 0.12s, opacity 0.12s',
+        whiteSpace: 'nowrap',
+      }}
+      onMouseEnter={e => { if (!disabled) (e.currentTarget as HTMLElement).style.filter = 'brightness(1.08)' }}
+      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none' }}
+    >
+      {children}
+    </button>
+  )
+}
+
+// The interactive outline review — lives in the preview pane (not the
 // chat) so there's room to actually read the section flow before slides
 // get built. Reuses the same editable-card + layout-selector design as
 // Classic's storyline page (components/storyline/StorylineSectionCard)
@@ -83,7 +135,8 @@ function SortableCard({ section, index, onUpdate, onDuplicate, onDelete, onAddBe
 // title/bullets, per-section layout choice, drag-to-reorder, duplicate/
 // delete/add. No inner scroll on the section list on purpose: it sits
 // inside the canvas's own scroll container, so nesting a second
-// scrollable box here would trap scrolling and hide the CTA row below.
+// scrollable box here would trap scrolling and hide the CTA row below —
+// the header above is sticky instead, so "Generate Slides" stays reachable.
 export function OutlineReviewPanel({ sections, onApprove, onRegenerate }: OutlineReviewPanelProps) {
   const [local, setLocal] = useState<StorylineSection[]>(() => toEditable(sections))
 
@@ -161,12 +214,30 @@ export function OutlineReviewPanel({ sections, onApprove, onRegenerate }: Outlin
         borderRadius: 'var(--r-xl)',
         background: 'var(--surface)',
         boxShadow: '0 8px 24px rgba(0, 0, 0, 0.1)',
-        overflow: 'hidden',
+        // Not `overflow: hidden` — that would make this box (rather than
+        // the canvas's own scroll container) the sticky header's containing
+        // block, since overflow:hidden ancestors count as scroll containers
+        // for position:sticky purposes even without a scrollbar. The header
+        // and footer round their own corners instead (below) to keep the
+        // same clipped look without breaking the sticky CTA.
+        overflow: 'visible',
       }}
     >
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, padding: '20px 24px 16px' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+      {/* Header — sticky, so the primary CTA on its right stays reachable
+          while scrolling a long outline, without needing a second inner
+          scroll box (see the note on the component above). */}
+      <div
+        style={{
+          position: 'sticky', top: 0, zIndex: 2,
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16,
+          padding: '20px 24px 16px',
+          background: 'var(--surface)',
+          borderBottom: '1px solid var(--divider)',
+          borderTopLeftRadius: 'var(--r-xl)',
+          borderTopRightRadius: 'var(--r-xl)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, minWidth: 0 }}>
           <div
             style={{
               width: 34, height: 34, borderRadius: 10, flexShrink: 0,
@@ -176,30 +247,36 @@ export function OutlineReviewPanel({ sections, onApprove, onRegenerate }: Outlin
           >
             <ListChecks size={17} style={{ color: 'var(--accent)' }} />
           </div>
-          <div>
+          <div style={{ minWidth: 0 }}>
             <h2 style={{ fontSize: 17, fontWeight: 700, color: 'var(--text)', fontFamily: 'var(--font-heading)', margin: 0 }}>
-              Review the storyline
+              Review the outline
             </h2>
             <p style={{ fontSize: 12.5, color: 'var(--text-muted)', margin: '3px 0 0', lineHeight: 1.5, fontFamily: 'var(--font-body)' }}>
               Edit titles, points, and layouts directly, or ask for changes in the chat.
             </p>
           </div>
         </div>
-        <span
-          style={{
-            flexShrink: 0,
-            padding: '4px 11px',
-            borderRadius: 'var(--r-pill)',
-            background: 'var(--accent-soft)',
-            color: 'var(--accent)',
-            fontSize: 12,
-            fontWeight: 600,
-            fontFamily: 'var(--font-body)',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {local.length} sections
-        </span>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+          <span
+            style={{
+              padding: '4px 11px',
+              borderRadius: 'var(--r-pill)',
+              background: 'var(--accent-soft)',
+              color: 'var(--accent)',
+              fontSize: 12,
+              fontWeight: 600,
+              fontFamily: 'var(--font-body)',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {local.length} sections
+          </span>
+          <PrimaryCTA compact onClick={() => onApprove(toOutline(local))}>
+            <Sparkles size={13} />
+            Generate Slides
+          </PrimaryCTA>
+        </div>
       </div>
 
       {/* Editable, drag-sortable section cards — matches Classic's storyline page */}
@@ -252,8 +329,17 @@ export function OutlineReviewPanel({ sections, onApprove, onRegenerate }: Outlin
         </button>
       </div>
 
-      {/* CTA row — always the last thing in the panel, directly below the list */}
-      <div style={{ display: 'flex', gap: 10, padding: '16px 24px', borderTop: '1px solid var(--divider)', background: 'var(--surface-muted)' }}>
+      {/* CTA row — always the last thing in the panel, directly below the
+          list. Kept alongside the sticky header's compact CTA (not replaced
+          by it) so the primary action is available both while scrolling
+          and, as before, right where the review naturally ends. */}
+      <div
+        style={{
+          display: 'flex', gap: 10, padding: '16px 24px',
+          borderTop: '1px solid var(--divider)', background: 'var(--surface-muted)',
+          borderBottomLeftRadius: 'var(--r-xl)', borderBottomRightRadius: 'var(--r-xl)',
+        }}
+      >
         <button
           type="button"
           onClick={onRegenerate}
@@ -267,24 +353,12 @@ export function OutlineReviewPanel({ sections, onApprove, onRegenerate }: Outlin
           }}
         >
           <RefreshCw size={14} />
-          Rethink Storyline
+          Rethink Outline
         </button>
-        <button
-          type="button"
-          onClick={() => onApprove(toOutline(local))}
-          className="dk-press dk-focus-ring"
-          style={{
-            flex: 1,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-            padding: '11px 18px', borderRadius: 'var(--r-pill)',
-            border: 'none', background: 'var(--primary)', color: 'var(--primary-fg)',
-            fontSize: 13.5, fontWeight: 600, cursor: 'pointer',
-            fontFamily: 'var(--font-body)', boxShadow: 'var(--sh-1)',
-          }}
-        >
+        <PrimaryCTA fullWidth onClick={() => onApprove(toOutline(local))}>
           <Sparkles size={14} />
           Generate Slides
-        </button>
+        </PrimaryCTA>
       </div>
     </div>
   )

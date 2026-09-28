@@ -26,7 +26,7 @@ export async function runGenerate(state: SessionState, emit: Emit): Promise<void
     item: {
       id: newId('agent'),
       type: 'agent',
-      text: "I'll build this deck for you. Let me lock the direction with a couple of quick questions, draft a storyline for you to review, then generate the slides.",
+      text: "I'll build this deck for you. Let me lock the direction with a couple of quick questions, draft an outline for you to review, then generate the slides.",
     },
   })
 
@@ -60,7 +60,7 @@ export async function runClarify(state: SessionState, answers: string[], emit: E
   state.clarifyAnswers = answers
 
   const groupId = 'group-storyline'
-  await emit({ t: 'chat', item: { id: groupId, type: 'group', label: 'Structuring the storyline', children: [] } })
+  await emit({ t: 'chat', item: { id: groupId, type: 'group', label: 'Structuring the outline', children: [] } })
 
   const toolId = newId('tool')
   await emit({ t: 'group-push', groupId, item: { id: toolId, type: 'tool', label: 'Structuring outline', detail: 'Drafting section flow and narrative arc', status: 'running' } })
@@ -75,7 +75,7 @@ export async function runClarify(state: SessionState, answers: string[], emit: E
     { label: 'Draft key talking points', done: false },
     { label: 'Choose per-section layouts', done: false },
   ]
-  await emit({ t: 'group-push', groupId, item: { id: checklistId, type: 'checklist', title: 'Generating storyline', tasks } })
+  await emit({ t: 'group-push', groupId, item: { id: checklistId, type: 'checklist', title: 'Generating outline', tasks } })
   for (let i = 0; i < tasks.length; i++) {
     await delay(150)
     const patched = tasks.map((t, idx) => (idx <= i ? { ...t, done: true } : t))
@@ -83,7 +83,7 @@ export async function runClarify(state: SessionState, answers: string[], emit: E
   }
 
   if (usedFallback) {
-    await emit({ t: 'error', message: 'The Copywriter model was unavailable — using a fallback storyline.', code: 'COPYWRITER_FALLBACK' })
+    await emit({ t: 'error', message: 'The Copywriter model was unavailable — using a fallback outline.', code: 'COPYWRITER_FALLBACK' })
   }
 
   // Keep the just-drafted storyline pending until /approve (or /regenerate
@@ -169,7 +169,7 @@ export async function runApprove(state: SessionState, emit: Emit): Promise<void>
 /**
  * POST /regenerate — re-drafts the storyline (optionally with notes) and
  * streams a new outline gate. Mirrors runClarify's shape but is triggered
- * from the outline-review "Rethink Storyline" action, not the clarify answer.
+ * from the outline-review "Rethink Outline" action, not the clarify answer.
  */
 export async function runRegenerate(state: SessionState, notes: string | undefined, emit: Emit): Promise<void> {
   const chipId = newId('tool')
@@ -179,7 +179,7 @@ export async function runRegenerate(state: SessionState, notes: string | undefin
 
   await emit({ t: 'update', id: chipId, patch: { status: 'done' } })
   if (usedFallback) {
-    await emit({ t: 'error', message: 'The Copywriter model was unavailable — using a fallback storyline.', code: 'COPYWRITER_FALLBACK' })
+    await emit({ t: 'error', message: 'The Copywriter model was unavailable — using a fallback outline.', code: 'COPYWRITER_FALLBACK' })
   }
 
   state.approvedStoryline = sections

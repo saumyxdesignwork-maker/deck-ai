@@ -16,7 +16,7 @@ interface Step {
 }
 
 const STEPS_INIT: Step[] = [
-  { id: 'storyline', label: 'Storyline', detail: 'Structuring your narrative arc…', status: 'active' },
+  { id: 'storyline', label: 'Outline', detail: 'Structuring your narrative arc…', status: 'active' },
   { id: 'content', label: 'Content', detail: 'Writing sections and blocks…', status: 'pending' },
   { id: 'imagery', label: 'Imagery', detail: 'Selecting visuals for each slide…', status: 'pending' },
   { id: 'finalizing', label: 'Finalizing', detail: 'Polishing layout and spacing…', status: 'pending' },

@@ -48,7 +48,7 @@ approveRoute.post('/approve', async c => {
   if (!state.approvedStoryline) {
     log('route.approve', 'no storyline to approve', { sessionId: body.data.sessionId })
     return stream(c, async s => {
-      await s.write(toLine({ t: 'error', message: 'No storyline to approve yet.', code: 'NO_STORYLINE' }))
+      await s.write(toLine({ t: 'error', message: 'No outline to approve yet.', code: 'NO_STORYLINE' }))
     })
   }
 

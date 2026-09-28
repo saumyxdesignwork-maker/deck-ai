@@ -16,6 +16,16 @@ interface StorylineSectionCardProps {
   dragHandleProps?: Record<string, unknown>
   /** VL3: spine marker replaces the number badge */
   hideNumberBadge?: boolean
+  /** Studio's outline review only: replaces the round "N" badge with an
+   * explicit "Slide N" label above the title, so the title itself reads as
+   * editable content rather than doubling as the card's own name. Classic's
+   * storyline page (app/create/storyline) omits this and keeps its existing
+   * number-badge-next-to-title layout. */
+  slideLabel?: string
+  /** Studio's outline review only: swaps the layout picker's thumbnail-style
+   * buttons for a compact segmented control, visually separated from the
+   * bullets above it. Classic's storyline page omits this. */
+  compactLayoutPicker?: boolean
 }
 
 export function StorylineSectionCard({
@@ -27,6 +37,8 @@ export function StorylineSectionCard({
   onAddBelow,
   dragHandleProps,
   hideNumberBadge,
+  slideLabel,
+  compactLayoutPicker,
 }: StorylineSectionCardProps) {
   const [hovered, setHovered] = useState(false)
   const { vl } = useTheme()
@@ -77,107 +89,156 @@ export function StorylineSectionCard({
       }}
     >
       {/* Card header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-        {/* Drag handle — only in VL1/VL2 (VL3 uses the spine marker as handle) */}
-        {!isVL3 && (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: slideLabel ? 8 : 0 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+          {/* Drag handle — only in VL1/VL2 (VL3 uses the spine marker as handle) */}
+          {!isVL3 && (
+            <div
+              {...(dragHandleProps || {})}
+              style={{
+                cursor: 'grab',
+                color: 'var(--text-disabled)',
+                marginTop: 2,
+                flexShrink: 0,
+                opacity: hovered ? 1 : 0,
+                transition: 'opacity 0.15s',
+              }}
+            >
+              <GripVertical size={16} />
+            </div>
+          )}
+
+          {/* Slide-number identity — either an explicit "Slide N" label (Studio's
+              outline review: the card's identity, separate from its editable
+              title) or the plain round number badge (Classic's storyline page,
+              where the title sits right next to it). VL3 hides both in favor
+              of its own spine marker. */}
+          {slideLabel ? (
+            <span
+              style={{
+                display: 'inline-flex', alignItems: 'center',
+                padding: '3px 9px',
+                borderRadius: 'var(--r-pill)',
+                border: '1px solid var(--accent)',
+                color: 'var(--accent)',
+                fontSize: 11, fontWeight: 700,
+                letterSpacing: '0.02em',
+                fontFamily: 'var(--font-body)',
+                flexShrink: 0,
+              }}
+            >
+              {slideLabel}
+            </span>
+          ) : !hideNumberBadge && (
+            <div
+              style={{
+                width: 26,
+                height: 26,
+                borderRadius: '50%',
+                border: '1.5px solid var(--accent)',
+                color: 'var(--accent)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 11,
+                fontWeight: 700,
+                flexShrink: 0,
+              }}
+            >
+              {index + 1}
+            </div>
+          )}
+
+          {/* Editable title — inline next to the identity marker, unless a
+              slideLabel is given, in which case it moves to its own row below
+              so "Slide N" (the card's identity) and the title (its editable
+              content) never look like the same label. */}
+          {!slideLabel && (
+            <input
+              value={section.title}
+              onChange={(e) => updateTitle(e.target.value)}
+              style={{
+                flex: 1,
+                border: 'none',
+                outline: 'none',
+                fontSize: isVL3 ? 15 : 14,
+                fontWeight: 600,
+                color: 'var(--text)',
+                background: 'transparent',
+                fontFamily: 'var(--font-heading)',
+                padding: '2px 0',
+              }}
+              placeholder="Section title…"
+            />
+          )}
+
+          {/* Actions */}
           <div
-            {...(dragHandleProps || {})}
             style={{
-              cursor: 'grab',
-              color: 'var(--text-disabled)',
-              marginTop: 2,
-              flexShrink: 0,
+              display: 'flex',
+              gap: 2,
+              marginLeft: slideLabel ? 'auto' : 0,
               opacity: hovered ? 1 : 0,
               transition: 'opacity 0.15s',
             }}
           >
-            <GripVertical size={16} />
+            {[
+              { icon: Copy, title: 'Duplicate', fn: onDuplicate },
+              { icon: Trash2, title: 'Delete', fn: onDelete },
+              { icon: Plus, title: 'Add below', fn: onAddBelow },
+            ].map(({ icon: Icon, title, fn }) => (
+              <button
+                key={title}
+                onClick={fn}
+                title={title}
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: isVL3 ? 'var(--r-md)' : 'var(--r-sm)',
+                  border: 'none',
+                  background: 'transparent',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: title === 'Delete' ? 'var(--destructive)' : 'var(--text-muted)',
+                  transition: 'background 0.1s',
+                }}
+                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'var(--surface-muted)')}
+                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
+              >
+                <Icon size={14} />
+              </button>
+            ))}
           </div>
-        )}
-
-        {/* Number badge — hidden in VL3 (spine marker handles it) */}
-        {!hideNumberBadge && (
-          <div
-            style={{
-              width: 26,
-              height: 26,
-              borderRadius: '50%',
-              border: '1.5px solid var(--accent)',
-              color: 'var(--accent)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 11,
-              fontWeight: 700,
-              flexShrink: 0,
-            }}
-          >
-            {index + 1}
-          </div>
-        )}
-
-        {/* Editable title */}
-        <input
-          value={section.title}
-          onChange={(e) => updateTitle(e.target.value)}
-          style={{
-            flex: 1,
-            border: 'none',
-            outline: 'none',
-            fontSize: isVL3 ? 15 : 14,
-            fontWeight: 600,
-            color: 'var(--text)',
-            background: 'transparent',
-            fontFamily: 'var(--font-heading)',
-            padding: '2px 0',
-          }}
-          placeholder="Section title…"
-        />
-
-        {/* Actions */}
-        <div
-          style={{
-            display: 'flex',
-            gap: 2,
-            opacity: hovered ? 1 : 0,
-            transition: 'opacity 0.15s',
-          }}
-        >
-          {[
-            { icon: Copy, title: 'Duplicate', fn: onDuplicate },
-            { icon: Trash2, title: 'Delete', fn: onDelete },
-            { icon: Plus, title: 'Add below', fn: onAddBelow },
-          ].map(({ icon: Icon, title, fn }) => (
-            <button
-              key={title}
-              onClick={fn}
-              title={title}
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: isVL3 ? 'var(--r-md)' : 'var(--r-sm)',
-                border: 'none',
-                background: 'transparent',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: title === 'Delete' ? 'var(--destructive)' : 'var(--text-muted)',
-                transition: 'background 0.1s',
-              }}
-              onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'var(--surface-muted)')}
-              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
-            >
-              <Icon size={14} />
-            </button>
-          ))}
         </div>
+
+        {/* Title as content — only in the slideLabel variant (see above) */}
+        {slideLabel && (
+          <input
+            value={section.title}
+            onChange={(e) => updateTitle(e.target.value)}
+            style={{
+              border: 'none',
+              outline: 'none',
+              fontSize: 16,
+              fontWeight: 700,
+              color: 'var(--text)',
+              background: 'transparent',
+              fontFamily: 'var(--font-heading)',
+              padding: '2px 0',
+            }}
+            placeholder="Slide title…"
+          />
+        )}
       </div>
 
-      {/* Bullets */}
+      {/* Bullets — indented to sit under the title only when the title is
+          inline next to the badge (Classic); the slideLabel variant already
+          starts its own title flush left, so bullets match that. */}
       <div
         style={{
-          paddingLeft: hideNumberBadge ? 0 : 36,
+          paddingLeft: hideNumberBadge || slideLabel ? 0 : 36,
           display: 'flex',
           flexDirection: 'column',
           gap: 5,
@@ -248,12 +309,23 @@ export function StorylineSectionCard({
         </button>
       </div>
 
-      {/* Layout selector */}
-      <div style={{ paddingLeft: hideNumberBadge ? 0 : 36 }}>
-        <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+      {/* Layout selector — a distinct control area, set apart from the
+          content above by a real divider (not just indentation) so it can't
+          read as part of the bullet list or as a media thumbnail sitting
+          under them. */}
+      <div
+        style={{
+          paddingLeft: hideNumberBadge || slideLabel ? 0 : 36,
+          ...(compactLayoutPicker && {
+            paddingTop: 10,
+            borderTop: '1px solid var(--divider)',
+          }),
+        }}
+      >
+        <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 7, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           Layout
         </p>
-        <LayoutSelector selected={section.layout} onChange={updateLayout} />
+        <LayoutSelector selected={section.layout} onChange={updateLayout} variant={compactLayoutPicker ? 'compact' : 'thumbnail'} />
       </div>
     </div>
   )
