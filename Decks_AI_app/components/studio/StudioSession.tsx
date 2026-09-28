@@ -153,6 +153,9 @@ export function StudioSession({ initialPrompt, aspectRatio, deckStyle = 'profess
             onRegenerateOutline={() => session.regenerateOutline()}
             verifyFlags={session.verifyFlags}
             isVerifying={session.isVerifying}
+            generationProgress={session.generationProgress}
+            generationFailed={session.generationFailed}
+            onRetryGeneration={session.retryGeneration}
             onVerify={session.verifyContent}
             canUndo={session.canUndo}
             canRedo={session.canRedo}

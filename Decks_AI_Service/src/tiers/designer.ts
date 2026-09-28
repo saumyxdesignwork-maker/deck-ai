@@ -97,7 +97,10 @@ export async function generateAndAssignImages(
   sections: DeckSection[],
   directive: OrchestratorResult['designDirective'] | undefined,
   aspectRatio: AspectRatio,
-  onProgress?: (label: string, status: 'running' | 'done' | 'failed') => void,
+  // `total` is passed on every call (not just the first) so the caller can
+  // derive real fractional progress without duplicating pickImageTargets'
+  // selection logic itself.
+  onProgress?: (label: string, status: 'running' | 'done' | 'failed', total: number) => void,
 ): Promise<void> {
   if (!config.imagesEnabled || config.maxImagesPerDeck <= 0) return
 
@@ -112,7 +115,7 @@ export async function generateAndAssignImages(
       const useRecraft = idx === 1
       const model = useRecraft ? MODELS.designerVector : MODELS.designerImage
       const label = `${useRecraft ? 'Recraft' : 'Flux'} — ${target.sectionTitle}`
-      onProgress?.(label, 'running')
+      onProgress?.(label, 'running', targets.length)
 
       const prompt = useRecraft
         ? `Flat vector illustration, minimal geometric style, ${mood}. Subject: ${target.caption}. Clean background, no text.`
@@ -135,11 +138,11 @@ export async function generateAndAssignImages(
         const block = sections[target.sectionIndex].blocks[target.blockIndex]
         block.imageUrl = url
         block.alt = target.caption
-        onProgress?.(label, 'done')
+        onProgress?.(label, 'done', targets.length)
         log('designer', `generated image for "${target.sectionTitle}" via ${model}`)
       } catch (err) {
         if (err instanceof OpenRouterError || err instanceof Error) logError('designer.generateImage', err)
-        onProgress?.(label, 'failed')
+        onProgress?.(label, 'failed', targets.length)
         // Block keeps its placeholder — no imageUrl assigned.
       }
     }),

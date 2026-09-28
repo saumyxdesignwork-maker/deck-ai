@@ -19,7 +19,8 @@ import type { DeckHistoryEntry } from '@/lib/useDeckEditor'
 import { ResizeHandle } from '@/components/shared/ResizeHandle'
 import { MOCK_DECK, DeckData, LayoutType } from '@/lib/fixtures'
 import { ChatItem, OutlineSection, VerifyFlag } from '@/lib/studioScript'
-import { PreviewState } from '@/lib/useStudioSession'
+import { PreviewState, GenerationProgress } from '@/lib/useStudioSession'
+import { GenerationProgressBar } from './GenerationProgressBar'
 import { useResizableWidth } from '@/lib/useResizableWidth'
 import { useDoubleMetaTap, isApplePlatform } from '@/lib/useDoubleMetaTap'
 import { deriveEditRun } from '@/lib/editStages'
@@ -43,6 +44,11 @@ interface PreviewPaneProps {
   verifyFlags: VerifyFlag[]
   isVerifying: boolean
   onVerify: () => void
+  /** Real lifecycle progress for the /approve pipeline — null whenever
+   * generation isn't in flight. */
+  generationProgress: GenerationProgress | null
+  generationFailed: boolean
+  onRetryGeneration: () => void
   canUndo: boolean
   canRedo: boolean
   onUndo: () => void
@@ -76,7 +82,7 @@ interface PreviewPaneProps {
 
 export function PreviewPane({
   previewState, revealedSlides, deck, isWorking, outlinePending, onApproveOutline, onRegenerateOutline,
-  verifyFlags, isVerifying, onVerify,
+  verifyFlags, isVerifying, onVerify, generationProgress, generationFailed, onRetryGeneration,
   canUndo, canRedo, onUndo, onRedo, deckHistory, onRestoreHistoryPoint,
   onInsertBlock, onInsertSection, onDeleteBlocks, onDuplicateBlocks,
   onBeginBlockEdit, onUpdateBlockContent, onCommitBlockEdit, onSetSectionLayout,
@@ -377,6 +383,8 @@ export function PreviewPane({
           </>
         )}
       </div>
+
+      <GenerationProgressBar progress={generationProgress} failed={generationFailed} onRetry={onRetryGeneration} />
 
       {/* Body */}
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>

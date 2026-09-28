@@ -100,6 +100,10 @@ export async function runClarify(state: SessionState, answers: string[], emit: E
  * to `done`.
  */
 export async function runApprove(state: SessionState, emit: Emit): Promise<void> {
+  // Phase 1/4 — structure: expandDeck is one atomic LLM call (copy, layout,
+  // and section structure all come back together), so there's no sub-step
+  // to count — indeterminate is the honest representation here.
+  await emit({ t: 'progress', phase: 'structure' })
   const { deck: skeleton, usedFallback } = await expandDeck(state)
   if (usedFallback) {
     await emit({ t: 'error', message: 'The Copywriter model was unavailable — using a fallback deck.', code: 'DECK_FALLBACK' })
@@ -111,12 +115,22 @@ export async function runApprove(state: SessionState, emit: Emit): Promise<void>
   await emit({ t: 'chat', item: { id: groupId, type: 'group', label: 'Writing your slides', children: [] } })
 
   if (config.imagesEnabled && config.maxImagesPerDeck > 0) {
+    // Phase 2/4 — images: real per-image counts from generateAndAssignImages'
+    // onProgress, not a fabricated fraction. Concurrent generation means
+    // "done" only ever increases, never out of order.
     const imgToolId = newId('tool')
     await emit({ t: 'group-push', groupId, item: { id: imgToolId, type: 'tool', label: 'Generating visuals', detail: 'Rendering images via Flux & Recraft', status: 'running' } })
-    // Images generate concurrently (bounded by MAX_IMAGES_PER_DECK) — a
-    // single chip covers the whole batch rather than one per image, since
-    // generateAndAssignImages resolves them together, not incrementally.
-    await generateAndAssignImages(sections, state.designDirective, state.aspectRatio)
+    // No progress event yet here — the real target count (from
+    // pickImageTargets, private to designer.ts) isn't known until the first
+    // onProgress call below, and a guessed total would be dishonest if it
+    // ever mismatched. Indeterminate until then.
+    let imagesDone = 0
+    await generateAndAssignImages(sections, state.designDirective, state.aspectRatio, async (_label, status, total) => {
+      if (status !== 'running') {
+        imagesDone += 1
+        await emit({ t: 'progress', phase: 'images', current: imagesDone, total })
+      }
+    })
     await emit({ t: 'update', id: imgToolId, patch: { status: 'done' } })
   }
 
@@ -134,11 +148,16 @@ export async function runApprove(state: SessionState, emit: Emit): Promise<void>
   await emit({ t: 'preview', state: 'preparing' })
   await emit({ t: 'preview', state: 'thumbs' })
 
+  // Phase 3/4 — slides: one real, countable unit of work per reveal, cover
+  // included — `current`/`total` mirror exactly what's already visible in
+  // the thumb rail, never a separate/inconsistent number.
+  const totalSlides = sections.length + 1
   const coverToolId = newId('tool')
   await emit({ t: 'group-push', groupId, item: { id: coverToolId, type: 'tool', label: 'Writing slide 1', detail: 'Cover', status: 'running' } })
   await delay(150)
   await emit({ t: 'update', id: coverToolId, patch: { status: 'done' } })
   await emit({ t: 'reveal-slide', index: 0 })
+  await emit({ t: 'progress', phase: 'slides', current: 1, total: totalSlides })
 
   for (let i = 0; i < sections.length; i++) {
     const toolId = newId('tool')
@@ -146,10 +165,13 @@ export async function runApprove(state: SessionState, emit: Emit): Promise<void>
     await delay(150)
     await emit({ t: 'update', id: toolId, patch: { status: 'done' } })
     await emit({ t: 'reveal-slide', index: i + 1 })
+    await emit({ t: 'progress', phase: 'slides', current: i + 2, total: totalSlides })
   }
 
+  // Phase 4/4 — finalizing: the layout-verify pass, another single atomic
+  // step (indeterminate, same reasoning as structure).
+  await emit({ t: 'progress', phase: 'finalizing' })
   const verifyId = newId('verify')
-  const totalSlides = sections.length + 1
   await emit({ t: 'group-push', groupId, item: { id: verifyId, type: 'verify', label: 'Check slide layout', detail: `Layout-check all ${totalSlides} slides`, status: 'running' } })
   await delay(200)
   await emit({ t: 'update', id: verifyId, patch: { status: 'done' } })

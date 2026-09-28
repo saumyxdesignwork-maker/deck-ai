@@ -18,3 +18,7 @@ export type StreamEvent =
   | { t: 'deck'; deck: DeckData }
   | { t: 'error'; message: string; code: string }
   | { t: 'done' }
+  /** Coarse, honest lifecycle progress for /approve's four real phases —
+   * see the backend's events.ts for the full reasoning. current/total are
+   * only present for the two countable phases (images, slides). */
+  | { t: 'progress'; phase: 'structure' | 'images' | 'slides' | 'finalizing'; current?: number; total?: number }

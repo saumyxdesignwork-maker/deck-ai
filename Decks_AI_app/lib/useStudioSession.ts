@@ -12,6 +12,14 @@ import { SavedDeck, saveDeckToHistory } from './deckHistory'
 
 export type PreviewState = 'idle' | 'preparing' | 'thumbs' | 'done'
 
+/** Mirrors the backend's `progress` StreamEvent — see streamEvents.ts. Only
+ * ever set during /approve's real slide-generation phases. */
+export interface GenerationProgress {
+  phase: 'structure' | 'images' | 'slides' | 'finalizing'
+  current?: number
+  total?: number
+}
+
 // Error codes that end the session with nothing left to resume — these get
 // a visible chat message. Everything else (*_FALLBACK codes from a degraded
 // model call) is a soft error the pipeline already recovered from.
@@ -76,6 +84,18 @@ export function useStudioSession(
   const [isVerifying, setIsVerifying] = useState(false)
   const [dataset, setDataset] = useState<DeckDataset | null>(null)
   const [isAttachingDataset, setIsAttachingDataset] = useState(false)
+  // Real lifecycle progress for the /approve slide-generation pipeline —
+  // see GenerationProgress. Null whenever generation isn't in flight.
+  const [generationProgress, setGenerationProgress] = useState<GenerationProgress | null>(null)
+  // True when /approve ends (hard error or a network failure) before the
+  // deck ever reaches previewState 'done' — lets the UI offer a real retry
+  // instead of leaving the canvas stuck on its last-known progress.
+  const [generationFailed, setGenerationFailed] = useState(false)
+  // The exact payload the last /approve call was made with — a retry
+  // resends it verbatim rather than re-deriving the outline from state that
+  // may have already moved on (outlinePending is cleared as soon as approve
+  // fires).
+  const lastApprovePayloadRef = useRef<{ sessionId: string | null; sections?: OutlineSection[] } | null>(null)
 
   const isDone = previewState === 'done'
   const deckEditor = useDeckEditor(streamedDeck, isDone, sessionId)
@@ -94,6 +114,11 @@ export function useStudioSession(
   // not part of the backend protocol — injected client-side exactly once,
   // alongside the first clarify gate, never repeated on /regenerate etc.
   const hasNudgedRef = useRef(false)
+  // True only while an /approve call is actually in flight — lets the
+  // error/network-failure paths (shared with /generate, /clarify, /edit)
+  // know a failure belongs to slide generation specifically, the same
+  // pattern isEditingRef already uses for /edit.
+  const isApprovingRef = useRef(false)
 
   // While an agent edit (/edit) is in flight, the streamed `deck` event is
   // the whole edited deck coming back from the Editor tier — it must land as
@@ -152,8 +177,16 @@ export function useStudioSession(
         setItems(prev => [...prev, { id: event.id, type: 'outline', sections: event.sections }])
         setOutlinePending({ id: event.id, sections: event.sections })
         break
+      case 'progress':
+        setGenerationProgress({ phase: event.phase, current: event.current, total: event.total })
+        break
       case 'preview':
         setPreviewState(event.state)
+        if (event.state === 'done') {
+          isApprovingRef.current = false
+          setGenerationProgress(null)
+          setGenerationFailed(false)
+        }
         if (event.state === 'done' && !hasSavedToHistoryRef.current && streamedDeckRef.current) {
           hasSavedToHistoryRef.current = true
           saveDeckToHistory({
@@ -191,7 +224,9 @@ export function useStudioSession(
           setClarifyPending(null)
           setOutlinePending(null)
           if (isEditingRef.current) setEditFailed(true)
+          if (isApprovingRef.current) setGenerationFailed(true)
           isEditingRef.current = false
+          isApprovingRef.current = false
           setIsEditing(false)
           setItems(prev => [
             ...prev,
@@ -230,6 +265,13 @@ export function useStudioSession(
           isEditingRef.current = false
           setIsEditing(false)
           setEditFailed(true)
+        }
+        // Same reasoning for /approve — a dropped connection before
+        // `preview:'done'` would otherwise leave the progress bar frozen
+        // with no way to retry.
+        if (isApprovingRef.current) {
+          isApprovingRef.current = false
+          setGenerationFailed(true)
         }
         setIsWorking(false)
       }
@@ -273,13 +315,31 @@ export function useStudioSession(
         { id: nextId('agent'), type: 'agent', text: 'Great — building your slides now.' },
       ])
       setOutlinePending(null)
+      setGenerationFailed(false)
+      isApprovingRef.current = true
       // editedSections carries whatever the user left in the outline review
       // card (title/bullet/layout edits, reordering) — the backend uses
-      // these instead of its original draft when present.
-      runStream('/approve', { sessionId: sessionIdRef.current, sections: editedSections })
+      // these instead of its original draft when present. Cached verbatim
+      // so a retry can resend exactly this, since outlinePending (and thus
+      // the edited sections) is already cleared above by the time a failure
+      // could happen.
+      const payload = { sessionId: sessionIdRef.current, sections: editedSections }
+      lastApprovePayloadRef.current = payload
+      runStream('/approve', payload)
     },
     [outlinePending, runStream],
   )
+
+  // Resends the exact same /approve request after a failed generation —
+  // no re-drafting, no lost edits, just retrying the one call that didn't
+  // finish.
+  const retryGeneration = useCallback(() => {
+    if (!lastApprovePayloadRef.current) return
+    setGenerationFailed(false)
+    setGenerationProgress(null)
+    isApprovingRef.current = true
+    runStream('/approve', lastApprovePayloadRef.current)
+  }, [runStream])
 
   const regenerateOutline = useCallback(
     (notes?: string) => {
@@ -374,6 +434,9 @@ export function useStudioSession(
     outlinePending,
     verifyFlags,
     isVerifying,
+    generationProgress,
+    generationFailed,
+    retryGeneration,
     canUndo: deckEditor.canUndo,
     canRedo: deckEditor.canRedo,
     undo: deckEditor.undo,

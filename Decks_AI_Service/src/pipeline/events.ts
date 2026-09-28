@@ -22,6 +22,13 @@ export type StreamEvent =
   | { t: 'deck'; deck: DeckData }
   | { t: 'error'; message: string; code: string }
   | { t: 'done' }
+  /** Coarse, honest lifecycle progress for the /approve slide-generation
+   * pipeline specifically — four real phases in fixed order, never a
+   * fabricated overall percentage. `current`/`total` are only present when
+   * the phase has a genuinely countable unit of work (images rendered,
+   * slides revealed); 'structure' and 'finalizing' are single atomic steps
+   * with nothing to count, so they're indeterminate (no current/total). */
+  | { t: 'progress'; phase: 'structure' | 'images' | 'slides' | 'finalizing'; current?: number; total?: number }
 
 /** Serializes one event as an NDJSON line (including the trailing newline). */
 export function toLine(event: StreamEvent): string {
