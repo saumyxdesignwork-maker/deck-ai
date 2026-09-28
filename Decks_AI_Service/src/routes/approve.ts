@@ -17,7 +17,7 @@ const BodySchema = z.object({
       z.object({
         title: z.string().min(1),
         bullets: z.array(z.string()).min(1),
-        layout: z.enum(['statement', 'key-points', 'heading-media', 'media-text', 'bento', 'data']).optional(),
+        layout: z.enum(['statement', 'key-points', 'heading-media', 'media-text', 'bento', 'data', 'divider', 'two-column', 'closing']).optional(),
       }),
     )
     .min(1)

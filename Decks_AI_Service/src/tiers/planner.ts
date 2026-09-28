@@ -6,7 +6,7 @@ import { logError } from '../lib/log.js'
 import type { DeckData } from '../contract/deck.js'
 
 const BLOCK_TYPES = ['heading', 'paragraph', 'card-group', 'image', 'callout', 'quote'] as const
-const LAYOUTS = ['statement', 'key-points', 'heading-media', 'media-text', 'bento', 'data'] as const
+const LAYOUTS = ['statement', 'key-points', 'heading-media', 'media-text', 'bento', 'data', 'divider', 'two-column', 'closing'] as const
 
 // The cover (deck.title/deck.subtitle) isn't a real section — it's addressed
 // via these two fixed pseudo-ids so the planner can target it with the same

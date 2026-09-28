@@ -109,6 +109,50 @@ function CalloutBlock({ block, onChange, onFocus, onBlur, align = 'left' }: { bl
   )
 }
 
+// A larger, italic pull-quote — distinct from CalloutBlock (a highlighted
+// stat/aside): this is for an attributed or standalone quotation, styled to
+// read as a statement rather than supporting detail.
+function QuoteBlock({ block, onChange, onFocus, onBlur, align = 'left' }: { block: Block } & BlockEditHandlers) {
+  return (
+    <div style={{ marginBottom: 12 }}>
+      <span
+        aria-hidden
+        style={{
+          display: 'block', fontFamily: 'var(--font-heading)', fontSize: 36,
+          lineHeight: 0.5, color: 'var(--accent)', opacity: 0.5, marginBottom: 6,
+          textAlign: align,
+        }}
+      >
+        "
+      </span>
+      <textarea
+        value={block.content}
+        onChange={e => onChange(e.target.value)}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        rows={2}
+        aria-label="Quote"
+        style={{
+          textAlign: align,
+          display: 'block',
+          width: '100%',
+          border: 'none',
+          outline: 'none',
+          background: 'transparent',
+          fontFamily: 'var(--font-heading)',
+          fontStyle: 'italic',
+          fontSize: 20,
+          fontWeight: 500,
+          color: 'var(--text)',
+          lineHeight: 1.4,
+          padding: 0,
+          resize: 'none',
+        }}
+      />
+    </div>
+  )
+}
+
 function ImageBlock({ block }: { block: Block }) {
   if (block.imageUrl) {
     return (
@@ -194,6 +238,7 @@ function renderBlock(block: Block, handlers: BlockEditHandlers) {
     case 'heading':    return <HeadingBlock    block={block} {...handlers} />
     case 'paragraph':  return <ParagraphBlock  block={block} {...handlers} />
     case 'callout':    return <CalloutBlock    block={block} {...handlers} />
+    case 'quote':      return <QuoteBlock      block={block} {...handlers} />
     case 'image':      return <ImageBlock      block={block} />
     case 'card-group': return <CardGroupBlock  block={block} />
     default:           return null
@@ -215,13 +260,26 @@ function layoutContainerStyle(layout: LayoutType): React.CSSProperties {
     case 'heading-media':
     case 'data':
       return { display: 'flex', flexDirection: 'column' }
+    // Bottom-aligned so the heading sits low on the slide, like a real
+    // section-break card — the (usually short) supporting paragraph, if
+    // any, trails just above it.
+    case 'divider':
+      return { display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', minHeight: '100%', maxWidth: 640 }
+    // Heading/callout run full-width above two columns of body content —
+    // whatever blocks come after them alternate left/right.
+    case 'two-column':
+      return { display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: 32, alignContent: 'start' }
+    // Centered like a closing/CTA card: heading, then a short pitch, then
+    // an optional callout styled as the call-to-action itself.
+    case 'closing':
+      return { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', minHeight: '100%', maxWidth: 560, margin: '0 auto' }
     case 'key-points':
     default:
       return {}
   }
 }
 
-function layoutItemStyle(layout: LayoutType, block: Block): React.CSSProperties {
+function layoutItemStyle(layout: LayoutType, block: Block, columnIndex = 0): React.CSSProperties {
   const isMedia = block.type === 'image'
   const isHeading = block.type === 'heading'
   const isFigure = block.type === 'card-group' || block.type === 'callout'
@@ -234,6 +292,10 @@ function layoutItemStyle(layout: LayoutType, block: Block): React.CSSProperties 
       return isHeading || block.type === 'card-group' ? { gridColumn: '1 / -1' } : {}
     case 'data':
       return { order: isHeading ? 0 : isFigure ? 1 : 2 }
+    // Heading spans both columns up top; the rest alternate left/right in
+    // block order, so two paragraphs (or two card-groups) land side by side.
+    case 'two-column':
+      return isHeading ? { gridColumn: '1 / -1' } : { gridColumn: columnIndex % 2 === 0 ? 1 : 2 }
     default:
       return {}
   }
@@ -280,7 +342,7 @@ export function ContentSection({ section, isActive, onClick, onInsertBefore, asp
   const [initialBlockIds] = useState(() => new Set(section.blocks.map(b => b.id)))
   const m = motionPresets(useReducedMotion())
   const layout = section.layout ?? 'key-points'
-  const align = layout === 'statement' ? 'center' : 'left'
+  const align = layout === 'statement' || layout === 'closing' ? 'center' : 'left'
 
   return (
     <div
@@ -387,7 +449,13 @@ export function ContentSection({ section, isActive, onClick, onInsertBefore, asp
           transition={m.content}
           style={layoutContainerStyle(layout)}
         >
-        {section.blocks.map(block => {
+        {(() => {
+          // Only meaningful for 'two-column': counts non-heading blocks so
+          // the first body block lands left, the second right, and so on —
+          // the heading itself always spans both columns.
+          let bodyIndex = -1
+          return section.blocks.map(block => {
+          if (block.type !== 'heading') bodyIndex += 1
           const isSelected = selectedBlockIds?.has(block.id) ?? false
           const isNew = !initialBlockIds.has(block.id)
           const isChanged = !!highlight?.ids.has(block.id)
@@ -399,7 +467,7 @@ export function ContentSection({ section, isActive, onClick, onInsertBefore, asp
               initial={isNew ? m.arrive.initial : false}
               animate={m.arrive.animate}
               transition={m.content}
-              style={{ position: 'relative', ...layoutItemStyle(layout, block) }}
+              style={{ position: 'relative', ...layoutItemStyle(layout, block, bodyIndex) }}
             >
               {isChanged && (
                 // Keyed on the highlight so the cue replays on each new change.
@@ -430,7 +498,8 @@ export function ContentSection({ section, isActive, onClick, onInsertBefore, asp
               )}
             </motion.div>
           )
-        })}
+        })
+        })()}
         </motion.div>
         </AnimatePresence>
       </div>

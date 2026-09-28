@@ -12,6 +12,7 @@ const BLOCK_DEFAULTS: Partial<Record<Block['type'], string>> = {
   heading: 'New Heading',
   paragraph: 'Start writing here…',
   callout: 'Add a callout note…',
+  quote: 'Add a quote…',
   image: 'Image placeholder',
 }
 

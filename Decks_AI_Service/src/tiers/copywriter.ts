@@ -7,10 +7,15 @@ import { newId } from '../lib/ids.js'
 import type { SessionState } from '../session/store.js'
 import type { OutlineSection } from '../contract/chat.js'
 import type { LayoutType, Block } from '../contract/deck.js'
-import { styleGuidance } from '../contract/deck.js'
+import { styleGuidance, LAYOUT_RULES } from '../contract/deck.js'
 import type { DeckDataset } from '../contract/data.js'
 
-const LAYOUTS: LayoutType[] = ['statement', 'key-points', 'heading-media', 'media-text', 'bento', 'data']
+const LAYOUTS = ['statement', 'key-points', 'heading-media', 'media-text', 'bento', 'data', 'divider', 'two-column', 'closing'] as const satisfies readonly LayoutType[]
+// The fallback deck (used only when the expandDeck model call fails) cycles
+// through layouts positionally — restricted to the original content
+// layouts so a network hiccup never turns an arbitrary section into a bare
+// "divider" or "closing" slide.
+const FALLBACK_LAYOUTS: LayoutType[] = ['statement', 'key-points', 'heading-media', 'media-text', 'bento', 'data']
 
 // ── Data grounding ──────────────────────────────────────────────────────
 // Shared between draftStoryline and expandDeck so a connected dataset (see
@@ -120,7 +125,7 @@ export async function draftStoryline(state: SessionState, notes?: string): Promi
 // ── Full deck expansion ──────────────────────────────────────────────────
 
 const BlockSchema = z.object({
-  type: z.enum(['heading', 'paragraph', 'card-group', 'image', 'callout']),
+  type: z.enum(['heading', 'paragraph', 'card-group', 'image', 'callout', 'quote']),
   content: z.string(),
   cards: z.array(z.object({ icon: z.string(), title: z.string(), value: z.string() })).optional(),
 })
@@ -132,7 +137,7 @@ const DeckSkeletonSchema = z.object({
     .array(
       z.object({
         title: z.string(),
-        layout: z.enum(['statement', 'key-points', 'heading-media', 'media-text', 'bento', 'data']),
+        layout: z.enum(LAYOUTS),
         blocks: z.array(BlockSchema).min(1).max(6),
       }),
     )
@@ -172,7 +177,7 @@ function deckTool() {
                   items: {
                     type: 'object',
                     properties: {
-                      type: { type: 'string', enum: ['heading', 'paragraph', 'card-group', 'image', 'callout'] },
+                      type: { type: 'string', enum: ['heading', 'paragraph', 'card-group', 'image', 'callout', 'quote'] },
                       content: { type: 'string', description: 'Text content, or a short image caption when type is "image".' },
                       cards: {
                         type: 'array',
@@ -204,7 +209,7 @@ function fallbackDeck(state: SessionState): DeckSkeleton {
     subtitle: state.copyDirective?.audienceGoal ?? 'Generated with DeckAI',
     sections: storyline.map((s, i) => ({
       title: s.title,
-      layout: s.layout ?? LAYOUTS[i % LAYOUTS.length],
+      layout: s.layout ?? FALLBACK_LAYOUTS[i % FALLBACK_LAYOUTS.length],
       blocks: [
         { id: newId('bl'), type: 'heading', content: s.title },
         ...s.bullets.map(b => ({ id: newId('bl'), type: 'paragraph' as const, content: b })),
@@ -222,13 +227,13 @@ function fallbackDeck(state: SessionState): DeckSkeleton {
 export async function expandDeck(state: SessionState): Promise<{ deck: DeckSkeleton; usedFallback: boolean }> {
   const storyline = state.approvedStoryline ?? []
 
-  const system = `You are the copywriter for an AI deck-generation product. You are given a storyline the user has ALREADY APPROVED — you must expand it into rendered slide blocks WITHOUT changing section titles, order, or count. For each section, produce 2-4 blocks using ONLY these block types: "heading" (the section title, once), "paragraph" (prose expanding a bullet), "callout" (one key stat or quote, short), "card-group" (2-4 short cards with an emoji icon, a title, and a short value — use for comparisons/lists of items), "image" (a short one-line caption describing what the image should depict — do not describe pixels, just the subject). Choose one layout per section from: ${LAYOUTS.join(', ')} — unless a section already specifies "(layout: ...)", in which case you MUST use that exact layout.${state.dataset ? ` ${GROUNDING_INSTRUCTIONS} A "data" or "card-group" layout is a natural home for attached figures — cite the source in a callout or caption when you use one (e.g. "Source: ${state.dataset.source}").` : ''} Call the emit_deck tool — do not respond in prose.`
+  const system = `You are the copywriter for an AI deck-generation product. You are given a storyline the user has ALREADY APPROVED — you must expand it into rendered slide blocks WITHOUT changing section titles, order, or count. For each section, produce 2-4 blocks using ONLY these block types: "heading" (the section title, once), "paragraph" (prose expanding a bullet), "callout" (one key stat or quote, short), "quote" (a standalone attributed or pull quote, short), "card-group" (2-4 short cards with an emoji icon, a title, and a short value — use for comparisons/lists of items), "image" (a short one-line caption describing what the image should depict — do not describe pixels, just the subject). Choose one layout per section from: ${LAYOUTS.join(', ')} — unless a section already specifies "(layout: ...)", in which case you MUST use that exact layout AND follow the shape rule given for it below.${state.dataset ? ` ${GROUNDING_INSTRUCTIONS} A "data" or "card-group" layout is a natural home for attached figures — cite the source in a callout or caption when you use one (e.g. "Source: ${state.dataset.source}").` : ''} Call the emit_deck tool — do not respond in prose.`
 
   const userParts = [
     `Deck topic: "${state.prompt}"`,
     styleGuidance(state.style),
     `Approved storyline (expand each section in this exact order):\n${storyline
-      .map((s, i) => `${i + 1}. ${s.title}${s.layout ? ` (layout: ${s.layout})` : ''}\n   - ${s.bullets.join('\n   - ')}`)
+      .map((s, i) => `${i + 1}. ${s.title}${s.layout ? ` (layout: ${s.layout} — must contain: ${LAYOUT_RULES[s.layout]})` : ''}\n   - ${s.bullets.join('\n   - ')}`)
       .join('\n')}`,
   ]
   if (state.dataset) userParts.push(formatDatasetForPrompt(state.dataset))

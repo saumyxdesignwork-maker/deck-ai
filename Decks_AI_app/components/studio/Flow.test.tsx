@@ -156,6 +156,20 @@ describe('ContentSection (canvas)', () => {
     return waitFor(() => expect(container.querySelector('[data-layout="statement"]')).not.toBeNull())
   })
 
+  // The three layouts added for the deck template system (divider,
+  // two-column, closing) — same "renders without throwing and carries its
+  // data-layout" bar as every pre-existing layout above.
+  it.each(['divider', 'two-column', 'closing'] as const)('renders the new "%s" layout', layout => {
+    const { container } = render(<ContentSection section={section({ layout })} isActive={false} onClick={noop} />)
+    expect(container.querySelector(`[data-layout="${layout}"]`)).not.toBeNull()
+  })
+
+  it('renders a quote block (previously a no-op block type)', () => {
+    const s = section({ blocks: [{ id: 'q', type: 'quote', content: 'Ship it.' }] })
+    render(<ContentSection section={s} isActive={false} onClick={noop} />)
+    expect(screen.getByRole('textbox', { name: 'Quote' })).toHaveValue('Ship it.')
+  })
+
   it('animates only blocks inserted after first render', () => {
     const s = section()
     const { rerender, container } = render(<ContentSection section={s} isActive={false} onClick={noop} />)

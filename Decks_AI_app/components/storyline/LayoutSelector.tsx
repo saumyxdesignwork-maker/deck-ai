@@ -2,7 +2,8 @@
 
 import { ReactElement } from 'react'
 import {
-  AlignLeft, ListTree, LayoutTemplate, Columns2, LayoutGrid, BarChart3,
+  AlignLeft, ListTree, LayoutTemplate, Columns2, Columns3, LayoutGrid, BarChart3,
+  SeparatorHorizontal, Megaphone,
 } from 'lucide-react'
 import { LayoutType, LAYOUT_OPTIONS } from '@/lib/fixtures'
 
@@ -16,6 +17,9 @@ const COMPACT_ICONS: Record<LayoutType, ReactElement> = {
   'media-text': <Columns2 size={13} />,
   bento: <LayoutGrid size={13} />,
   data: <BarChart3 size={13} />,
+  divider: <SeparatorHorizontal size={13} />,
+  'two-column': <Columns3 size={13} />,
+  closing: <Megaphone size={13} />,
 }
 
 // Mini SVG thumbnails for each layout type
@@ -68,6 +72,29 @@ const LAYOUT_SVGS: Record<LayoutType, ReactElement> = {
         <rect key={x} x={x} y={28 - (i + 2) * 5} width="5" height={(i + 2) * 5 - 7} rx="1.5" fill="currentColor" opacity={0.2 + i * 0.1} />
       ))}
       <rect x="27" y="10" width="9" height="12" rx="2" fill="currentColor" opacity="0.2" />
+    </svg>
+  ),
+  divider: (
+    <svg viewBox="0 0 40 28" fill="none" xmlns="http://www.w3.org/2000/svg" width={40} height={28}>
+      <rect x="4" y="20" width="32" height="3" rx="1.5" fill="currentColor" opacity="0.7" />
+      <rect x="10" y="8" width="20" height="2" rx="1" fill="currentColor" opacity="0.35" />
+    </svg>
+  ),
+  'two-column': (
+    <svg viewBox="0 0 40 28" fill="none" xmlns="http://www.w3.org/2000/svg" width={40} height={28}>
+      <rect x="4" y="4" width="32" height="3" rx="1.5" fill="currentColor" opacity="0.7" />
+      <rect x="4" y="10" width="14" height="2" rx="1" fill="currentColor" opacity="0.35" />
+      <rect x="4" y="14" width="14" height="2" rx="1" fill="currentColor" opacity="0.35" />
+      <rect x="4" y="18" width="14" height="2" rx="1" fill="currentColor" opacity="0.35" />
+      <rect x="22" y="10" width="14" height="2" rx="1" fill="currentColor" opacity="0.35" />
+      <rect x="22" y="14" width="14" height="2" rx="1" fill="currentColor" opacity="0.35" />
+      <rect x="22" y="18" width="14" height="2" rx="1" fill="currentColor" opacity="0.35" />
+    </svg>
+  ),
+  closing: (
+    <svg viewBox="0 0 40 28" fill="none" xmlns="http://www.w3.org/2000/svg" width={40} height={28}>
+      <rect x="8" y="9" width="24" height="4" rx="2" fill="currentColor" opacity="0.7" />
+      <rect x="12" y="17" width="16" height="5" rx="2.5" fill="currentColor" opacity="0.4" />
     </svg>
   ),
 }

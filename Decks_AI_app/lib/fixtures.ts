@@ -1,4 +1,10 @@
-export type LayoutType = 'statement' | 'key-points' | 'heading-media' | 'media-text' | 'bento' | 'data'
+export type LayoutType =
+  | 'statement' | 'key-points' | 'heading-media' | 'media-text' | 'bento' | 'data'
+  // Added for the deck template system — a section divider, a two-column
+  // text layout, and a closing/CTA slide. See lib/deckTemplates for how
+  // each template renders these (e.g. divider/closing often use an
+  // "inverse"/"accent" surface instead of the deck's base slide color).
+  | 'divider' | 'two-column' | 'closing'
 export type AspectRatio = '16:9' | '4:3'
 
 /** CSS `aspect-ratio` value for a given slide ratio — the single source of
@@ -49,6 +55,11 @@ export interface DeckData {
    * slide's canvas is locked to this shape. Defaults to '16:9' for decks
    * that predate this field (e.g. Classic's MOCK_DECK). */
   aspectRatio?: AspectRatio
+  /** The deck template driving colors/type/surfaces for every slide (see
+   * lib/deckTemplates). Optional so decks saved before this field existed
+   * still load — lib/deckTemplates' getTemplate() falls back to the
+   * default template for undefined/unknown ids. */
+  templateId?: string
 }
 
 // ─── Mock storyline (generated from prompt) ───
@@ -252,4 +263,7 @@ export const LAYOUT_OPTIONS: { id: LayoutType; label: string }[] = [
   { id: 'media-text', label: 'Media + Text' },
   { id: 'bento', label: 'Bento' },
   { id: 'data', label: 'Data' },
+  { id: 'divider', label: 'Divider' },
+  { id: 'two-column', label: 'Two Column' },
+  { id: 'closing', label: 'Closing' },
 ]

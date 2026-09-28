@@ -8,8 +8,8 @@ import {
   Type, SquareStack, Image, BarChart3, StickyNote,
   Heading1, AlignLeft, Quote, Flame, Hash,
   GripVertical, ChevronDown, ChevronRight,
-  LayoutList, Columns2, Grid2x2, LayoutPanelTop, Quote as QuoteIcon, Loader2,
-  Printer, Copy, Archive,
+  LayoutList, Columns2, Columns3, Grid2x2, LayoutPanelTop, Quote as QuoteIcon, Loader2,
+  Printer, Copy, Archive, SeparatorHorizontal, Megaphone,
 } from 'lucide-react'
 
 export const BLOCK_GROUPS = [
@@ -71,6 +71,9 @@ const LAYOUT_ICONS: Record<LayoutType, typeof LayoutList> = {
   'media-text': Columns2,
   'bento': Grid2x2,
   'data': BarChart3,
+  'divider': SeparatorHorizontal,
+  'two-column': Columns3,
+  'closing': Megaphone,
 }
 const LAYOUTS = LAYOUT_OPTIONS.map(o => ({ ...o, icon: LAYOUT_ICONS[o.id] }))
 
