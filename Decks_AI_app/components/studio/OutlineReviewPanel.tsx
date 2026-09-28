@@ -283,7 +283,7 @@ export function OutlineReviewPanel({ sections, onApprove, onRegenerate }: Outlin
       </div>
 
       {/* Editable, drag-sortable section cards — matches Classic's storyline page */}
-      <div style={{ margin: '0 24px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ margin: '16px 24px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={local.map(s => s.id)} strategy={verticalListSortingStrategy}>
             {local.map((section, i) => (
