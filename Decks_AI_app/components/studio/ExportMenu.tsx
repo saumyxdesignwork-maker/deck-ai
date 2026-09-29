@@ -4,24 +4,28 @@ import { useEffect, useId, useRef, useState, KeyboardEvent } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { Download, FileText, Presentation, Globe, Loader2, CheckCircle2, AlertCircle, RotateCcw } from 'lucide-react'
 import { motionPresets } from '@/lib/motion'
+import { captureSlides, exportToPdf, exportToPptx, exportToHtml } from '@/lib/deckExport'
+import type { AspectRatio } from '@/lib/fixtures'
 
 type ExportFormat = 'pdf' | 'pptx' | 'html'
-/** The full lifecycle a format can be in — modeled up front (per the
- * product spec) even though no format is wired to a real backend yet, so
- * turning one on later is a status change at the single call site below,
- * not a rewrite of this menu. */
+/** The full lifecycle a format can be in. */
 type ExportStatus = 'ready' | 'exporting' | 'success' | 'failed' | 'unavailable'
 
-// No backend export route exists yet for any format (see the /export
-// investigation this was built from) — every format is honestly
-// 'unavailable' today. This is the one place to flip a format to 'ready'
-// once it's actually implemented; nothing else in this component assumes
-// a particular format is or isn't real.
+// All three formats export for real now (see lib/deckExport.ts) — client
+// side, by rasterizing each rendered slide and assembling it into the
+// target file, rather than a backend rendering pipeline. 'unavailable'
+// stays a reachable status (via `initialStatus`) for a format that isn't
+// ready, but nothing sets it by default anymore.
 const INITIAL_STATUS: Record<ExportFormat, ExportStatus> = {
-  pdf: 'unavailable',
-  pptx: 'unavailable',
-  html: 'unavailable',
+  pdf: 'ready',
+  pptx: 'ready',
+  html: 'ready',
 }
+
+// How long a success checkmark stays up before the item resets to 'ready' —
+// long enough to register, short enough that exporting the same format
+// twice in a row doesn't feel stuck.
+const SUCCESS_RESET_MS = 2200
 
 const FORMAT_META: Record<ExportFormat, { icon: typeof FileText; label: string; sublabel?: string }> = {
   pdf: { icon: FileText, label: 'Export as PDF' },
@@ -34,20 +38,27 @@ const FORMAT_ORDER: ExportFormat[] = ['pdf', 'pptx', 'html']
 /**
  * The deck's primary export entry point — a visible top-bar action (not
  * buried in an overflow/"More" menu) that opens a small menu of format
- * choices. Every format currently renders as honestly 'unavailable': no
- * PDF/PPTX/HTML export exists on the backend today, so this never claims a
- * download happened. The exporting/success/failed states are real,
- * reachable UI once a format is wired — not speculative decoration — they
- * just have no live caller yet.
+ * choices. Every format is a real, working download: each rasterizes the
+ * deck's own already-rendered slide DOM (the same pixels the customer is
+ * looking at, template and all) via html-to-image, then assembles that into
+ * a PDF (jsPDF), a PowerPoint (pptxgenjs, one full-bleed image per slide —
+ * not editable text boxes; faithful to what's on screen was judged more
+ * valuable than an editable-but-drifted recreation), or a self-contained
+ * HTML slideshow.
  */
 interface ExportMenuProps {
-  /** Test-only seam for exercising the exporting/success/failed states,
-   * which nothing in the app can reach yet (see INITIAL_STATUS) — the real
-   * call site below never passes this. */
+  /** Every currently-rendered slide's root element, cover first, in order —
+   * PreviewPane already keeps exactly this in `slideRefs` for scroll/verify
+   * purposes, so export reuses it rather than re-deriving its own DOM query. */
+  getSlideNodes: () => HTMLElement[]
+  title: string
+  aspectRatio?: AspectRatio
+  /** Test-only seam for exercising the exporting/success/failed states
+   * without driving a real capture — the real call site never passes this. */
   initialStatus?: Partial<Record<ExportFormat, ExportStatus>>
 }
 
-export function ExportMenu({ initialStatus }: ExportMenuProps = {}) {
+export function ExportMenu({ getSlideNodes, title, aspectRatio, initialStatus }: ExportMenuProps) {
   const [status, setStatus] = useState({ ...INITIAL_STATUS, ...initialStatus })
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
@@ -55,6 +66,12 @@ export function ExportMenu({ initialStatus }: ExportMenuProps = {}) {
   const menuRef = useRef<HTMLDivElement>(null)
   const menuId = useId()
   const m = motionPresets(useReducedMotion())
+  const resetTimers = useRef<Partial<Record<ExportFormat, ReturnType<typeof setTimeout>>>>({})
+
+  useEffect(() => {
+    const timers = resetTimers.current
+    return () => { Object.values(timers).forEach(t => t && clearTimeout(t)) }
+  }, [])
 
   useEffect(() => {
     if (!open) return
@@ -104,10 +121,31 @@ export function ExportMenu({ initialStatus }: ExportMenuProps = {}) {
     }
   }
 
-  // Placeholder — there's nothing real to call yet (see INITIAL_STATUS).
-  // Kept as a named handler rather than inlined so wiring a real export
-  // later means replacing this function's body, not the menu's structure.
-  const requestExport = (_format: ExportFormat) => {}
+  const requestExport = async (format: ExportFormat) => {
+    setStatus(s => ({ ...s, [format]: 'exporting' }))
+    // Exporting closes the menu so the user sees the canvas (a large,
+    // multi-second DOM rasterization can otherwise look like the menu is
+    // just frozen) — the trigger button's own status badge (added below)
+    // keeps the in-progress state visible without the panel open.
+    closeMenu(false)
+    try {
+      const nodes = getSlideNodes()
+      if (nodes.length === 0) throw new Error('No slides to export')
+      const images = await captureSlides(nodes)
+      if (format === 'pdf') await exportToPdf(images, title, aspectRatio)
+      else if (format === 'pptx') await exportToPptx(images, title, aspectRatio)
+      else exportToHtml(images, title)
+      setStatus(s => ({ ...s, [format]: 'success' }))
+      resetTimers.current[format] = setTimeout(() => {
+        setStatus(s => ({ ...s, [format]: 'ready' }))
+      }, SUCCESS_RESET_MS)
+    } catch (err) {
+      console.error(`Export (${format}) failed`, err)
+      setStatus(s => ({ ...s, [format]: 'failed' }))
+    }
+  }
+
+  const anyExporting = Object.values(status).includes('exporting')
 
   return (
     <div ref={rootRef} style={{ position: 'relative' }}>
@@ -118,20 +156,24 @@ export function ExportMenu({ initialStatus }: ExportMenuProps = {}) {
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={open ? menuId : undefined}
+        aria-busy={anyExporting || undefined}
         style={{
           display: 'flex', alignItems: 'center', gap: 5,
           padding: '5px 10px',
           borderRadius: 'var(--r-sm)',
-          // Accent, not the plain muted border every other mini-bar button
-          // uses — visibly promoted without matching the full-strength
-          // gradient CTA style reserved for the outline's "Generate Slides".
-          border: '1px solid var(--accent)',
-          background: open ? 'var(--accent-soft)' : 'transparent',
-          fontSize: 11.5, color: 'var(--accent)', fontWeight: 500,
+          border: '1px solid transparent',
+          // Inverted, on purpose — this is the deck's primary/first action
+          // now, promoted above Present/History, and a solid white pill on
+          // the app's dark chrome reads as the one action that isn't
+          // optional, the way the other mini-bar buttons (outlined/muted) do
+          // not.
+          background: open ? '#EDEDED' : '#FFFFFF',
+          fontSize: 11.5, color: '#0A0A0A', fontWeight: 600,
           cursor: 'pointer', fontFamily: 'var(--font-body)',
         }}
       >
-        <Download size={12} /> Export
+        {anyExporting ? <Loader2 size={12} className="studio-spin" aria-hidden /> : <Download size={12} aria-hidden />}
+        Export
       </button>
 
       <AnimatePresence>
@@ -161,7 +203,10 @@ export function ExportMenu({ initialStatus }: ExportMenuProps = {}) {
               const { icon: Icon, label, sublabel } = FORMAT_META[format]
               const formatStatus = status[format]
               const isFailed = formatStatus === 'failed'
-              const isDisabled = formatStatus === 'unavailable' || formatStatus === 'exporting'
+              // Covers this item's own 'exporting' too — anyExporting is
+              // derived from `status`, so it's already true whenever this
+              // format is the one in flight.
+              const isDisabled = formatStatus === 'unavailable' || anyExporting
               return (
                 <button
                   key={format}

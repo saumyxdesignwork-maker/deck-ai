@@ -352,8 +352,12 @@ export function PreviewPane({
         </span>
         {isDone && (
           <>
+            <ExportMenu
+              getSlideNodes={() => slideRefs.current.filter((el): el is HTMLDivElement => el !== null)}
+              title={deck?.title ?? MOCK_DECK.title}
+              aspectRatio={deck?.aspectRatio}
+            />
             <button style={miniBtnStyle} onClick={() => setIsPresenting(true)}><Play size={12} fill="currentColor" /> Present</button>
-            <ExportMenu />
             <div style={{ position: 'relative' }}>
               <button
                 style={miniBtnStyle}

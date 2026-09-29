@@ -162,6 +162,11 @@ function ImageBlock({ block }: { block: Block }) {
       <img
         src={block.imageUrl}
         alt={block.alt ?? block.content}
+        // Required for html-to-image (deck export) to read this image back
+        // out of the canvas — without it, a same-app-but-different-host
+        // image (the backend's own /assets URL) taints the canvas even
+        // though the server already sends the matching CORS header.
+        crossOrigin="anonymous"
         style={{
           width: '100%',
           height: 180,
