@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { Sparkles, X, Undo2, RotateCcw, Loader2, CheckCircle2, AlertCircle, Maximize2, Heading, Pilcrow, Image as ImageIcon, Quote, LayoutGrid, MessageSquareQuote } from 'lucide-react'
+import { Sparkles, X, Undo2, RotateCcw, Loader2, CheckCircle2, AlertCircle, Maximize2, Heading, Pilcrow, Image as ImageIcon, Quote, LayoutGrid, MessageSquareQuote, MousePointer2 } from 'lucide-react'
 import { ChatItem } from '@/lib/studioScript'
 import { DeckSection, Block } from '@/lib/fixtures'
 import { EditRun } from '@/lib/editStages'
@@ -14,10 +14,11 @@ import { Composer } from './Composer'
 
 export type ChatSurfaceState = 'closed' | 'expanded' | 'compact'
 
-/** A single slide element selected in the canvas's Select mode, carried into
- * the SAME Ask AI composer as a removable context chip — see PreviewPane,
- * which derives this from its existing `selectedBlockIds` (no new selection
- * state; this is just a read-friendly view of it). */
+/** One slide element selected in the canvas's Select mode, carried into the
+ * SAME Ask AI composer as a removable context chip — see PreviewPane, which
+ * derives a list of these from its existing `selectedBlockIds` (no new
+ * selection state; this is just a read-friendly view of it). Several can be
+ * selected at once so one instruction can target all of them together. */
 export interface SelectedBlockContext {
   blockId: string
   sectionId: string
@@ -55,7 +56,7 @@ interface FloatingChatProps {
   onExpand: () => void
   onClose: () => void
   /** Called on send; the parent switches to `compact` and starts the run. */
-  onSubmit: (instruction: string, activeSectionId?: string, activeBlockId?: string) => void
+  onSubmit: (instruction: string, activeSectionId?: string, activeBlockIds?: string[]) => void
   activeSection: DeckSection | null
   /** Chat items belonging to the current/latest edit run (user message onward). */
   runItems: ChatItem[]
@@ -70,13 +71,20 @@ interface FloatingChatProps {
    * one panel opens as the other closes. */
   instruction: string
   onInstructionChange: (value: string) => void
-  /** The single element selected on the canvas (Select mode), if any — shown
+  /** The elements selected on the canvas (Select mode), if any — each shown
    * as a removable chip above the field and used to scope the next ask to
-   * that exact block instead of the whole active slide. Selecting a block
-   * elsewhere also opens/focuses this SAME composer; there is no separate
-   * selection popup. */
-  selectedBlock: SelectedBlockContext | null
-  onClearSelectedBlock: () => void
+   * exactly those blocks instead of the whole active slide. Selecting a
+   * block elsewhere also opens/focuses this SAME composer; there is no
+   * separate selection popup. */
+  selectedBlocks: SelectedBlockContext[]
+  /** Removes one block from the selection (a single chip's ×). */
+  onRemoveSelectedBlock: (blockId: string) => void
+  /** Drops the whole selection at once. */
+  onClearSelectedBlocks: () => void
+  /** Switches the canvas into Select mode without leaving the chat — lets a
+   * user start (or extend) a multi-element selection from right here instead
+   * of having to first find the toolbar's own Select button. */
+  onEnterSelectMode: () => void
 }
 
 /**
@@ -91,7 +99,7 @@ interface FloatingChatProps {
  */
 export function FloatingChat({
   state, onExpand, onClose, onSubmit, activeSection, runItems, isEditing, run, canUndo, onUndo, shouldIgnoreEscape,
-  instruction, onInstructionChange, selectedBlock, onClearSelectedBlock,
+  instruction, onInstructionChange, selectedBlocks, onRemoveSelectedBlock, onClearSelectedBlocks, onEnterSelectMode,
 }: FloatingChatProps) {
   const [viewMode, setViewMode] = useState<'compose' | 'run'>('compose')
   const [lastInstruction, setLastInstruction] = useState('')
@@ -100,7 +108,7 @@ export function FloatingChat({
   const railRef = useRef<HTMLDivElement>(null)
   const previouslyFocusedRef = useRef<HTMLElement | null>(null)
   const scopeSectionIdRef = useRef<string | undefined>(undefined)
-  const scopeBlockIdRef = useRef<string | undefined>(undefined)
+  const scopeBlockIdsRef = useRef<string[] | undefined>(undefined)
   const prevStateRef = useRef<ChatSurfaceState>('closed')
   const reduceMotion = useReducedMotion()
 
@@ -166,32 +174,35 @@ export function FloatingChat({
     const text = raw.trim()
     if (!text || isEditing) return false
     setLastInstruction(text)
-    // A selected block's own section is the real scope — it may not be
-    // whichever slide happened to be "active" (last clicked) beforehand.
-    const sectionId = selectedBlock?.sectionId ?? activeSection?.id
+    // The first selected block's own section is the real scope — it may not
+    // be whichever slide happened to be "active" (last clicked) beforehand.
+    const sectionId = selectedBlocks[0]?.sectionId ?? activeSection?.id
+    const blockIds = selectedBlocks.length ? selectedBlocks.map(b => b.blockId) : undefined
     scopeSectionIdRef.current = sectionId
-    scopeBlockIdRef.current = selectedBlock?.blockId
+    scopeBlockIdsRef.current = blockIds
     setViewMode('run')
-    onSubmit(text, sectionId, selectedBlock?.blockId)
-    // The instruction now targets a specific edit — clear the chip so the
+    onSubmit(text, sectionId, blockIds)
+    // The instruction now targets specific elements — clear the chips so the
     // NEXT ask (once this one finishes) defaults back to slide/deck scope
     // rather than silently reusing a stale selection.
-    if (selectedBlock) onClearSelectedBlock()
+    if (selectedBlocks.length) onClearSelectedBlocks()
   }
 
   const handleRetry = () => {
     if (!lastInstruction || isEditing) return
-    onSubmit(lastInstruction, scopeSectionIdRef.current, scopeBlockIdRef.current)
+    onSubmit(lastInstruction, scopeSectionIdRef.current, scopeBlockIdsRef.current)
   }
 
   const runQuickAction = (action: string) => {
-    if (isEditing || !selectedBlock) return
+    if (isEditing || selectedBlocks.length === 0) return
     setLastInstruction(action)
-    scopeSectionIdRef.current = selectedBlock.sectionId
-    scopeBlockIdRef.current = selectedBlock.blockId
+    const sectionId = selectedBlocks[0].sectionId
+    const blockIds = selectedBlocks.map(b => b.blockId)
+    scopeSectionIdRef.current = sectionId
+    scopeBlockIdsRef.current = blockIds
     setViewMode('run')
-    onSubmit(action, selectedBlock.sectionId, selectedBlock.blockId)
-    onClearSelectedBlock()
+    onSubmit(action, sectionId, blockIds)
+    onClearSelectedBlocks()
   }
 
   const noop = () => {}
@@ -297,10 +308,11 @@ export function FloatingChat({
                       <Undo2 size={12} aria-hidden /> Undo this edit
                     </button>
                   )}
-                  {/* Quick actions for a selected element — the one bit of the
-                      old per-block popover worth keeping, now just canned
-                      instructions through the SAME submit path as typing. */}
-                  {viewMode === 'compose' && selectedBlock && (
+                  {/* Quick actions for the current selection — the one bit of
+                      the old per-block popover worth keeping, now just canned
+                      instructions through the SAME submit path as typing.
+                      Applies to every selected block at once. */}
+                  {viewMode === 'compose' && selectedBlocks.length > 0 && (
                     <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
                       {QUICK_BLOCK_ACTIONS.map(action => (
                         <button
@@ -320,22 +332,54 @@ export function FloatingChat({
                       ))}
                     </div>
                   )}
+                  {/* Lets a user start (or extend) a multi-element selection
+                      from inside the chat, instead of first having to find
+                      the canvas toolbar's own Select button — that button
+                      still works too, this is just a second way in. */}
+                  {viewMode === 'compose' && (
+                    <button
+                      type="button"
+                      onClick={onEnterSelectMode}
+                      disabled={isEditing}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 5, alignSelf: 'flex-start',
+                        padding: '4px 10px', borderRadius: 'var(--r-pill)',
+                        border: '1px solid var(--border)',
+                        background: selectedBlocks.length > 0 ? 'var(--accent-soft)' : 'var(--surface-muted)',
+                        color: selectedBlocks.length > 0 ? 'var(--accent)' : 'var(--text-muted)',
+                        fontSize: 11.5, fontWeight: 500,
+                        cursor: isEditing ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-body)',
+                      }}
+                    >
+                      <MousePointer2 size={12} aria-hidden />
+                      {selectedBlocks.length > 0 ? 'Select more elements' : 'Select elements'}
+                    </button>
+                  )}
                   <Composer
                     inputRef={inputRef}
                     value={instruction}
                     onChange={onInstructionChange}
                     onSubmit={handleComposerSubmit}
-                    placeholder={selectedBlock ? `Describe a change to this ${BLOCK_TYPE_LABEL[selectedBlock.blockType].toLowerCase()}…` : isEditing ? 'Draft your next change…' : 'Ask AI to change this deck…'}
+                    placeholder={
+                      selectedBlocks.length === 1
+                        ? `Describe a change to this ${BLOCK_TYPE_LABEL[selectedBlocks[0].blockType].toLowerCase()}…`
+                        : selectedBlocks.length > 1
+                          ? `Describe a change to these ${selectedBlocks.length} elements…`
+                          : isEditing ? 'Draft your next change…' : 'Ask AI to change this deck…'
+                    }
                     ariaLabel="Describe a change to the deck"
                     variant="session"
                     sendDisabled={isEditing}
                     sendDisabledLabel="Send (available when the current edit finishes)"
-                    contextChips={selectedBlock ? [{
-                      id: selectedBlock.blockId,
-                      icon: (() => { const Icon = BLOCK_TYPE_ICON[selectedBlock.blockType]; return <Icon size={11} aria-hidden /> })(),
-                      label: `${BLOCK_TYPE_LABEL[selectedBlock.blockType]}: ${selectedBlock.preview}`,
-                      onRemove: onClearSelectedBlock,
-                    }] : undefined}
+                    contextChips={selectedBlocks.length ? selectedBlocks.map(block => {
+                      const Icon = BLOCK_TYPE_ICON[block.blockType]
+                      return {
+                        id: block.blockId,
+                        icon: <Icon size={11} aria-hidden />,
+                        label: `${BLOCK_TYPE_LABEL[block.blockType]}: ${block.preview}`,
+                        onRemove: () => onRemoveSelectedBlock(block.blockId),
+                      }
+                    }) : undefined}
                   />
                 </div>
               </motion.div>

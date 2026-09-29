@@ -84,26 +84,36 @@ export function PreviewToolbar({ mode, onModeChange, onVerify, isVerifying, flag
         zIndex: 15,
       }}
     >
-      {TOOLS.map(({ key, icon: Icon, label }) => (
-        <button
-          key={key}
-          onClick={() => onModeChange(key)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 5,
-            padding: '5px 10px',
-            borderRadius: 'var(--r-pill)',
-            border: 'none',
-            background: mode === key ? 'var(--accent-soft)' : 'transparent',
-            color: mode === key ? 'var(--accent)' : 'var(--text-muted)',
-            fontSize: 12, fontWeight: 500, cursor: 'pointer',
-            fontFamily: 'var(--font-body)', position: 'relative',
-            whiteSpace: 'nowrap', flexShrink: 0,
-          }}
-        >
-          <Icon size={13} style={{ flexShrink: 0 }} />
-          {label}
-        </button>
-      ))}
+      {TOOLS.map(({ key, icon: Icon, label }) => {
+        // 'edit' is the canvas's resting/default mode — always typeable,
+        // nothing special engaged — so it never wears the "active" pill.
+        // 'select' is the deliberate, less-common mode a user switches into,
+        // so it's the one that visibly lights up while engaged. Showing
+        // both as a plain two-way toggle made 'edit' look permanently
+        // "pressed" for no reason, like a stray active state on page load.
+        const isActive = key === 'select' && mode === 'select'
+        return (
+          <button
+            key={key}
+            onClick={() => onModeChange(key)}
+            aria-pressed={key === 'select' ? isActive : undefined}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 5,
+              padding: '5px 10px',
+              borderRadius: 'var(--r-pill)',
+              border: 'none',
+              background: isActive ? 'var(--accent-soft)' : 'transparent',
+              color: isActive ? 'var(--accent)' : 'var(--text-muted)',
+              fontSize: 12, fontWeight: 500, cursor: 'pointer',
+              fontFamily: 'var(--font-body)', position: 'relative',
+              whiteSpace: 'nowrap', flexShrink: 0,
+            }}
+          >
+            <Icon size={13} style={{ flexShrink: 0 }} />
+            {label}
+          </button>
+        )
+      })}
 
       <div style={{ width: 1, height: 16, background: 'var(--divider)', margin: '0 2px' }} />
 

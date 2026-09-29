@@ -364,7 +364,7 @@ export function useStudioSession(
   // (same chip/checklist components as first-draft generation); the result
   // comes back as a single `deck` event applied as ONE undoable step.
   const runEdit = useCallback(
-    (instruction: string, activeSectionId?: string, activeBlockId?: string) => {
+    (instruction: string, activeSectionId?: string, activeBlockIds?: string[]) => {
       const deck = deckEditorRef.current.deck
       if (!instruction.trim() || !deck || isEditingRef.current) return
       setItems(prev => [...prev, { id: nextId('user'), type: 'user', text: instruction }])
@@ -373,7 +373,7 @@ export function useStudioSession(
       setIsEditing(true)
       setEditFailed(false)
       setEditGroupId(null)
-      runStream('/edit', { sessionId: sessionIdRef.current, instruction, deck, activeSectionId, activeBlockId })
+      runStream('/edit', { sessionId: sessionIdRef.current, instruction, deck, activeSectionId, activeBlockIds })
     },
     [runStream],
   )

@@ -71,7 +71,7 @@ interface PreviewPaneProps {
   isEditing: boolean
   editFailed: boolean
   editGroupId: string | null
-  onRunEdit: (instruction: string, activeSectionId?: string, activeBlockId?: string) => void
+  onRunEdit: (instruction: string, activeSectionId?: string, activeBlockIds?: string[]) => void
   /** Blocks the latest agent edit / AI rewrite changed (see useDeckEditor). */
   changeHighlight?: ChangeHighlight | null
   /** Ask AI popup state and draft — owned by StudioSession so it can hand
@@ -202,11 +202,11 @@ export function PreviewPane({
   }, [showWalkthrough, walkthroughStep, insertCollapsed, dismissWalkthrough])
 
   const handleAskAISubmit = useCallback(
-    (instruction: string, activeSectionId?: string, activeBlockId?: string) => {
+    (instruction: string, activeSectionId?: string, activeBlockIds?: string[]) => {
       setRunAnchor(items.length)
       setChipsVisible(true)
       onChatStateChange('compact')
-      onRunEdit(instruction, activeSectionId, activeBlockId)
+      onRunEdit(instruction, activeSectionId, activeBlockIds)
     },
     [items.length, onRunEdit, onChatStateChange],
   )
@@ -266,20 +266,34 @@ export function PreviewPane({
     setSelectedBlockIds(new Set())
   }, [])
 
-  // Selecting exactly one block opens/focuses the SAME Ask AI composer
+  // Selecting one or more blocks opens/focuses the SAME Ask AI composer
   // (below) instead of a separate popup anchored under the block — one
-  // editing surface for both entry points, per the unified design.
+  // editing surface for both entry points, per the unified design. Opens on
+  // the FIRST block selected in a run (prev was empty), not just when the
+  // set happens to land on exactly one, so selecting several via
+  // shift/cmd-click still opens the composer once, immediately.
   const handleToggleBlockSelect = useCallback((blockId: string, additive: boolean) => {
     setSelectedBlockIds(prev => {
       const next = additive ? new Set(prev) : new Set<string>()
       if (prev.has(blockId) && additive) next.delete(blockId)
       else next.add(blockId)
-      if (next.size === 1) openAskAI()
+      if (prev.size === 0 && next.size > 0) openAskAI()
       return next
     })
   }, [openAskAI])
 
   const handleClearSelection = useCallback(() => setSelectedBlockIds(new Set()), [])
+
+  // Removes just one block from the selection (a single context chip's ×) —
+  // distinct from Clear, which drops the whole selection at once.
+  const handleRemoveSelectedBlock = useCallback((blockId: string) => {
+    setSelectedBlockIds(prev => {
+      if (!prev.has(blockId)) return prev
+      const next = new Set(prev)
+      next.delete(blockId)
+      return next
+    })
+  }, [])
 
   const handleDeleteSelected = useCallback(() => {
     onDeleteBlocks(selectedBlockIds)
@@ -296,22 +310,23 @@ export function PreviewPane({
   const activeSectionIdx = activeIndex !== null && activeIndex > 0 ? activeIndex - 1 : null
   const activeSection = activeSectionIdx !== null ? sections[activeSectionIdx] ?? null : null
 
-  // A single-block selection, described for the Ask AI composer's context
-  // chip — derived from `selectedBlockIds` (the one existing source of
-  // selection truth), not a second parallel piece of state.
-  const selectedBlock: SelectedBlockContext | null = useMemo(() => {
-    if (selectedBlockIds.size !== 1) return null
-    const [blockId] = selectedBlockIds
+  // The selected blocks, described for the Ask AI composer's context chips —
+  // derived from `selectedBlockIds` (the one existing source of selection
+  // truth), not a second parallel piece of state. One chip per block, so an
+  // instruction can target several elements at once.
+  const selectedBlocks: SelectedBlockContext[] = useMemo(() => {
+    if (selectedBlockIds.size === 0) return []
+    const found: SelectedBlockContext[] = []
     for (const section of sections) {
-      const block = section.blocks.find(b => b.id === blockId)
-      if (block) {
+      for (const block of section.blocks) {
+        if (!selectedBlockIds.has(block.id)) continue
         const preview = block.content?.trim()
           || (block.cards?.length ? `${block.cards.length} card${block.cards.length > 1 ? 's' : ''}` : '')
           || 'Untitled'
-        return { blockId, sectionId: section.id, blockType: block.type, preview: preview.slice(0, 60) }
+        found.push({ blockId: block.id, sectionId: section.id, blockType: block.type, preview: preview.slice(0, 60) })
       }
     }
-    return null
+    return found
   }, [selectedBlockIds, sections])
 
   const flagCountBySection = new Map<string, number>()
@@ -446,8 +461,14 @@ export function PreviewPane({
                   shouldIgnoreEscape={shouldIgnoreEscape}
                   instruction={chatDraft}
                   onInstructionChange={onChatDraftChange}
-                  selectedBlock={selectedBlock}
-                  onClearSelectedBlock={handleClearSelection}
+                  selectedBlocks={selectedBlocks}
+                  onRemoveSelectedBlock={handleRemoveSelectedBlock}
+                  onClearSelectedBlocks={handleClearSelection}
+                  // Guarded: handleModeChange always clears the selection
+                  // (the toolbar's own Select button relies on that reset),
+                  // but re-clicking this from inside the chat while already
+                  // selecting must NOT wipe out chips the user just built up.
+                  onEnterSelectMode={() => { if (canvasMode !== 'select') handleModeChange('select') }}
                 />
               </LayoutGroup>
               <AnimatePresence>

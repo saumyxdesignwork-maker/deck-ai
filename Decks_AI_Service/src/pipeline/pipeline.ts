@@ -233,7 +233,7 @@ function opLabel(op: Op): string {
  * first-draft generation. Ends with a single `deck` event so the whole edit
  * lands as one atomic, undoable mutation on the client.
  */
-export async function runEdit(state: SessionState, instruction: string, deck: DeckData, activeSectionId: string | undefined, emit: Emit, activeBlockId?: string): Promise<void> {
+export async function runEdit(state: SessionState, instruction: string, deck: DeckData, activeSectionId: string | undefined, emit: Emit, activeBlockIds?: string[]): Promise<void> {
   const groupId = newId('group')
   await emit({ t: 'chat', item: { id: groupId, type: 'group', label: 'Working on your deck', children: [] } })
 
@@ -241,7 +241,7 @@ export async function runEdit(state: SessionState, instruction: string, deck: De
   const planToolId = newId('tool')
   await emit({ t: 'group-push', groupId, item: { id: planToolId, type: 'tool', label: 'Understanding your request', detail: instruction, status: 'running' } })
 
-  const { plan, usedFallback: plannerFallback } = await planEdit(instruction, deck, activeSectionId, activeBlockId)
+  const { plan, usedFallback: plannerFallback } = await planEdit(instruction, deck, activeSectionId, activeBlockIds)
 
   await emit({ t: 'update', id: planToolId, patch: { status: 'done' } })
   await emit({ t: 'group-push', groupId, item: { id: newId('reasoning'), type: 'reasoning', text: plan.summary } })

@@ -20,10 +20,10 @@ const EditBodySchema = z.object({
   text: z.string().min(1).optional(),
   deck: z.custom<DeckData>(v => !!v && typeof v === 'object').optional(),
   activeSectionId: z.string().optional(),
-  // Set when the user selected a specific block before asking (Select mode
-  // in the canvas) — lets the Coordinator target that exact block instead
-  // of guessing from the active slide alone.
-  activeBlockId: z.string().optional(),
+  // Set when the user selected one or more specific blocks before asking
+  // (Select mode in the canvas) — lets the Coordinator target exactly those
+  // blocks instead of guessing from the active slide alone.
+  activeBlockIds: z.array(z.string()).optional(),
 })
 
 export const followupRoute = new Hono()
@@ -61,7 +61,7 @@ async function handleEdit(c: Context) {
       await s.write(toLine(event))
     }
     try {
-      await runEdit(state, instruction, deck, body.data.activeSectionId, emit, body.data.activeBlockId)
+      await runEdit(state, instruction, deck, body.data.activeSectionId, emit, body.data.activeBlockIds)
     } catch (err) {
       logError('route.edit', err)
       await emit({ t: 'error', message: 'Something went wrong processing that. Please try again.', code: 'PIPELINE_ERROR' })
