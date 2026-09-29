@@ -305,7 +305,18 @@ export function Composer({
                     left: 0,
                     marginBottom: 8,
                     minWidth: 210,
-                    background: 'var(--surface)',
+                    // --surface alone is a near-transparent glass in the dark
+                    // visual language (built for panels sitting over a
+                    // mostly-solid background) — floating directly over the
+                    // composer/hero text underneath let that text bleed
+                    // straight through and read as illegible. --surface-panel
+                    // (the sidebar/topbar's own near-opaque glass) plus a real
+                    // blur is what makes it a proper frosted panel instead of
+                    // a barely-there tint — falls back to --surface where
+                    // --surface-panel isn't defined (VL1, already solid white).
+                    background: 'var(--surface-panel, var(--surface))',
+                    backdropFilter: 'var(--backdrop-blur, blur(16px))',
+                    WebkitBackdropFilter: 'var(--backdrop-blur, blur(16px))',
                     border: '1px solid var(--border)',
                     borderRadius: 'var(--r-md)',
                     boxShadow: 'var(--sh-3)',

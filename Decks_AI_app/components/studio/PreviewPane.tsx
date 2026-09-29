@@ -490,7 +490,14 @@ export function PreviewPane({
                 position: 'absolute', top: 60, left: '50%', transform: 'translateX(-50%)',
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '6px 8px 6px 14px', borderRadius: 'var(--r-pill)',
-                background: 'var(--surface)', border: '1px solid var(--border)',
+                // --surface-panel (the near-opaque glass sidebar/topbar use),
+                // not the bare, near-transparent --surface — this pill floats
+                // directly over live slide content, which bled straight
+                // through and made "N selected" hard to read.
+                background: 'var(--surface-panel, var(--surface))',
+                backdropFilter: 'var(--backdrop-blur, blur(16px))',
+                WebkitBackdropFilter: 'var(--backdrop-blur, blur(16px))',
+                border: '1px solid var(--border)',
                 boxShadow: 'var(--sh-2)', zIndex: 15,
               }}
             >
@@ -516,7 +523,13 @@ export function PreviewPane({
                 position: 'absolute', top: 14, right: 14, zIndex: 10,
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '5px 12px', borderRadius: 'var(--r-pill)',
-                background: 'var(--surface)', border: '1px solid var(--border)',
+                // Same frosted-panel fix as the selection pill above — floats
+                // over live slide content while streaming, so it needs the
+                // near-opaque --surface-panel glass, not bare --surface.
+                background: 'var(--surface-panel, var(--surface))',
+                backdropFilter: 'var(--backdrop-blur, blur(16px))',
+                WebkitBackdropFilter: 'var(--backdrop-blur, blur(16px))',
+                border: '1px solid var(--border)',
                 boxShadow: 'var(--sh-1)', fontSize: 11.5, color: 'var(--text-muted)',
                 fontFamily: 'var(--font-body)',
               }}
