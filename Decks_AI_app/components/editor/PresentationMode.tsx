@@ -3,8 +3,11 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { motionPresets } from '@/lib/motion'
-import { X, ChevronLeft, ChevronRight, Minimize2 } from 'lucide-react'
-import { DeckSection, Block, AspectRatio, aspectRatioCss } from '@/lib/fixtures'
+import { X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { DeckSection, Block, AspectRatio, aspectRatioCss, LayoutType } from '@/lib/fixtures'
+import { DeckThemeScope, useDeckTemplate } from '@/components/deck/DeckThemeScope'
+import { resolveCoverVars } from '@/lib/deckTemplates/toCssVars'
+import type { DeckTemplate } from '@/lib/deckTemplates'
 
 interface Slide {
   id: string
@@ -36,44 +39,109 @@ function buildSlides(deckTitle: string, sections: DeckSection[], cover: CoverInf
   ]
 }
 
-// Presentation mode always renders on its own fixed dark backdrop,
-// regardless of the site's active VL1/VL2/VL3 theme — so these colors are
-// hardcoded for legibility on dark, never the `--text`/`--accent` theme
-// variables (those are tuned for light surfaces and were the cause of
-// dark-text-on-dark-panel illegibility here before).
-const PRESENT_TEXT = 'rgba(255,255,255,0.94)'
-const PRESENT_TEXT_MUTED = 'rgba(255,255,255,0.72)'
-const PRESENT_ACCENT = '#F2A65A'
+// The single canvas every slide renders at, before the whole thing gets
+// uniformly scaled to fit the viewport (see `scale` below) — matches
+// PreviewPane's own canvas width (see its `maxWidth: 820`) so every
+// `var(--dt-*)` token pixel value already tuned for the editor applies here
+// completely unchanged, rather than needing its own separately-tuned scale.
+// This is what makes Present mode's proportions match the editor by
+// construction instead of by coincidence.
+const BASE_W = 820
 
-function renderBlockPreview(block: Block) {
+// Muted secondary text color for chrome that sits OUTSIDE the slide canvas
+// itself (top/bottom bars, nav dots) — the backdrop stays a fixed dark
+// stage regardless of the deck's template, same as a real projector's
+// bezel; only the canvas inside picks up the template's real colors.
+const CHROME_TEXT_MUTED = 'rgba(255,255,255,0.72)'
+
+function align(layout?: LayoutType): 'left' | 'center' {
+  return layout === 'statement' || layout === 'closing' ? 'center' : 'left'
+}
+
+function renderBlockPreview(block: Block, layout: LayoutType | undefined, template: DeckTemplate) {
+  const textAlign = align(layout)
   switch (block.type) {
     case 'heading':
       return (
-        <h2 key={block.id} style={{ fontFamily: 'var(--font-heading)', fontSize: 34, fontWeight: 700, color: PRESENT_TEXT, marginBottom: 16, lineHeight: 1.2 }}>
+        <h2
+          key={block.id}
+          style={{
+            fontFamily: 'var(--font-heading)',
+            fontSize: textAlign === 'center' ? 'var(--dt-h1, 28px)' : 'var(--dt-h2, 22px)',
+            fontWeight: 'var(--dt-h-weight, 700)' as unknown as number,
+            textTransform: 'var(--dt-h-case, none)' as React.CSSProperties['textTransform'],
+            letterSpacing: 'var(--dt-h-track, normal)',
+            color: 'var(--text)',
+            textAlign,
+            marginBottom: 'var(--dt-gap, 12px)',
+            lineHeight: 1.25,
+          }}
+        >
           {block.content}
         </h2>
       )
     case 'paragraph':
       return (
-        <p key={block.id} style={{ fontFamily: 'var(--font-body)', fontSize: 19, color: PRESENT_TEXT_MUTED, lineHeight: 1.65, marginBottom: 18 }}>
+        <p
+          key={block.id}
+          style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--dt-body, 16px)', color: 'var(--text)', textAlign, lineHeight: 1.65, marginBottom: 'var(--dt-gap, 12px)' }}
+        >
           {block.content}
         </p>
       )
+    case 'quote':
+      return (
+        <div key={block.id} style={{ marginBottom: 'var(--dt-gap, 12px)', textAlign }}>
+          <span aria-hidden style={{ display: 'block', fontFamily: 'var(--font-heading)', fontSize: 36, lineHeight: 0.5, color: 'var(--accent)', opacity: 0.5, marginBottom: 6 }}>&ldquo;</span>
+          <p style={{ fontFamily: 'var(--font-heading)', fontStyle: 'italic', fontSize: 20, fontWeight: 500, color: 'var(--text)', lineHeight: 1.4, margin: 0 }}>{block.content}</p>
+        </div>
+      )
     case 'callout':
       return (
-        <div key={block.id} style={{ borderLeft: `3px solid ${PRESENT_ACCENT}`, paddingLeft: 18, paddingTop: 12, paddingBottom: 12, marginBottom: 18, background: 'rgba(242,166,90,0.12)', borderRadius: '0 var(--r-sm) var(--r-sm) 0' }}>
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: 17, color: PRESENT_ACCENT, fontWeight: 500, margin: 0 }}>{block.content}</p>
+        <div key={block.id} style={{ borderLeft: '3px solid var(--accent)', paddingLeft: 18, paddingTop: 12, paddingBottom: 12, marginBottom: 'var(--dt-gap, 12px)', background: 'var(--accent-soft)', borderRadius: '0 var(--r-sm) var(--r-sm) 0' }}>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 17, color: 'var(--accent)', fontWeight: 500, margin: 0 }}>{block.content}</p>
         </div>
+      )
+    case 'image':
+      if (!block.imageUrl) return null
+      return (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          key={block.id}
+          src={block.imageUrl}
+          alt={block.alt ?? block.content}
+          style={{
+            width: '100%',
+            height: 180,
+            objectFit: 'cover',
+            display: 'block',
+            boxSizing: 'border-box',
+            marginBottom: 'var(--dt-gap, 12px)',
+            borderRadius: 'var(--dt-img-radius, var(--r-md))',
+            border: 'var(--dt-img-frame, none)',
+            filter: 'var(--dt-img-filter, none)',
+            mixBlendMode: 'var(--dt-img-blend, normal)' as React.CSSProperties['mixBlendMode'],
+          }}
+        />
       )
     case 'card-group':
       if (!block.cards) return null
       return (
-        <div key={block.id} style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(block.cards.length, 3)}, 1fr)`, gap: 14, marginBottom: 18 }}>
+        <div key={block.id} style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(block.cards.length, 3)}, 1fr)`, gap: 10, marginBottom: 'var(--dt-gap, 12px)' }}>
           {block.cards.map((card, i) => (
-            <div key={i} style={{ padding: 18, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 'var(--r-md)' }}>
-              <div style={{ fontSize: 22, marginBottom: 8 }}>{card.icon}</div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: PRESENT_TEXT_MUTED, marginBottom: 4 }}>{card.title}</div>
-              <div style={{ fontSize: 22, fontWeight: 700, color: PRESENT_TEXT }}>{card.value}</div>
+            <div
+              key={i}
+              style={{
+                padding: 14,
+                borderRadius: 'var(--dt-card-radius, var(--r-md))',
+                background: 'var(--dt-card-bg, var(--surface-muted))',
+                border: 'var(--dt-card-border, 1px solid var(--border))',
+                boxShadow: 'var(--dt-card-shadow, none)',
+              }}
+            >
+              <div style={{ fontSize: 18, marginBottom: 6 }}>{card.icon}</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 3, fontFamily: 'var(--font-body)' }}>{card.title}</div>
+              <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--dt-stat-color, var(--accent))', fontFamily: 'var(--dt-numeric-font, var(--font-heading))' }}>{card.value}</div>
             </div>
           ))}
         </div>
@@ -94,17 +162,43 @@ interface PresentationModeProps {
 }
 
 export function PresentationMode({ deckTitle, subtitle, author, coverColor, sections, onClose, aspectRatio }: PresentationModeProps) {
+  const template = useDeckTemplate()
   const slides = buildSlides(deckTitle, sections, { subtitle, author, color: coverColor })
-  // Numeric form of the same ratio aspectRatioCss() renders as CSS — used to
-  // size the slide as large as possible without exceeding the viewport in
-  // either dimension (a real "fill the screen" present view, not a small
-  // fixed-width card floating in the middle of it).
   const ratioNum = aspectRatio === '4:3' ? 4 / 3 : 16 / 9
+  const baseH = BASE_W / ratioNum
   const [current, setCurrent] = useState(0)
   const [controlsVisible, setControlsVisible] = useState(true)
   const [hideTimer, setHideTimer] = useState<ReturnType<typeof setTimeout> | null>(null)
   const rootRef = useRef<HTMLDivElement>(null)
   const m = motionPresets(useReducedMotion())
+
+  // Reserves room for the top/bar chrome (which sit OVER the canvas, not
+  // beside it, but auto-hide — keeping a margin means they never overlap
+  // slide content even during the brief moment they're visible) — kept as
+  // plain numbers, not CSS, since the scale factor itself is computed in JS.
+  const MARGIN_X = 64
+  const MARGIN_Y = 96
+
+  // The one thing that actually changes between a laptop, a maximized
+  // browser window, real OS fullscreen, and a TV-sized display — everything
+  // else (the canvas's own internal layout) is fixed at BASE_W×baseH and
+  // just gets visually scaled by this factor, never recomputed or reflowed.
+  const [viewport, setViewport] = useState(() => ({
+    w: typeof window !== 'undefined' ? window.innerWidth : 1280,
+    h: typeof window !== 'undefined' ? window.innerHeight : 720,
+  }))
+  useEffect(() => {
+    const onResize = () => setViewport({ w: window.innerWidth, h: window.innerHeight })
+    window.addEventListener('resize', onResize)
+    // Safari doesn't always fire `resize` synchronously on a fullscreen
+    // transition — belt and suspenders.
+    document.addEventListener('fullscreenchange', onResize)
+    return () => {
+      window.removeEventListener('resize', onResize)
+      document.removeEventListener('fullscreenchange', onResize)
+    }
+  }, [])
+  const scale = Math.max(0.1, Math.min((viewport.w - MARGIN_X) / BASE_W, (viewport.h - MARGIN_Y) / baseH))
 
   // Take focus on open (so arrow keys/Esc work immediately and screen
   // readers land in the presentation), give it back on close.
@@ -144,6 +238,8 @@ export function PresentationMode({ deckTitle, subtitle, author, coverColor, sect
   }, [current])
 
   const slide = slides[current]
+  const cover = template.surfaces.cover
+  const coverBg = cover.kind === 'deck-color' ? slide.color : cover.background
 
   return (
     <motion.div
@@ -190,7 +286,7 @@ export function PresentationMode({ deckTitle, subtitle, author, coverColor, sect
           {deckTitle}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', fontFamily: 'var(--font-body)' }}>
+          <span style={{ fontSize: 13, color: CHROME_TEXT_MUTED, fontFamily: 'var(--font-body)' }}>
             {current + 1} / {slides.length}
           </span>
           <button
@@ -220,7 +316,6 @@ export function PresentationMode({ deckTitle, subtitle, author, coverColor, sect
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '32px',
           boxSizing: 'border-box',
           overflow: 'hidden',
         }}
@@ -231,30 +326,42 @@ export function PresentationMode({ deckTitle, subtitle, author, coverColor, sect
           else go(-1)
         }}
       >
-        <div
-          className="animate-fade-in"
+        {/* The single fixed-size canvas — width/height are real pixels, not
+            vw/vh or aspectRatio-derived, so every child's font-size/padding
+            is a literal, unchanging number. `transform: scale` below is the
+            ONLY thing that changes across viewports; it paints this same
+            layout bigger or smaller without re-flowing anything inside it,
+            which is exactly what keeps typography/images/spacing/positions
+            moving together instead of drifting independently. */}
+        <motion.div
           key={slide.id}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1, scale }}
+          transition={m.content}
           style={{
-            // Fills as much of the viewport as possible while honoring the
-            // deck's aspect ratio exactly — whichever dimension (width or
-            // height) is the tighter constraint wins, so the slide is
-            // always maximally large without ever being cropped or
-            // letterboxed unevenly.
-            width: `min(100%, calc((100vh - 64px) * ${ratioNum}))`,
-            aspectRatio: aspectRatioCss(aspectRatio),
+            width: BASE_W,
+            height: baseH,
+            flexShrink: 0,
+            transformOrigin: 'center center',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
           }}
         >
           {slide.type === 'cover' ? (
-            /* Cover slide */
+            /* Cover slide — same background/foreground rules as CoverBlock
+               (deck-color vs. the template's own fixed cover), not a
+               hardcoded dark treatment, so it matches the editor exactly. */
             <div
               style={{
-                background: slide.color,
-                borderRadius: 'var(--r-xl)',
-                padding: '60px 64px',
-                aspectRatio: aspectRatioCss(aspectRatio),
+                ...resolveCoverVars(template),
+                background: coverBg,
+                backgroundImage: cover.kind === 'pattern' ? cover.pattern : undefined,
+                backgroundSize: cover.kind === 'pattern' ? (cover.patternSize ?? 'auto') : undefined,
+                borderRadius: template.surfaces.slideRadius,
+                padding: template.space.slidePad,
+                width: '100%',
+                height: '100%',
                 overflow: 'hidden',
                 boxSizing: 'border-box',
                 display: 'flex',
@@ -263,43 +370,52 @@ export function PresentationMode({ deckTitle, subtitle, author, coverColor, sect
                 boxShadow: '0 40px 100px rgba(0,0,0,0.6)',
               }}
             >
-              <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 44, fontWeight: 700, color: 'rgba(255,255,255,0.95)', lineHeight: 1.15, marginBottom: 14 }}>
+              <h1
+                style={{
+                  fontFamily: 'var(--font-heading)',
+                  fontWeight: 'var(--dt-h-weight, 700)' as unknown as number,
+                  textTransform: 'var(--dt-h-case, none)' as React.CSSProperties['textTransform'],
+                  letterSpacing: 'var(--dt-h-track, normal)',
+                  fontSize: 32,
+                  color: 'var(--dt-cover-fg)',
+                  lineHeight: 1.2,
+                  marginBottom: 12,
+                }}
+              >
                 {slide.title}
               </h1>
               {slide.subtitle && (
-                <p style={{ fontFamily: 'var(--font-body)', fontSize: 18, color: 'rgba(255,255,255,0.65)', marginBottom: 28, lineHeight: 1.5 }}>
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: 15, color: 'var(--dt-cover-fg)', opacity: 0.8, marginBottom: 24, lineHeight: 1.5 }}>
                   {slide.subtitle}
                 </p>
               )}
               {slide.author && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'white' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'color-mix(in srgb, var(--dt-cover-fg) 25%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: 'var(--dt-cover-fg)' }}>
                     {slide.author.split(' ').map(n => n[0]).join('').slice(0, 2)}
                   </div>
-                  <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', fontFamily: 'var(--font-body)' }}>{slide.author}</span>
+                  <span style={{ fontSize: 12, color: 'var(--dt-cover-fg)', opacity: 0.7, fontFamily: 'var(--font-body)' }}>{slide.author}</span>
                 </div>
               )}
             </div>
           ) : (
-            /* Section slide */
-            <div
+            /* Section slide — DeckThemeScope is the exact same wrapper
+               ContentSection uses, so background/text/card tokens are
+               identical, not a parallel guess at them. */
+            <DeckThemeScope
+              layout={slide.section?.layout}
               style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: 'var(--r-xl)',
-                padding: '52px 60px',
-                aspectRatio: aspectRatioCss(aspectRatio),
+                width: '100%',
+                height: '100%',
+                borderRadius: template.surfaces.slideRadius,
                 overflow: 'auto',
-                boxSizing: 'border-box',
                 boxShadow: '0 40px 100px rgba(0,0,0,0.5)',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
               }}
             >
-              {slide.section?.blocks.map(block => renderBlockPreview(block))}
-            </div>
+              {slide.section?.blocks.map(block => renderBlockPreview(block, slide.section?.layout, template))}
+            </DeckThemeScope>
           )}
-        </div>
+        </motion.div>
       </div>
 
       {/* Bottom nav bar */}

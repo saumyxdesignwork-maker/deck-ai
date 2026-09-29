@@ -642,16 +642,23 @@ export function PreviewPane({
 
       <AnimatePresence>
       {isPresenting && (
-        <PresentationMode
-          key="present"
-          deckTitle={deck?.title ?? MOCK_DECK.title}
-          subtitle={deck?.subtitle ?? MOCK_DECK.subtitle}
-          author={deck?.author ?? MOCK_DECK.author}
-          coverColor={deck?.coverColor ?? MOCK_DECK.coverColor}
-          sections={sections}
-          onClose={() => setIsPresenting(false)}
-          aspectRatio={deck?.aspectRatio}
-        />
+        // Its own provider, not nested inside the canvas's — Present mode
+        // renders as a sibling fixed overlay (see the AnimatePresence
+        // wrapping it), outside the DeckTemplateProvider that wraps the
+        // scrollable canvas above, so it would otherwise silently fall back
+        // to the default template regardless of what's actually selected.
+        <DeckTemplateProvider templateId={effectiveTemplateId}>
+          <PresentationMode
+            key="present"
+            deckTitle={deck?.title ?? MOCK_DECK.title}
+            subtitle={deck?.subtitle ?? MOCK_DECK.subtitle}
+            author={deck?.author ?? MOCK_DECK.author}
+            coverColor={deck?.coverColor ?? MOCK_DECK.coverColor}
+            sections={sections}
+            onClose={() => setIsPresenting(false)}
+            aspectRatio={deck?.aspectRatio}
+          />
+        </DeckTemplateProvider>
       )}
       </AnimatePresence>
     </div>

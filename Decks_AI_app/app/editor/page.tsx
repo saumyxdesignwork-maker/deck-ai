@@ -192,14 +192,16 @@ export default function EditorPage() {
       <ControlsPanel />
 
       {isPresenting && (
-        <PresentationMode
-          deckTitle={deckTitle}
-          subtitle={MOCK_DECK.subtitle}
-          author={MOCK_DECK.author}
-          coverColor={MOCK_DECK.coverColor}
-          sections={sections}
-          onClose={() => setIsPresenting(false)}
-        />
+        <DeckTemplateProvider templateId={templateOverride}>
+          <PresentationMode
+            deckTitle={deckTitle}
+            subtitle={MOCK_DECK.subtitle}
+            author={MOCK_DECK.author}
+            coverColor={MOCK_DECK.coverColor}
+            sections={sections}
+            onClose={() => setIsPresenting(false)}
+          />
+        </DeckTemplateProvider>
       )}
     </>
   )
