@@ -3,7 +3,7 @@ import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useEffect, useState } from 'react'
 import { MotionGlobalConfig } from 'motion/react'
-import { PreviewPane, WALKTHROUGH_SEEN_KEY } from './PreviewPane'
+import { PreviewPane } from './PreviewPane'
 import type { ChatSurfaceState } from './FloatingChat'
 import { MOCK_DECK } from '@/lib/fixtures'
 import type { ChatItem } from '@/lib/studioScript'
@@ -27,7 +27,7 @@ const controls = {
 }
 const onRunEdit = vi.fn()
 
-function Harness({ previewState = 'done' as PreviewState }) {
+function Harness({ previewState = 'done' as PreviewState, initialWalkthroughSeen = false }: { previewState?: PreviewState; initialWalkthroughSeen?: boolean }) {
   const [items, setItems] = useState<ChatItem[]>([{ id: 'u0', type: 'user', text: 'Make a deck' }])
   const [isEditing, setIsEditing] = useState(false)
   const [editFailed, setEditFailed] = useState(false)
@@ -81,6 +81,7 @@ function Harness({ previewState = 'done' as PreviewState }) {
       onChatStateChange={setChatState}
       chatDraft={chatDraft}
       onChatDraftChange={setChatDraft}
+      initialWalkthroughSeen={initialWalkthroughSeen}
     />
   )
 }
@@ -329,9 +330,8 @@ describe('shortcut signifier', () => {
     // Isolates this from the full shortcut walkthrough (a separate, newer
     // first-run experience that covers the same ⌘⌘ gesture) by treating it
     // as already seen — a realistic state for anyone testing the smaller tip.
-    window.localStorage.setItem(WALKTHROUGH_SEEN_KEY, '1')
     const user = userEvent.setup()
-    const { unmount } = render(<Harness />)
+    const { unmount } = render(<Harness initialWalkthroughSeen />)
     const askButton = screen.getByRole('button', { name: /Ask AI/ })
     expect(askButton).toHaveTextContent('⌘⌘')
     expect(askButton).toHaveAccessibleDescription(/press Command twice/i)
@@ -343,13 +343,12 @@ describe('shortcut signifier', () => {
     expect(window.localStorage.getItem(ASK_AI_HINT_SEEN_KEY)).toBe('1')
 
     unmount()
-    render(<Harness />)
+    render(<Harness initialWalkthroughSeen />)
     expect(screen.queryByTestId('ask-ai-coachmark')).toBeNull()
   })
 
   it('the tip hides while chat is open and does not come back after using ⌘⌘', async () => {
-    window.localStorage.setItem(WALKTHROUGH_SEEN_KEY, '1')
-    render(<Harness />)
+    render(<Harness initialWalkthroughSeen />)
     expect(screen.getByTestId('ask-ai-coachmark')).toBeInTheDocument()
     doubleCmd()
     await waitFor(() => expect(screen.queryByTestId('ask-ai-coachmark')).toBeNull())
@@ -359,14 +358,15 @@ describe('shortcut signifier', () => {
   })
 
   it('Escape dismisses the tip without blocking anything', async () => {
-    render(<Harness />)
+    render(<Harness initialWalkthroughSeen />)
+    expect(screen.getByTestId('ask-ai-coachmark')).toBeInTheDocument()
     key('keydown', 'Escape')
     await waitFor(() => expect(screen.queryByTestId('ask-ai-coachmark')).toBeNull())
   })
 
   it('does not advertise ⌘⌘ on non-Apple platforms', () => {
     setPlatform('Win32')
-    render(<Harness />)
+    render(<Harness initialWalkthroughSeen />)
     expect(screen.getByRole('button', { name: /Ask AI/ })).not.toHaveTextContent('⌘⌘')
     expect(screen.queryByTestId('ask-ai-coachmark')).toBeNull()
   })
@@ -389,19 +389,35 @@ describe('shortcut walkthrough', () => {
     key('keydown', '/', { metaKey: true })
     await waitFor(() => expect(screen.getByTitle(/Hide insert panel/)).toBeInTheDocument())
     await waitFor(() => expect(screen.queryByText('Try the manual edit shortcut')).toBeNull(), { timeout: 2000 })
-    expect(window.localStorage.getItem(WALKTHROUGH_SEEN_KEY)).toBe('1')
   })
 
-  it('Skip dismisses it immediately and it does not return', async () => {
+  it('Skip dismisses it immediately, but it comes back on the next fresh mount (e.g. a reload)', async () => {
     const user = userEvent.setup()
     const { unmount } = render(<Harness />)
     await user.click(screen.getByRole('button', { name: 'Skip walkthrough' }))
     await waitFor(() => expect(screen.queryByText('Try the Ask AI shortcut')).toBeNull())
-    expect(window.localStorage.getItem(WALKTHROUGH_SEEN_KEY)).toBe('1')
+
+    // Deliberately NOT persisted (see the comment on `walkthroughSeen` in
+    // PreviewPane.tsx) — every fresh mount is a new "does this customer see
+    // the shortcut walkthrough" decision, not a one-time-ever gate.
+    unmount()
+    render(<Harness />)
+    expect(screen.getByText('Try the Ask AI shortcut')).toBeInTheDocument()
+  })
+
+  it('completing the walkthrough once does not suppress it on the next fresh mount either', async () => {
+    const { unmount } = render(<Harness />)
+    doubleCmd()
+    await waitFor(() => expect(dialog()).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText('Try the manual edit shortcut')).toBeInTheDocument(), { timeout: 2000 })
+    key('keydown', '/', { metaKey: true })
+    // Full dismissal, not just the step-1→2 transition — the same signal
+    // the "walks through" test above waits on.
+    await waitFor(() => expect(screen.queryByText('Try the manual edit shortcut')).toBeNull(), { timeout: 2000 })
 
     unmount()
     render(<Harness />)
-    expect(screen.queryByText('Try the Ask AI shortcut')).toBeNull()
+    expect(screen.getByText('Try the Ask AI shortcut')).toBeInTheDocument()
   })
 })
 

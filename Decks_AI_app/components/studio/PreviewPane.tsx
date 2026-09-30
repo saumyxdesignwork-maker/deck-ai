@@ -32,7 +32,6 @@ import { DeckTemplateProvider } from '@/components/deck/DeckThemeScope'
 const MIN_INSERT_WIDTH = 220
 const MAX_INSERT_WIDTH = 480
 const DEFAULT_INSERT_WIDTH = 276
-export const WALKTHROUGH_SEEN_KEY = 'deckai.shortcutWalkthroughSeen'
 const noopSubscribe = () => () => {}
 
 interface PreviewPaneProps {
@@ -80,6 +79,13 @@ interface PreviewPaneProps {
   onChatStateChange: (state: ChatSurfaceState) => void
   chatDraft: string
   onChatDraftChange: (value: string) => void
+  /** Test-only seam: starts the shortcut walkthrough as already-seen so a
+   * test can isolate the smaller ask-ai-coachmark tip (or anything else
+   * gated on `isDone`) without the walkthrough popping up and covering it.
+   * The real call site never passes this — the walkthrough resets on every
+   * fresh mount by design (see the comment where `walkthroughSeen` is
+   * declared), not something a normal caller would want to skip. */
+  initialWalkthroughSeen?: boolean
 }
 
 export function PreviewPane({
@@ -90,6 +96,7 @@ export function PreviewPane({
   onBeginBlockEdit, onUpdateBlockContent, onCommitBlockEdit, onSetSectionLayout,
   items, isEditing, editFailed, editGroupId, onRunEdit, changeHighlight,
   chatState, onChatStateChange, chatDraft, onChatDraftChange,
+  initialWalkthroughSeen = false,
 }: PreviewPaneProps) {
   const m = motionPresets(useReducedMotion())
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
@@ -171,17 +178,20 @@ export function PreviewPane({
   // (chatState, insertCollapsed), so it only advances once the user has
   // actually done it. ⌘⌘ is Apple-only (see useDoubleMetaTap), so the whole
   // walkthrough is gated the same way rather than teaching a dead shortcut.
+  //
+  // Deliberately NOT persisted across reloads (no localStorage) — every time
+  // someone opens the deck link and the canvas reaches `isDone`, they see it
+  // again, not just the first time ever on that browser. It still leaves on
+  // its own within a single visit once the shortcuts are actually used, or
+  // via Skip; it just doesn't stay dismissed the next time the page loads.
   const showShortcuts = useSyncExternalStore(noopSubscribe, isApplePlatform, () => false)
-  const [walkthroughSeen, setWalkthroughSeen] = useState(() => {
-    try { return window.localStorage.getItem(WALKTHROUGH_SEEN_KEY) === '1' } catch { return true }
-  })
+  const [walkthroughSeen, setWalkthroughSeen] = useState(initialWalkthroughSeen)
   const [walkthroughStep, setWalkthroughStep] = useState<WalkthroughStep>(0)
   const [walkthroughCompleted, setWalkthroughCompleted] = useState(false)
   const showWalkthrough = showShortcuts && isDone && !walkthroughSeen
 
   const dismissWalkthrough = useCallback(() => {
     setWalkthroughSeen(true)
-    try { window.localStorage.setItem(WALKTHROUGH_SEEN_KEY, '1') } catch {}
   }, [])
 
   useEffect(() => {
