@@ -250,9 +250,18 @@ export interface StudioTemplate {
 
 // Studio's "Try one of these" — one real thumbnail per card (public/Thumbnail-1..6.png),
 // so this stays at exactly 6 entries, mapped left-to-right/top-to-bottom in that order.
+// Slots 3 and 5 use the "alt" variants per design feedback.
+const STUDIO_TEMPLATE_THUMBNAILS = [
+  '/Thumbnail-1.png',
+  '/Thumbnail-2.png',
+  '/Thumbnail-3 alt.png',
+  '/Thumbnail-4.png',
+  '/Thumbnail-5 alt.png',
+  '/Thumbnail-6.png',
+]
 export const STUDIO_TEMPLATES: StudioTemplate[] = SUGGESTED_PROMPTS.slice(0, 6).map((prompt, i) => ({
   prompt,
-  thumbnail: `/Thumbnail-${i + 1}.png`,
+  thumbnail: STUDIO_TEMPLATE_THUMBNAILS[i],
 }))
 
 // ─── Layout options for storyline selector ───
