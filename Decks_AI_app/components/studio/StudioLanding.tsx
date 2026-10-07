@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Sparkles, Layers, Briefcase, Palette, RectangleHorizontal, Square, Wand2 } from 'lucide-react'
 import { Composer } from './Composer'
 import { STUDIO_TEMPLATES, AspectRatio } from '@/lib/fixtures'
@@ -72,6 +73,7 @@ function formatRelativeDate(iso: string): string {
 }
 
 export function StudioLanding({ onSubmit, onResume }: StudioLandingProps) {
+  const searchParams = useSearchParams()
   const [mode, setMode] = useState<DeckStyle>('professional')
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9')
   const [promptValue, setPromptValue] = useState('')
@@ -119,6 +121,23 @@ export function StudioLanding({ onSubmit, onResume }: StudioLandingProps) {
       el.setSelectionRange(prompt.length, prompt.length)
     })
   }
+
+  // Marketing-page deep links (?prompt=, ?template=) — lets a landing-page
+  // CTA land the visitor in Studio ready to go instead of a generic open.
+  // Runs once on mount, after the last-used-template effect above, so an
+  // explicit link always wins over the remembered choice.
+  useEffect(() => {
+    const prompt = searchParams.get('prompt')
+    const template = searchParams.get('template')
+    if (template && TEMPLATES.some(t => t.id === template)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time seed from the URL on mount, not a sync loop
+      selectTemplate(template)
+    }
+    if (prompt) {
+      fillFromTemplate(prompt)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleSend = async (text: string) => {
     setSendError(null)

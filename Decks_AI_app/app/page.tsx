@@ -1,16 +1,24 @@
-'use client'
+import { Suspense } from 'react'
+import { ReturningUserRedirect } from '@/components/marketing/ReturningUserRedirect'
+import { DirectionSwitcher } from '@/components/marketing/DirectionSwitcher'
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-
-// Studio is the default Create Flow (see ThemeProvider); a visitor who
-// switched to Classic via the Style controller keeps landing there instead,
-// since that choice is only known client-side (localStorage).
-export default function RootPage() {
-  const router = useRouter()
-  useEffect(() => {
-    const savedFlow = localStorage.getItem('deckai-flow')
-    router.replace(savedFlow === 'classic' ? '/create' : '/create/studio')
-  }, [router])
-  return null
+// The marketing page is the front door at "/". Returning users (anyone with
+// a saved deck already) are forwarded straight to their flow by
+// ReturningUserRedirect — see components/marketing/ReturningUserRedirect.tsx
+// for why that's a client-side check rather than a server redirect.
+//
+// DirectionSwitcher renders whichever of the two landing-page directions is
+// active (see components/marketing/Direction1.tsx / Direction2.tsx) behind a
+// floating stakeholder toggle; each direction owns its own CSS token scope
+// and section tree, so this page itself stays a thin shell. Wrapped in
+// Suspense because DirectionSwitcher reads the `?dir=` search param.
+export default function HomePage() {
+  return (
+    <>
+      <ReturningUserRedirect />
+      <Suspense fallback={null}>
+        <DirectionSwitcher />
+      </Suspense>
+    </>
+  )
 }

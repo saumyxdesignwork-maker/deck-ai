@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { MotionConfig } from 'motion/react'
 import { ControlsPanel } from '@/components/controls/ControlsPanel'
 import { useTheme } from '@/components/controls/ThemeProvider'
@@ -76,7 +76,11 @@ export default function StudioPage() {
   return (
     <MotionConfig reducedMotion="user">
       <div style={{ height: '100vh', overflow: 'hidden', background: 'var(--bg-canvas)' }}>
-        <StudioLanding onSubmit={handleSubmit} onResume={handleResume} />
+        {/* StudioLanding reads ?prompt=/?template= via useSearchParams, which
+            requires a Suspense boundary. */}
+        <Suspense fallback={null}>
+          <StudioLanding onSubmit={handleSubmit} onResume={handleResume} />
+        </Suspense>
       </div>
       <ControlsPanel />
     </MotionConfig>

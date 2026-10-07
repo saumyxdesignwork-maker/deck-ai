@@ -8,6 +8,16 @@
       "port": 3301
     },
     {
+      "name": "DeckAI Dev (attach)",
+      "url": "http://localhost:3301"
+    },
+    {
+      "name": "DeckAI Dev (session)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "Decks_AI_app", "run", "dev", "--", "--port", "3302"],
+      "port": 3302
+    },
+    {
       "name": "DeckAI Service",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["--prefix", "Decks_AI_Service", "run", "dev"],
