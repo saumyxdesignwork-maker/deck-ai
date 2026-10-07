@@ -258,7 +258,11 @@
   transform: translate(calc(var(--dx) * var(--k) * 1cqw), calc(var(--dy) * var(--k) * 1cqw)) rotate(calc(var(--rot) * var(--k) * 1deg));
   filter: grayscale(var(--k)); z-index: 2;
 }
-.m-cx.m-slide-card { padding: 2cqw; }
+/* Higher specificity than slideMock.css's `.m-slide-card { position: relative }`
+   so this wins regardless of CSS bundle order (that file is a separate import,
+   not textual source order within this one) — otherwise the chaos cards fall
+   back into normal document flow and stack on top of each other. */
+.m-cx.m-slide-card { position: absolute; padding: 2cqw; }
 .m-cx-title { font: 700 4.8cqw/1.05 var(--font-heading); letter-spacing: -0.02em; }
 .m-cx-body { font-size: 2.3cqw; color: var(--text-muted); line-height: 1.35; }
 .m-cx-chart { height: calc(var(--h) * 1cqw); display: flex; align-items: flex-end; gap: 1.4cqw; border-radius: 1.2cqw; padding: 2cqw; }
