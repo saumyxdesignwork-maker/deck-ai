@@ -219,8 +219,10 @@
 /* ---------- closing statement ---------- */
 .d2-closing { text-align: center; padding-block: clamp(100px, 14vw, 220px); }
 .d2-closing h2 { max-width: 16ch; margin-inline: auto; }
-.d2-closing .d2-sec-desc { margin-top: 24px; font-size: 1.1rem; }
+.d2-closing .d2-sec-desc { margin-top: 24px; margin-inline: auto; font-size: 1.1rem; }
 .d2-closing .d2-btn { margin-top: 40px; }
+.d2-closing .d2-btn-primary { background: #ffffff; color: var(--bg-canvas); }
+.d2-closing .d2-btn-primary:hover { background: #e8e8e8; }
 
 /* ---------- bottom cards ---------- */
 .d2-bottom-cards { display: grid; grid-template-columns: 1fr 1fr; }
