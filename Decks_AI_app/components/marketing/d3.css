@@ -51,3 +51,35 @@
   background-size: 6px 6px;
   background-repeat: no-repeat;
 }
+
+/* Flatten every remaining rounded-RECTANGLE UI element for corner-radius
+   consistency across the page (e.g. the final-CTA form's template <select>
+   was still 12px while the form around it had gone sharp). No corner-marker
+   ticks on these — those are reserved for the 7 major panels above; this is
+   just radius:0 for visual consistency on smaller controls.
+
+   Deliberately NOT included:
+   - True circles (border-radius: 50%) — .m-opt i (radio dot), .m-pl .m-spin
+     (loading spinner), .m-tpl-btn .m-sw i (swatch dot), .m-step-n (step
+     badge), .m-flag — these are shape primitives, not "rounded corners".
+   - Pill/capsule shapes (border-radius: 99px/99cqw) — .m-hero-pill, .m-chip,
+     .m-tag, .m-ptab, .m-m-btn, .m-prog, .m-style-toggle, .m-cx-clock — fully
+     rounded ends read as a capsule, not a rectangle with visible corners;
+     kept per the earlier "small UI chrome stays rounded" scope decision.
+   - Deck-template-driven mockup content (.m-slide-card, .m-cx-chart,
+     .m-cx-empty, .m-slide-bars) — these must stay faithful to each
+     DeckTemplate's own radius token, not the page's chrome styling. */
+.d3-page .m-final-form select,
+.d3-page .m-m-input,
+.d3-page .m-opt,
+.d3-page .m-ol,
+.d3-page .m-swatches,
+.d3-page .m-conn-row,
+.d3-page .m-conn-row .m-ic,
+.d3-page .m-pframe,
+.d3-page .m-rail,
+.d3-page .m-rail-fill,
+.d3-page .m-qa .m-ans .m-todo,
+.d3-page :focus-visible {
+  border-radius: 0;
+}
