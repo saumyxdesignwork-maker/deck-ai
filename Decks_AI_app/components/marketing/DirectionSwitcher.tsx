@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 
 const Direction1 = lazy(() => import('./Direction1').then(m => ({ default: m.Direction1 })))
 const Direction2 = lazy(() => import('./Direction2').then(m => ({ default: m.Direction2 })))
+const Direction3 = lazy(() => import('./Direction3').then(m => ({ default: m.Direction3 })))
 
 const SWITCHER_STYLE: React.CSSProperties = {
   position: 'fixed',
@@ -24,18 +25,21 @@ const SWITCHER_STYLE: React.CSSProperties = {
   boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
 }
 
-/** Floating stakeholder toggle between the two landing-page directions.
+/** Floating stakeholder toggle between the landing-page directions.
  * Reads/writes `?dir=` so each direction is linkable (e.g. `/?dir=2`), but
  * never navigates — the swap happens in React state so scroll position and
  * Lenis/GSAP setup for the newly active direction start clean. Each
  * direction is lazy-loaded so only the active one's JS bundle is fetched. */
 export function DirectionSwitcher() {
   const searchParams = useSearchParams()
-  const [direction, setDirection] = useState<1 | 2>(() => (searchParams.get('dir') === '2' ? 2 : 1))
+  const [direction, setDirection] = useState<1 | 2 | 3>(() => {
+    const dir = searchParams.get('dir')
+    return dir === '3' ? 3 : dir === '2' ? 2 : 1
+  })
 
-  const pick = (d: 1 | 2) => {
+  const pick = (d: 1 | 2 | 3) => {
     setDirection(d)
-    const url = d === 2 ? '?dir=2' : window.location.pathname
+    const url = d === 1 ? window.location.pathname : `?dir=${d}`
     window.history.replaceState(null, '', url)
   }
 
@@ -73,9 +77,26 @@ export function DirectionSwitcher() {
         >
           2
         </button>
+        <button
+          type="button"
+          onClick={() => pick(3)}
+          style={{
+            background: direction === 3 ? '#c8785a' : 'transparent',
+            color: direction === 3 ? '#111' : '#eee',
+            border: '1px solid rgba(255,255,255,0.2)',
+            borderRadius: 6,
+            padding: '4px 10px',
+            cursor: 'pointer',
+            fontWeight: 600,
+          }}
+        >
+          3
+        </button>
       </div>
 
-      <Suspense fallback={null}>{direction === 1 ? <Direction1 /> : <Direction2 />}</Suspense>
+      <Suspense fallback={null}>
+        {direction === 1 ? <Direction1 /> : direction === 2 ? <Direction2 /> : <Direction3 />}
+      </Suspense>
     </>
   )
 }

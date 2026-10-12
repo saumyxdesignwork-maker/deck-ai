@@ -1,0 +1,53 @@
+/* Direction 3 — Direction 1's content re-skinned with Direction 2's
+   outline-stroke panel language. marketing.css's component classes
+   (.m-glass, .m-pain, etc.) are BARE global selectors, not scoped under
+   .marketing-page — so these overrides must win via selector specificity
+   (descendant combinator, 0,2,0) rather than import order, which is what
+   broke slideMock.css vs marketing.css earlier. Scoping everything under
+   .d3-page means Direction 1 (wrapped in .marketing-page only) is
+   completely unaffected. */
+
+.d3-page {
+  --d3-corner: rgba(255, 255, 255, 0.35);
+}
+
+/* Flatten + thin the border on the page's panel-level containers only —
+   small pills/chips/tags/tabs (.m-chip, .m-tag, .m-ptab, .m-opt, etc.)
+   deliberately keep their rounded shape, same as Direction 2 itself only
+   corner-marks its big section containers, not its small role badges. */
+.d3-page .m-glass,
+.d3-page .m-pain,
+.d3-page .m-hero-frame,
+.d3-page .m-callout,
+.d3-page .m-export,
+.d3-page .m-pprompt,
+.d3-page .m-final-form {
+  position: relative;
+  border-radius: 0;
+  border-width: 0.5px;
+}
+
+/* Corner-marker ticks via a single ::before per panel (no DOM changes to
+   any D1 component needed) — inset: -3px lets the 6x6px squares straddle
+   the real border line exactly like D2CornerMarkers' four positioned divs.
+   Safe because none of the 7 classes above set overflow: hidden. */
+.d3-page .m-glass::before,
+.d3-page .m-pain::before,
+.d3-page .m-hero-frame::before,
+.d3-page .m-callout::before,
+.d3-page .m-export::before,
+.d3-page .m-pprompt::before,
+.d3-page .m-final-form::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--d3-corner), var(--d3-corner)),
+    linear-gradient(var(--d3-corner), var(--d3-corner)),
+    linear-gradient(var(--d3-corner), var(--d3-corner)),
+    linear-gradient(var(--d3-corner), var(--d3-corner));
+  background-position: top left, top right, bottom left, bottom right;
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+}
