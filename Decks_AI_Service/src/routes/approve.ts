@@ -22,6 +22,11 @@ const BodySchema = z.object({
     )
     .min(1)
     .optional(),
+  // A template change made on the outline-review screen ("Choose your
+  // look"), after the template originally sent to /generate was already
+  // stamped onto the session — when present, this overrides it so the
+  // deck actually gets built with the newly chosen template.
+  templateId: z.string().min(1).optional(),
 })
 
 export const approveRoute = new Hono()
@@ -43,6 +48,10 @@ approveRoute.post('/approve', async c => {
 
   if (body.data.sections) {
     state.approvedStoryline = body.data.sections
+  }
+
+  if (body.data.templateId) {
+    state.templateId = body.data.templateId
   }
 
   if (!state.approvedStoryline) {

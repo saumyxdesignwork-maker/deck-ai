@@ -46,6 +46,7 @@ function Harness({ previewState = 'done' as PreviewState, initialWalkthroughSeen
       outlinePending={null}
       onApproveOutline={noop}
       onRegenerateOutline={noop}
+      onChangeTemplate={noop}
       verifyFlags={[]}
       isVerifying={false}
       onVerify={noop}

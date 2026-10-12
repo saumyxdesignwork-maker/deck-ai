@@ -47,10 +47,16 @@ export function SlideMock(props: SlideMockProps) {
 
   if (props.kind === 'cover') {
     const cover = template.surfaces.cover
+    // backgroundColor + backgroundImage/backgroundSize on both branches (not
+    // a `background` shorthand fallback) — the template switcher re-renders
+    // this same element across templates whose cover.kind differs, and
+    // switching between a shorthand and longhand property set on one element
+    // triggers a real React "conflicting style property" warning (and visual
+    // flicker), same reasoning as DeckThemeScope.
     const bg =
       cover.kind === 'pattern'
         ? { backgroundColor: cover.background, backgroundImage: cover.pattern, backgroundSize: cover.patternSize }
-        : { background: cover.background }
+        : { backgroundColor: cover.background, backgroundImage: undefined, backgroundSize: undefined }
     return (
       <div
         className={`m-slide ${className ?? ''}`}

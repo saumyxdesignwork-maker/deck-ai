@@ -6,6 +6,7 @@ import { ChatItem, ClarifyQuestion } from '@/lib/studioScript'
 import { ChatItemView } from './ChatItem'
 import { ClarifyCard } from './ClarifyCard'
 import { Composer } from './Composer'
+import { NotifyToggle } from './NotifyToggle'
 import { motionPresets } from '@/lib/motion'
 import type { ConnectStep } from './DataConnectPanel'
 
@@ -24,6 +25,12 @@ interface ChatPaneProps {
    * above the composer (never inside the scrolling transcript, so it can't
    * be missed by scrolling past it). Null once answered/skipped. */
   clarifyPending: { id: string; questions: ClarifyQuestion[] } | null
+  /** "Get notified when your task is ready" — shown as a flap from the
+   * first prompt submit until generation completes (see StudioSession). */
+  showNotify: boolean
+  notifyEnabled: boolean
+  notifySupported: boolean
+  onToggleNotify: () => void
 }
 
 function hasActiveProgress(items: ChatItem[]): boolean {
@@ -34,7 +41,10 @@ function hasActiveProgress(items: ChatItem[]): boolean {
   )
 }
 
-export function ChatPane({ items, isWorking, onAnswerClarify, onSendFollowUp, onOpenConnectors, width, draft, onDraftChange, clarifyPending }: ChatPaneProps) {
+export function ChatPane({
+  items, isWorking, onAnswerClarify, onSendFollowUp, onOpenConnectors, width, draft, onDraftChange, clarifyPending,
+  showNotify, notifyEnabled, notifySupported, onToggleNotify,
+}: ChatPaneProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const m = motionPresets(useReducedMotion())
 
@@ -93,6 +103,9 @@ export function ChatPane({ items, isWorking, onAnswerClarify, onSendFollowUp, on
       {/* Anchored directly above the composer — outside the scroll
           container above, so it's always visible and never something the
           user has to scroll back up to find. */}
+      {showNotify && (
+        <NotifyToggle enabled={notifyEnabled} supported={notifySupported} onToggle={onToggleNotify} />
+      )}
       <AnimatePresence initial={false}>
         {clarifyPending && (
           <motion.div

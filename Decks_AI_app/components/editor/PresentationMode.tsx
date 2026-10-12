@@ -58,7 +58,11 @@ function align(layout?: LayoutType): 'left' | 'center' {
   return layout === 'statement' || layout === 'closing' ? 'center' : 'left'
 }
 
-function renderBlockPreview(block: Block, layout: LayoutType | undefined, template: DeckTemplate) {
+/** Read-only block renderer — no `<input>`/`<textarea>` chrome, unlike
+ * ContentSection's editable blocks. Exported so other read-only surfaces
+ * (the template preview modal) can reuse it instead of writing a third
+ * slide renderer alongside this one and ContentSection's editable path. */
+export function renderBlockPreview(block: Block, layout: LayoutType | undefined, template: DeckTemplate) {
   const textAlign = align(layout)
   switch (block.type) {
     case 'heading':
@@ -355,7 +359,11 @@ export function PresentationMode({ deckTitle, subtitle, author, coverColor, sect
             <div
               style={{
                 ...resolveCoverVars(template),
-                background: coverBg,
+                // backgroundColor + backgroundImage (not the `background`
+                // shorthand) — see DeckThemeScope for why mixing them causes
+                // a React "conflicting style property" warning and real
+                // flicker when the pattern/solid cover kind changes.
+                backgroundColor: coverBg,
                 backgroundImage: cover.kind === 'pattern' ? cover.pattern : undefined,
                 backgroundSize: cover.kind === 'pattern' ? (cover.patternSize ?? 'auto') : undefined,
                 borderRadius: template.surfaces.slideRadius,

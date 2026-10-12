@@ -246,6 +246,11 @@ export interface StudioTemplate {
   prompt: string
   /** Path under /public — one per card, matched left-to-right. */
   thumbnail: string
+  /** The deck-template id this card opens in the preview modal, picked to
+   * match the thumbnail's own visual vibe (e.g. the bold red/black cover
+   * pairs with Riso's print-bold look). A styling judgment call, not load-
+   * bearing logic — safe to re-map if a thumbnail changes. */
+  templateId: string
 }
 
 // Studio's "Try one of these" — one real thumbnail per card (public/Thumbnail-1..6.png),
@@ -259,9 +264,13 @@ const STUDIO_TEMPLATE_THUMBNAILS = [
   '/Thumbnail-5 alt.png',
   '/Thumbnail-6.png',
 ]
+// One of each of the 6 real templates, matched to that card's thumbnail —
+// see the comment on StudioTemplate.templateId above.
+const STUDIO_TEMPLATE_IDS = ['riso', 'noir', 'ledger', 'slate', 'meridian', 'bloom']
 export const STUDIO_TEMPLATES: StudioTemplate[] = SUGGESTED_PROMPTS.slice(0, 6).map((prompt, i) => ({
   prompt,
   thumbnail: STUDIO_TEMPLATE_THUMBNAILS[i],
+  templateId: STUDIO_TEMPLATE_IDS[i],
 }))
 
 // ─── Layout options for storyline selector ───

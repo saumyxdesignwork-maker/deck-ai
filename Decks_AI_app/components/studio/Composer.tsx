@@ -2,7 +2,7 @@
 
 import { ReactNode, useEffect, useId, useImperativeHandle, useRef, useState, KeyboardEvent, Ref } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { Plus, Mic, ArrowUp, ChevronDown, Upload, FolderOpenDot, Plug, Loader2, Square, X } from 'lucide-react'
+import { Plus, Mic, ArrowUp, ChevronDown, Upload, FolderOpenDot, Plug, Loader2, Square, X, LayoutTemplate } from 'lucide-react'
 import { useAutosizeTextarea } from '@/lib/useAutosizeTextarea'
 import { useSpeechInput } from '@/lib/useSpeechInput'
 import { motionPresets } from '@/lib/motion'
@@ -72,6 +72,17 @@ interface ComposerProps {
   /** Attached context (e.g. a selected slide element) shown as removable
    * chips above the field. Empty/omitted renders nothing extra. */
   contextChips?: ComposerContextChip[]
+  /** A template attached from the preview modal — shown as a distinct
+   * attachment card (thumbnail + name + "Template" label), not a small
+   * pill, so it doesn't just repeat what the toolbar's theme dropdown
+   * already says right below it. */
+  attachedTemplate?: {
+    name: string
+    /** Style for the small cover-preview thumbnail — background/
+     * backgroundImage/backgroundSize for the template's own cover look. */
+    thumbnailStyle: React.CSSProperties
+    onRemove: () => void
+  }
   /** Shows the "Theme: <name>" dropdown in the toolbar when present — only
    * meaningful before generation (there's no re-theming an existing deck
    * from chat yet), so only the Studio landing composer passes this. */
@@ -84,7 +95,7 @@ interface ComposerProps {
 export function Composer({
   onSubmit, placeholder = 'Enter your slides request here', ariaLabel, variant = 'session', disabled,
   value: controlledValue, onChange: controlledOnChange, onOpenConnectors, errorMessage, pendingLabel = 'Sending…',
-  sendDisabled, sendDisabledLabel, inputRef, contextChips, themePicker,
+  sendDisabled, sendDisabledLabel, inputRef, contextChips, themePicker, attachedTemplate,
 }: ComposerProps) {
   const [internalValue, setInternalValue] = useState('')
   const isControlled = controlledValue !== undefined
@@ -202,6 +213,49 @@ export function Composer({
           gap: 10,
         }}
       >
+        {attachedTemplate && (
+          <div
+            style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              alignSelf: 'flex-start', maxWidth: '100%',
+              padding: 6, borderRadius: 'var(--r-md)',
+              border: '1px solid var(--border)',
+              // Black frosted glass, not the translucent --surface-muted —
+              // this card sits over the hero's own busy backdrop image, same
+              // reasoning as the Attach menu and ThemeMenu dropdown below.
+              background: 'var(--surface-panel, var(--surface))',
+              backdropFilter: 'var(--backdrop-blur, blur(16px))',
+              WebkitBackdropFilter: 'var(--backdrop-blur, blur(16px))',
+            }}
+          >
+            <div
+              aria-hidden
+              style={{ width: 56, height: 40, borderRadius: 7, flexShrink: 0, ...attachedTemplate.thumbnailStyle }}
+            />
+            <div style={{ minWidth: 0, paddingRight: 4 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font-body)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {attachedTemplate.name}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11.5, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>
+                <LayoutTemplate size={11} />
+                Template
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={attachedTemplate.onRemove}
+              aria-label={`Remove ${attachedTemplate.name} template`}
+              style={{
+                width: 20, height: 20, borderRadius: '50%', border: 'none',
+                background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginLeft: 'auto',
+              }}
+            >
+              <X size={12} aria-hidden />
+            </button>
+          </div>
+        )}
+
         <textarea
           ref={textareaRef}
           className="dk-autosize"

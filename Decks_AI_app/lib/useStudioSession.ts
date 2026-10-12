@@ -102,7 +102,40 @@ export function useStudioSession(
   // resends it verbatim rather than re-deriving the outline from state that
   // may have already moved on (outlinePending is cleared as soon as approve
   // fires).
-  const lastApprovePayloadRef = useRef<{ sessionId: string | null; sections?: OutlineSection[] } | null>(null)
+  const lastApprovePayloadRef = useRef<{ sessionId: string | null; sections?: OutlineSection[]; templateId?: string } | null>(null)
+
+  // The template chosen on the landing page is a one-shot value sent only to
+  // /generate — this is the same choice, but mutable afterward (via the
+  // outline step's "Choose your look"), and threaded back into /approve's
+  // request body so a late change actually takes effect instead of the
+  // backend silently keeping whatever was stamped onto the session at
+  // /generate time.
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | undefined>(templateId)
+
+  // "Get notified when your task is ready" — a real OS notification, not a
+  // cosmetic toggle. Permission is requested on enable, not on mount, so the
+  // browser's native prompt only ever appears in response to a deliberate
+  // click. Read via a ref inside applyEvent (a stable useCallback) for the
+  // same reason deckEditorRef/streamedDeckRef exist below.
+  const [notifyEnabled, setNotifyEnabled] = useState(false)
+  const notifySupported = typeof window !== 'undefined' && 'Notification' in window
+  const notifyEnabledRef = useRef(false)
+  useEffect(() => { notifyEnabledRef.current = notifyEnabled }, [notifyEnabled])
+
+  const toggleNotify = useCallback(async () => {
+    if (!notifySupported) return
+    if (notifyEnabled) {
+      setNotifyEnabled(false)
+      return
+    }
+    try {
+      const permission = await Notification.requestPermission()
+      if (permission === 'granted') setNotifyEnabled(true)
+    } catch {
+      // Permission prompt dismissed or blocked — the toggle just stays off;
+      // nothing else to recover here.
+    }
+  }, [notifyEnabled, notifySupported])
 
   const isDone = previewState === 'done'
   const deckEditor = useDeckEditor(streamedDeck, isDone, sessionId)
@@ -193,6 +226,15 @@ export function useStudioSession(
           isApprovingRef.current = false
           setGenerationProgress(null)
           setGenerationFailed(false)
+          // Only worth a real OS notification if the user isn't already
+          // looking at the tab watching it finish.
+          if (notifyEnabledRef.current && typeof document !== 'undefined' && document.hidden) {
+            try {
+              new Notification('Your deck is ready', { body: streamedDeckRef.current?.title })
+            } catch {
+              // e.g. permission revoked mid-session — nothing to recover.
+            }
+          }
         }
         if (event.state === 'done' && !hasSavedToHistoryRef.current && streamedDeckRef.current) {
           hasSavedToHistoryRef.current = true
@@ -326,15 +368,18 @@ export function useStudioSession(
       isApprovingRef.current = true
       // editedSections carries whatever the user left in the outline review
       // card (title/bullet/layout edits, reordering) — the backend uses
-      // these instead of its original draft when present. Cached verbatim
-      // so a retry can resend exactly this, since outlinePending (and thus
-      // the edited sections) is already cleared above by the time a failure
-      // could happen.
-      const payload = { sessionId: sessionIdRef.current, sections: editedSections }
+      // these instead of its original draft when present. templateId is
+      // included so a change made in "Choose your look" after the initial
+      // /generate call actually takes effect, instead of the backend
+      // silently keeping whatever was stamped onto the session at /generate
+      // time. Cached verbatim so a retry can resend exactly this, since
+      // outlinePending (and thus the edited sections) is already cleared
+      // above by the time a failure could happen.
+      const payload = { sessionId: sessionIdRef.current, sections: editedSections, templateId: selectedTemplateId }
       lastApprovePayloadRef.current = payload
       runStream('/approve', payload)
     },
-    [outlinePending, runStream],
+    [outlinePending, runStream, selectedTemplateId],
   )
 
   // Resends the exact same /approve request after a failed generation —
@@ -469,5 +514,10 @@ export function useStudioSession(
     runEdit,
     verifyContent,
     updateItem,
+    selectedTemplateId,
+    setSelectedTemplateId,
+    notifyEnabled,
+    notifySupported,
+    toggleNotify,
   }
 }

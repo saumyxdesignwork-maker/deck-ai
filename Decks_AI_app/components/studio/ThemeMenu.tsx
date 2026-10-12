@@ -255,7 +255,11 @@ function ThemeCard({ template, selected, onSelect }: { template: DeckTemplate; s
         <div
           style={{
             width: 38, borderRadius: 8,
-            background: coverBg,
+            // backgroundColor + backgroundImage (not the `background`
+            // shorthand) — mixing them triggers a React "conflicting style
+            // property" warning on rerender when a pattern template is
+            // swapped for a solid one or vice versa.
+            backgroundColor: coverBg,
             backgroundImage: cover.kind === 'pattern' ? cover.pattern : undefined,
             backgroundSize: cover.kind === 'pattern' ? (cover.patternSize ?? 'auto') : undefined,
           }}

@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { RefreshCw, Sparkles, ListChecks, Plus } from 'lucide-react'
+import { AnimatePresence } from 'motion/react'
+import { RefreshCw, Sparkles, ListChecks, Plus, ChevronRight } from 'lucide-react'
 import {
   DndContext, DragEndEvent, PointerSensor,
   useSensor, useSensors, closestCenter,
@@ -14,6 +15,8 @@ import { CSS } from '@dnd-kit/utilities'
 import { OutlineSection } from '@/lib/studioScript'
 import { StorylineSection, LayoutType } from '@/lib/fixtures'
 import { StorylineSectionCard } from '@/components/storyline/StorylineSectionCard'
+import { getTemplate } from '@/lib/deckTemplates'
+import { TemplatePreviewModal } from './TemplatePreviewModal'
 
 const DEFAULT_LAYOUT_CYCLE: LayoutType[] = ['statement', 'key-points', 'heading-media', 'media-text', 'bento', 'data']
 
@@ -38,6 +41,12 @@ interface OutlineReviewPanelProps {
   sections: OutlineSection[]
   onApprove: (sections: OutlineSection[]) => void
   onRegenerate: () => void
+  /** The template the deck will use once generated — shown as "Choose your
+   * look" so the pick is visible and changeable before Generate, not only
+   * discoverable after the fact. Only sets the template for the upcoming
+   * generation; the outline rows below stay plain text either way. */
+  templateId?: string
+  onChangeTemplate: (templateId: string) => void
 }
 
 interface SortableCardProps {
@@ -137,8 +146,12 @@ function PrimaryCTA({ onClick, children, compact, disabled, fullWidth }: Primary
 // inside the canvas's own scroll container, so nesting a second
 // scrollable box here would trap scrolling and hide the CTA row below —
 // the header above is sticky instead, so "Generate Slides" stays reachable.
-export function OutlineReviewPanel({ sections, onApprove, onRegenerate }: OutlineReviewPanelProps) {
+export function OutlineReviewPanel({ sections, onApprove, onRegenerate, templateId, onChangeTemplate }: OutlineReviewPanelProps) {
   const [local, setLocal] = useState<StorylineSection[]>(() => toEditable(sections))
+  const [browseOpen, setBrowseOpen] = useState(false)
+  const activeTemplate = getTemplate(templateId)
+  const activeCover = activeTemplate.surfaces.cover
+  const activeCoverBg = activeCover.kind === 'deck-color' ? activeTemplate.colors.accent : activeCover.background
 
   // Reset local edits whenever a genuinely new outline arrives (the
   // initial draft, or a fresh one after "Rethink Storyline") — `sections`
@@ -275,12 +288,58 @@ export function OutlineReviewPanel({ sections, onApprove, onRegenerate }: Outlin
           >
             {local.length} sections
           </span>
+
+          {/* "Choose your look" — the current template, changeable here
+              before generating. Only affects the upcoming /approve call;
+              these outline rows stay plain text (see component props doc). */}
+          <button
+            type="button"
+            onClick={() => setBrowseOpen(true)}
+            className="dk-select dk-focus-ring"
+            title="Choose your look"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '4px 10px 4px 6px', borderRadius: 'var(--r-pill)',
+              border: '1px solid var(--border)', background: 'var(--surface-muted)',
+              fontSize: 12, fontWeight: 500, color: 'var(--text)',
+              cursor: 'pointer', fontFamily: 'var(--font-body)', whiteSpace: 'nowrap',
+            }}
+          >
+            <span
+              aria-hidden
+              style={{
+                width: 16, height: 16, borderRadius: 4, flexShrink: 0,
+                backgroundColor: activeCoverBg,
+                backgroundImage: activeCover.kind === 'pattern' ? activeCover.pattern : undefined,
+                backgroundSize: activeCover.kind === 'pattern' ? (activeCover.patternSize ?? 'auto') : undefined,
+                border: '1px solid rgba(0,0,0,0.15)',
+              }}
+            />
+            {activeTemplate.name}
+            <ChevronRight size={11} style={{ color: 'var(--text-muted)' }} />
+          </button>
+
           <PrimaryCTA compact onClick={() => onApprove(toOutline(local))}>
             <Sparkles size={13} />
             Generate Slides
           </PrimaryCTA>
         </div>
       </div>
+
+      <AnimatePresence>
+        {browseOpen && (
+          <TemplatePreviewModal
+            key="browse-templates"
+            initialTemplateId={templateId ?? activeTemplate.id}
+            mode="browse"
+            onClose={() => setBrowseOpen(false)}
+            onAdd={id => {
+              onChangeTemplate(id)
+              setBrowseOpen(false)
+            }}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Editable, drag-sortable section cards — matches Classic's storyline page */}
       <div style={{ margin: '16px 24px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>

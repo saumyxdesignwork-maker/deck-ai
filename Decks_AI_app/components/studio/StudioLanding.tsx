@@ -3,12 +3,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Sparkles, Layers, Briefcase, Palette, RectangleHorizontal, Square, Wand2 } from 'lucide-react'
+import { AnimatePresence } from 'motion/react'
 import { Composer } from './Composer'
+import { TemplatePreviewModal } from './TemplatePreviewModal'
 import { STUDIO_TEMPLATES, AspectRatio } from '@/lib/fixtures'
 import { SERVICE_BASE_URL } from '@/lib/deckStream'
 import { getSavedDecks, SavedDeck } from '@/lib/deckHistory'
 import type { DeckStyle } from '@/lib/useStudioSession'
-import { TEMPLATES, DEFAULT_TEMPLATE_ID } from '@/lib/deckTemplates'
+import { TEMPLATES, DEFAULT_TEMPLATE_ID, getTemplate } from '@/lib/deckTemplates'
 
 export type { DeckStyle }
 
@@ -97,6 +99,16 @@ export function StudioLanding({ onSubmit, onResume }: StudioLandingProps) {
       // Private browsing / storage disabled — the pick still works for this session.
     }
   }
+
+  // Set only once a template is actually "Added" from the preview modal —
+  // shows a removable chip above the composer so the pick is visible before
+  // sending, same shape as a selected-element context chip elsewhere in the
+  // app. Picking a theme via the ThemeMenu dropdown instead (no modal) never
+  // sets this, so no chip appears for that path — both write to the same
+  // `templateId` state either way (see selectTemplate above).
+  const [attachedChipId, setAttachedChipId] = useState<string | null>(null)
+  // The template id currently open in the preview modal; null when closed.
+  const [previewModalId, setPreviewModalId] = useState<string | null>(null)
 
   // "Your slides" only exists once there's something to show — reads once on
   // mount (a fresh save during this same visit only matters after a full
@@ -257,6 +269,27 @@ export function StudioLanding({ onSubmit, onResume }: StudioLandingProps) {
           errorMessage={sendError}
           pendingLabel="Starting your deck…"
           themePicker={{ selectedId: templateId, onSelect: selectTemplate }}
+          attachedTemplate={
+            attachedChipId
+              ? (() => {
+                  const t = getTemplate(attachedChipId)
+                  const cover = t.surfaces.cover
+                  const coverBg = cover.kind === 'deck-color' ? t.colors.accent : cover.background
+                  return {
+                    name: t.name,
+                    thumbnailStyle: {
+                      backgroundColor: coverBg,
+                      backgroundImage: cover.kind === 'pattern' ? cover.pattern : undefined,
+                      backgroundSize: cover.kind === 'pattern' ? (cover.patternSize ?? 'auto') : undefined,
+                    },
+                    onRemove: () => {
+                      setAttachedChipId(null)
+                      selectTemplate(DEFAULT_TEMPLATE_ID)
+                    },
+                  }
+                })()
+              : undefined
+          }
         />
       </div>
 
@@ -286,11 +319,11 @@ export function StudioLanding({ onSubmit, onResume }: StudioLandingProps) {
           // Exactly 6 cards, one real thumbnail each — 3 per row so they read
           // left-to-right, top-to-bottom in the same order as the thumbnails.
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 }}>
-            {STUDIO_TEMPLATES.map(({ prompt, thumbnail }, i) => (
+            {STUDIO_TEMPLATES.map(({ prompt, thumbnail, templateId: cardTemplateId }, i) => (
               <button
                 key={i}
                 type="button"
-                onClick={() => fillFromTemplate(prompt)}
+                onClick={() => setPreviewModalId(cardTemplateId)}
                 className="dk-lift"
                 style={{
                   textAlign: 'left',
@@ -365,6 +398,23 @@ export function StudioLanding({ onSubmit, onResume }: StudioLandingProps) {
           </div>
         )}
       </div>
+
+      <AnimatePresence>
+        {previewModalId && (
+          <TemplatePreviewModal
+            key="template-preview"
+            initialTemplateId={previewModalId}
+            mode="single"
+            onClose={() => setPreviewModalId(null)}
+            onAdd={id => {
+              selectTemplate(id)
+              setAttachedChipId(id)
+              setPreviewModalId(null)
+              requestAnimationFrame(() => inputRef.current?.focus())
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }

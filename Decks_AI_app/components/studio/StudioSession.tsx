@@ -141,6 +141,10 @@ export function StudioSession({ initialPrompt, aspectRatio, deckStyle = 'profess
                 draft={chatDraft}
                 onDraftChange={setChatDraft}
                 clarifyPending={session.clarifyPending}
+                showNotify={session.previewState !== 'done'}
+                notifyEnabled={session.notifyEnabled}
+                notifySupported={session.notifySupported}
+                onToggleNotify={session.toggleNotify}
               />
               <ResizeHandle isResizing={isResizing} onPointerDown={handlePointerDown} />
             </>
@@ -153,6 +157,8 @@ export function StudioSession({ initialPrompt, aspectRatio, deckStyle = 'profess
             outlinePending={session.outlinePending}
             onApproveOutline={session.approveOutline}
             onRegenerateOutline={() => session.regenerateOutline()}
+            selectedTemplateId={session.selectedTemplateId}
+            onChangeTemplate={session.setSelectedTemplateId}
             verifyFlags={session.verifyFlags}
             isVerifying={session.isVerifying}
             generationProgress={session.generationProgress}

@@ -42,6 +42,12 @@ interface PreviewPaneProps {
   outlinePending: { id: string; sections: OutlineSection[] } | null
   onApproveOutline: (sections: OutlineSection[]) => void
   onRegenerateOutline: () => void
+  /** The template chosen so far (landing page, or a later change via
+   * "Choose your look") — used for the outline step's own preview, and sent
+   * with the eventual /approve call. Falls back to the default template
+   * once a template exists in context either way (see DeckTemplateProvider). */
+  selectedTemplateId?: string
+  onChangeTemplate: (templateId: string) => void
   verifyFlags: VerifyFlag[]
   isVerifying: boolean
   onVerify: () => void
@@ -90,6 +96,7 @@ interface PreviewPaneProps {
 
 export function PreviewPane({
   previewState, revealedSlides, deck, isWorking, outlinePending, onApproveOutline, onRegenerateOutline,
+  selectedTemplateId, onChangeTemplate,
   verifyFlags, isVerifying, onVerify, generationProgress, generationFailed, onRetryGeneration,
   canUndo, canRedo, onUndo, onRedo, deckHistory, onRestoreHistoryPoint,
   onInsertBlock, onInsertSection, onDeleteBlocks, onDuplicateBlocks,
@@ -124,8 +131,11 @@ export function PreviewPane({
   // The landing page's template picker sets this on the deck at generation
   // time (see useStudioSession's /generate call); DeckTemplateProvider falls
   // back to the default template when it's absent (legacy/resumed decks
-  // from before templates existed).
-  const effectiveTemplateId = deck?.templateId
+  // from before templates existed). Before the deck exists yet (outline
+  // review), fall back to `selectedTemplateId` — the mutable pre-generation
+  // choice — so "Choose your look" reflects the real current pick instead of
+  // always showing the default template.
+  const effectiveTemplateId = deck?.templateId ?? selectedTemplateId
 
   // Undo/redo — only meaningful once the deck is editable, and never while
   // the user is typing in a field (native Cmd+Z there must stay untouched).
@@ -581,6 +591,8 @@ export function PreviewPane({
                 sections={outlinePending!.sections}
                 onApprove={onApproveOutline}
                 onRegenerate={onRegenerateOutline}
+                templateId={effectiveTemplateId}
+                onChangeTemplate={onChangeTemplate}
               />
             ) : showPlaceholder ? (
               // A real skeleton once the agent is actually generating
