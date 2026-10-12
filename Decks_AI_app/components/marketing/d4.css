@@ -9,8 +9,15 @@
    or 3 (and nothing of theirs reaches in). */
 
 .d4-page {
+  /* The two canvas colours and the ember live here as their own tokens so
+     the burn shader can read them straight off the element (see
+     d4/D4Burn.tsx) and can never drift from the stylesheet. */
+  --d4-bg-dark: #141210;
+  --d4-bg-light: #e8e2d3;
+  --d4-ember: #e0893c;
+
   /* Dark ("verso") is the default; useThemeSwitch flips data-d4-theme. */
-  --d4-bg: #141210;
+  --d4-bg: var(--d4-bg-dark);
   --d4-ink: #ece7dc;
   --d4-ink-soft: rgba(236, 231, 220, 0.62);
   --d4-ink-faint: rgba(236, 231, 220, 0.34);
@@ -36,7 +43,7 @@
 }
 
 .d4-page[data-d4-theme='light'] {
-  --d4-bg: #e8e2d3;
+  --d4-bg: var(--d4-bg-light);
   --d4-ink: #17130f;
   --d4-ink-soft: rgba(23, 19, 15, 0.66);
   --d4-ink-faint: rgba(23, 19, 15, 0.38);
@@ -51,16 +58,35 @@
 .d4-page p { margin: 0; }
 .d4-page h1, .d4-page h2, .d4-page h3 { margin: 0; font-weight: 400; }
 
+/* ---------- burn transition canvas ----------
+   Paints the dissolve between the outgoing and incoming chapter colours.
+   It sits above the page background but below the geometry and content, and
+   is only opaque while a transition is actually in flight — the rest of the
+   time the plain CSS background below shows through.
+
+   When the canvas is live (`data-burn="on"`, set only after WebGL actually
+   initialises) the background's own cross-fade is switched off, because the
+   canvas is doing that job and an underlying fade would fight it. Without
+   WebGL — or under reduced motion — the attribute never lands and the
+   original CSS cross-fade stays as the fallback. */
+.d4-burn {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  width: 100%; height: 100%;
+  opacity: 0; transition: opacity 0.18s linear;
+}
+.d4-burn[data-active='true'] { opacity: 1; }
+.d4-page[data-burn='on'] { transition: color 0.7s ease; }
+
 /* ---------- fixed construction geometry ---------- */
 .d4-geometry {
-  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
   color: var(--d4-line);
   transition: color 0.7s ease;
 }
 .d4-geometry svg { width: 100%; height: 100%; display: block; }
 
 /* ---------- layout shell ---------- */
-.d4-main { position: relative; z-index: 1; margin-left: var(--d4-rail); }
+.d4-main { position: relative; z-index: 2; margin-left: var(--d4-rail); }
 @media (max-width: 1080px) { .d4-page { --d4-rail: 0px; } }
 
 .d4-wrap { padding-inline: var(--d4-gutter); max-width: 1180px; }

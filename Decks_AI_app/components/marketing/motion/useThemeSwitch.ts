@@ -1,31 +1,48 @@
 'use client'
 
-import { RefObject, useEffect, useState } from 'react'
+import { RefObject, useEffect, useRef, useState } from 'react'
 
 export type D4Theme = 'light' | 'dark'
 
+/** Live state of the burn dissolve between two chapter themes. Mutated in
+ * place on scroll rather than pushed through React state — it changes every
+ * frame, and only the canvas reads it. */
+export interface BurnState {
+  from: D4Theme
+  to: D4Theme
+  /** 0 = fully `from`, 1 = fully `to`. */
+  progress: number
+}
+
 export interface ThemeSwitchState {
   theme: D4Theme
-  /** `data-chapter` of the section currently owning the viewport's middle. */
+  /** `data-chapter` of the section currently holding the viewport's middle. */
   chapter: string | null
+  burnRef: RefObject<BurnState>
 }
+
+const readTheme = (el: HTMLElement): D4Theme => (el.dataset.theme === 'light' ? 'light' : 'dark')
 
 /**
  * Direction 4's signature move, ported from Shopify's Editions page: each
- * section declares `data-theme="light|dark"` (and optionally
- * `data-chapter`), and whichever one currently owns the middle of the
- * viewport becomes the page's theme.
+ * section declares `data-theme="light|dark"`, and the page inverts between
+ * parchment and near-black as you move between them.
  *
- * Returns that state rather than writing to the DOM, so the caller applies
- * it as ordinary JSX (`data-d4-theme={theme}`) and the chapter index can
- * take the active numeral as a plain prop. Everything chrome-level — page
- * background, nav, contents rail, the fixed construction geometry — reads
- * the one attribute, so the whole page inverts as you scroll. The
- * cross-fade itself is a CSS transition on `.d4-page` (see d4.css), which
- * the stylesheet's own reduced-motion block disables.
+ * Rather than snapping at a section boundary, this scrubs the crossing to
+ * scroll position — exactly how the reference drives its own transition —
+ * so the burn dissolve in D4Burn can sweep in step with the wheel. Progress
+ * is measured against the *nearest boundary* rather than "which section
+ * holds the middle", which keeps it continuous: were it keyed to the
+ * containing section, the pair being blended would swap at the halfway
+ * point and progress would jump.
+ *
+ * The committed theme still flips at the midpoint, so the colour tokens and
+ * the dissolve agree on which side of the burn we're on.
  */
 export function useThemeSwitch(scope: RefObject<HTMLElement | null>): ThemeSwitchState {
-  const [state, setState] = useState<ThemeSwitchState>({ theme: 'dark', chapter: null })
+  const [theme, setTheme] = useState<D4Theme>('dark')
+  const [chapter, setChapter] = useState<string | null>(null)
+  const burnRef = useRef<BurnState>({ from: 'dark', to: 'dark', progress: 0 })
 
   useEffect(() => {
     const root = scope.current
@@ -34,42 +51,74 @@ export function useThemeSwitch(scope: RefObject<HTMLElement | null>): ThemeSwitc
     const sections = Array.from(root.querySelectorAll<HTMLElement>('[data-theme]'))
     if (!sections.length) return
 
-    const read = (el: HTMLElement): ThemeSwitchState => ({
-      theme: el.dataset.theme === 'light' ? 'light' : 'dark',
-      chapter: el.dataset.chapter ?? null,
-    })
-
-    const commit = (el: HTMLElement) => {
-      const next = read(el)
-      setState(prev => (prev.theme === next.theme && prev.chapter === next.chapter ? prev : next))
+    // Document-space tops, cached: re-reading layout for every section on
+    // every scroll frame would thrash. Re-measured whenever the page resizes
+    // or reflows (fonts landing, images sizing, the grid collapsing).
+    let tops: number[] = []
+    const measure = () => {
+      const y = window.scrollY
+      tops = sections.map(s => s.getBoundingClientRect().top + y)
     }
 
-    // A thin band across the middle of the viewport: the section crossing it
-    // is the one the reader is actually looking at. rootMargin collapses the
-    // observed area to that band, so `isIntersecting` means "owns the middle".
-    const observer = new IntersectionObserver(
-      entries => {
-        // Several can cross in one tick during a fast scroll; the last one in
-        // document order that's intersecting is the furthest down the page.
-        const hit = entries.filter(e => e.isIntersecting).map(e => e.target as HTMLElement)
-        if (hit.length) commit(hit[hit.length - 1])
-      },
-      { rootMargin: '-50% 0px -50% 0px', threshold: 0 }
-    )
+    const update = () => {
+      if (!tops.length) return
+      const centerY = window.scrollY + window.innerHeight / 2
 
-    sections.forEach(s => observer.observe(s))
+      // Chapter rail: the last section that has started above the middle.
+      let activeIdx = 0
+      for (let i = 0; i < tops.length; i++) {
+        if (tops[i] <= centerY) activeIdx = i
+      }
+      setChapter(sections[activeIdx].dataset.chapter ?? null)
 
-    // Seed from whatever is already under the band on mount, so a deep link
-    // or a restored scroll position doesn't start on the wrong theme.
-    const mid = window.innerHeight / 2
-    const initial = sections.find(s => {
-      const r = s.getBoundingClientRect()
-      return r.top <= mid && r.bottom >= mid
-    })
-    if (initial) commit(initial)
+      // Nearest boundary (every section top after the first).
+      let nearest = 1
+      let best = Infinity
+      for (let i = 1; i < tops.length; i++) {
+        const d = Math.abs(tops[i] - centerY)
+        if (d < best) {
+          best = d
+          nearest = i
+        }
+      }
+      if (tops.length < 2) return
 
-    return () => observer.disconnect()
+      const from = readTheme(sections[nearest - 1])
+      const to = readTheme(sections[nearest])
+      // Band over which the crossing is scrubbed, centred on the boundary.
+      const band = window.innerHeight * 0.3
+      const d = tops[nearest] - centerY
+      const progress = Math.min(1, Math.max(0, (band - d) / (band * 2)))
+
+      const burn = burnRef.current
+      burn.from = from
+      burn.to = to
+      burn.progress = from === to ? 0 : progress
+
+      const committed = progress < 0.5 ? from : to
+      setTheme(prev => (prev === committed ? prev : committed))
+    }
+
+    const onScroll = () => update()
+    const onResize = () => {
+      measure()
+      update()
+    }
+
+    measure()
+    update()
+
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onResize)
+    const ro = new ResizeObserver(onResize)
+    ro.observe(root)
+
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onResize)
+      ro.disconnect()
+    }
   }, [scope])
 
-  return state
+  return { theme, chapter, burnRef }
 }

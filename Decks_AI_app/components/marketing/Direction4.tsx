@@ -5,6 +5,7 @@ import './d4.css'
 import { SmoothScroll } from './motion/SmoothScroll'
 import { useScrollReveals } from './motion/useScrollReveals'
 import { useThemeSwitch } from './motion/useThemeSwitch'
+import { D4Burn } from './d4/D4Burn'
 import { D4Geometry } from './d4/D4Geometry'
 import { D4Nav } from './d4/D4Nav'
 import { D4ChapterIndex } from './d4/D4ChapterIndex'
@@ -24,11 +25,12 @@ import { D4Footer } from './d4/D4Footer'
  * SmoothScroll, useScrollReveals — from the shared marketing/ folder. */
 export function Direction4() {
   const ref = useRef<HTMLDivElement>(null)
-  const { theme, chapter } = useThemeSwitch(ref)
+  const { theme, chapter, burnRef } = useThemeSwitch(ref)
   useScrollReveals(ref)
 
   return (
     <div className="d4-page" data-d4-theme={theme} ref={ref}>
+      <D4Burn burnRef={burnRef} pageRef={ref} />
       <D4Geometry />
       <SmoothScroll>
         <D4Nav />
