@@ -31,9 +31,12 @@ export function useScrollReveals(scope: RefObject<HTMLElement | null>) {
     const clipEls = gsap.utils.toArray<HTMLElement>('[data-clip-reveal]', root)
 
     const isD2 = !!root.closest('.d2-page')
+    // Direction 4 echoes Shopify Editions' media entrance: a slight scale-up
+    // out of a soft blur rather than D1's plain slide-up.
+    const isD4 = !!root.closest('.d4-page')
 
     if (prefersReducedMotion()) {
-      gsap.set(reveals, { opacity: 1, y: 0, filter: 'blur(0px)' })
+      gsap.set(reveals, { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' })
       gsap.set(clipEls, { clipPath: 'inset(0% 0% 0% 0%)' })
       return
     }
@@ -41,8 +44,9 @@ export function useScrollReveals(scope: RefObject<HTMLElement | null>) {
     if (reveals.length) {
       gsap.set(reveals, {
         opacity: 0,
-        y: isD2 ? 12 : 28,
+        y: isD2 ? 12 : isD4 ? 18 : 28,
         ...(isD2 ? { filter: 'blur(5px)' } : {}),
+        ...(isD4 ? { scale: 0.975, filter: 'blur(3px)', transformOrigin: '50% 100%' } : {}),
       })
       ScrollTrigger.batch(reveals, {
         start: 'top 85%',
@@ -56,10 +60,11 @@ export function useScrollReveals(scope: RefObject<HTMLElement | null>) {
           gsap.to(sorted, {
             opacity: 1,
             y: 0,
-            ...(isD2 ? { filter: 'blur(0px)' } : {}),
-            duration: isD2 ? 0.9 : 0.8,
-            ease: isD2 ? 'power2.out' : 'power3.out',
-            stagger: isD2 ? 0.1 : 0.08,
+            ...(isD2 || isD4 ? { filter: 'blur(0px)' } : {}),
+            ...(isD4 ? { scale: 1 } : {}),
+            duration: isD2 ? 0.9 : isD4 ? 1 : 0.8,
+            ease: isD2 ? 'power2.out' : isD4 ? 'power3.out' : 'power3.out',
+            stagger: isD2 ? 0.1 : isD4 ? 0.09 : 0.08,
             delay: 0,
             overwrite: true,
           })

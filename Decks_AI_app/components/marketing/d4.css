@@ -1,0 +1,293 @@
+/* Direction 4 — "The Renaissance Edition": an editorial-manuscript language
+   modeled on Shopify's Winter '26 Editions page. Parchment/near-black
+   duotone that inverts per section, Fraunces display serif with drop caps,
+   a Roman-numeral chapter index, and a fixed construction-geometry
+   backdrop drawn in SVG (no external art assets).
+
+   SELF-CONTAINED token scope under .d4-page, same pattern as .d2-css —
+   every class is d4- prefixed, so nothing here can reach Direction 1, 2
+   or 3 (and nothing of theirs reaches in). */
+
+.d4-page {
+  /* Dark ("verso") is the default; useThemeSwitch flips data-d4-theme. */
+  --d4-bg: #141210;
+  --d4-ink: #ece7dc;
+  --d4-ink-soft: rgba(236, 231, 220, 0.62);
+  --d4-ink-faint: rgba(236, 231, 220, 0.34);
+  --d4-line: rgba(236, 231, 220, 0.16);
+  --d4-line-strong: rgba(236, 231, 220, 0.4);
+  --d4-accent: #c8a06a;
+  --d4-plate: rgba(236, 231, 220, 0.04);
+
+  --d4-rail: 196px;
+  --d4-gutter: clamp(20px, 4vw, 56px);
+
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-label: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+
+  position: relative;
+  z-index: 0;
+  min-height: 100vh;
+  background: var(--d4-bg);
+  color: var(--d4-ink);
+  font-family: var(--font-label);
+  overflow-x: clip;
+  transition: background-color 0.7s ease, color 0.7s ease;
+}
+
+.d4-page[data-d4-theme='light'] {
+  --d4-bg: #e8e2d3;
+  --d4-ink: #17130f;
+  --d4-ink-soft: rgba(23, 19, 15, 0.66);
+  --d4-ink-faint: rgba(23, 19, 15, 0.38);
+  --d4-line: rgba(23, 19, 15, 0.16);
+  --d4-line-strong: rgba(23, 19, 15, 0.4);
+  --d4-accent: #8a6530;
+  --d4-plate: rgba(23, 19, 15, 0.035);
+}
+
+.d4-page :where(a) { color: inherit; text-decoration: none; }
+.d4-page :focus-visible { outline: 1.5px solid var(--d4-accent); outline-offset: 3px; }
+.d4-page p { margin: 0; }
+.d4-page h1, .d4-page h2, .d4-page h3 { margin: 0; font-weight: 400; }
+
+/* ---------- fixed construction geometry ---------- */
+.d4-geometry {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  color: var(--d4-line);
+  transition: color 0.7s ease;
+}
+.d4-geometry svg { width: 100%; height: 100%; display: block; }
+
+/* ---------- layout shell ---------- */
+.d4-main { position: relative; z-index: 1; margin-left: var(--d4-rail); }
+@media (max-width: 1080px) { .d4-page { --d4-rail: 0px; } }
+
+.d4-wrap { padding-inline: var(--d4-gutter); max-width: 1180px; }
+
+/* ---------- nav ---------- */
+.d4-nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 30;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px var(--d4-gutter);
+  font-size: 13px; letter-spacing: 0.01em;
+  color: var(--d4-ink);
+  transition: color 0.7s ease;
+  mix-blend-mode: normal;
+}
+.d4-wordmark { font-family: var(--font-display); font-size: 17px; letter-spacing: -0.01em; }
+/* The Shopify "Ren(ai)ssance" trick — one italic cluster inside the
+   wordmark, carried by Fraunces' true italic. */
+.d4-wordmark i { font-style: italic; }
+.d4-nav-cta {
+  border: 1px solid var(--d4-line-strong); padding: 7px 16px;
+  font-size: 12.5px; letter-spacing: 0.02em;
+  transition: background-color 0.3s, color 0.3s, border-color 0.7s ease;
+}
+.d4-nav-cta:hover { background: var(--d4-ink); color: var(--d4-bg); }
+
+/* ---------- chapter index (sticky rail) ---------- */
+.d4-index {
+  position: fixed; left: 0; bottom: 0; z-index: 20;
+  width: var(--d4-rail); padding: 0 0 28px var(--d4-gutter);
+  font-size: 12.5px; line-height: 1.75;
+  color: var(--d4-ink-faint);
+  transition: color 0.7s ease;
+}
+@media (max-width: 1080px) { .d4-index { display: none; } }
+.d4-index ol { list-style: none; margin: 0; padding: 0; }
+.d4-index li { display: flex; align-items: baseline; gap: 6px; }
+.d4-index button {
+  all: unset; cursor: pointer; display: flex; align-items: baseline;
+  gap: 6px; width: 100%;
+  transition: color 0.25s;
+}
+.d4-index button:hover { color: var(--d4-ink); }
+.d4-index .d4-ix-name { white-space: nowrap; }
+/* dotted leader fills the gap out to the numeral, like a book's contents */
+.d4-index .d4-ix-dots {
+  flex: 1; min-width: 10px; align-self: center; height: 1px;
+  background-image: radial-gradient(circle, currentColor 0.6px, transparent 0.7px);
+  background-size: 4px 1px; background-repeat: repeat-x;
+  opacity: 0; transition: opacity 0.25s;
+}
+.d4-index .d4-ix-num { font-variant-numeric: tabular-nums; letter-spacing: 0.04em; }
+.d4-index li[data-active='true'] { color: var(--d4-ink); }
+.d4-index li[data-active='true'] .d4-ix-dots { opacity: 0.55; }
+
+/* ---------- kickers + display type ---------- */
+.d4-kicker {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 11.5px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--d4-ink-faint); margin-bottom: 22px;
+  transition: color 0.7s ease;
+}
+.d4-kicker i { font-style: normal; font-variant-numeric: tabular-nums; }
+.d4-kicker span { height: 1px; width: 44px; background: currentColor; opacity: 0.5; }
+
+.d4-display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  font-size: clamp(2.4rem, 5.4vw, 4.3rem);
+  max-width: 19ch;
+}
+.d4-display em { font-style: italic; }
+
+/* Drop cap — only on chapter leads (.d4-display[data-cap]), never on the
+   hero or closing, so it reads as a manuscript chapter opener.
+   `flow-root` contains the float: without it the cap overhangs the heading
+   and the lede below wraps around its tail instead of starting flush. */
+.d4-display[data-cap] { display: flow-root; }
+.d4-display[data-cap]::first-letter {
+  float: left;
+  font-size: 3.1em;
+  line-height: 0.76;
+  padding: 0.06em 0.09em 0 0;
+  color: var(--d4-accent);
+  transition: color 0.7s ease;
+}
+
+.d4-lede {
+  margin-top: 22px; max-width: 54ch;
+  font-size: clamp(1rem, 1.25vw, 1.1rem); line-height: 1.6;
+  color: var(--d4-ink-soft);
+  transition: color 0.7s ease;
+}
+
+/* ---------- chapters ---------- */
+.d4-chapter { position: relative; padding-block: clamp(84px, 11vw, 160px); }
+.d4-chapter-head { max-width: 900px; }
+
+/* ---------- feature row + plates ---------- */
+.d4-row { position: relative; margin-top: clamp(44px, 6vw, 80px); }
+.d4-plates {
+  position: relative; z-index: 1;
+  display: grid; grid-template-columns: repeat(var(--d4-cols, 3), 1fr);
+  gap: clamp(18px, 2.6vw, 34px);
+}
+@media (max-width: 900px) { .d4-plates { grid-template-columns: 1fr; } }
+
+.d4-plate { position: relative; }
+/* Four "+" registration marks, one per corner, drawn as a single overlay
+   element so no extra DOM per corner (same multi-background technique
+   Direction 3 uses for its corner ticks). */
+.d4-plate::before {
+  content: ''; position: absolute; inset: -5px; pointer-events: none; z-index: 2;
+  background-image:
+    linear-gradient(var(--d4-line-strong), var(--d4-line-strong)),
+    linear-gradient(var(--d4-line-strong), var(--d4-line-strong)),
+    linear-gradient(var(--d4-line-strong), var(--d4-line-strong)),
+    linear-gradient(var(--d4-line-strong), var(--d4-line-strong)),
+    linear-gradient(var(--d4-line-strong), var(--d4-line-strong)),
+    linear-gradient(var(--d4-line-strong), var(--d4-line-strong)),
+    linear-gradient(var(--d4-line-strong), var(--d4-line-strong)),
+    linear-gradient(var(--d4-line-strong), var(--d4-line-strong));
+  /* Each corner = one horizontal + one vertical bar, both centred on the
+     media box's corner so they read as a true "+" registration mark. The
+     box is inset -5px, so that corner sits 5px in from this element's edge;
+     a 9px bar centred on it therefore starts 0.5px in. */
+  background-size: 9px 1px, 1px 9px, 9px 1px, 1px 9px, 9px 1px, 1px 9px, 9px 1px, 1px 9px;
+  background-position:
+    left 0.5px top 5px, left 5px top 0.5px,
+    right 0.5px top 5px, right 5px top 0.5px,
+    left 0.5px bottom 5px, left 5px bottom 0.5px,
+    right 0.5px bottom 5px, right 5px bottom 0.5px;
+  background-repeat: no-repeat;
+}
+.d4-plate-media {
+  position: relative; background: var(--d4-plate);
+  border: 1px solid var(--d4-line);
+  transition: border-color 0.7s ease, background-color 0.7s ease;
+}
+.d4-plate-media > * { display: block; }
+.d4-plate-cap { margin-top: 14px; }
+.d4-plate-cap h3 {
+  font-family: var(--font-label); font-size: 14.5px; font-weight: 600;
+  letter-spacing: -0.005em; color: var(--d4-ink);
+}
+.d4-plate-cap p {
+  margin-top: 5px; font-size: 13.5px; line-height: 1.5; color: var(--d4-ink-soft);
+}
+
+/* plain text plate (no mockup) — used by the export chapter */
+.d4-plate-note {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: clamp(22px, 2.6vw, 34px);
+  min-height: 190px;
+}
+.d4-plate-note b {
+  font-family: var(--font-display); font-weight: 400;
+  font-size: clamp(1.6rem, 2.6vw, 2.1rem); letter-spacing: -0.015em;
+}
+.d4-plate-note span { font-size: 13.5px; line-height: 1.5; color: var(--d4-ink-soft); }
+
+/* ---------- connection lines ---------- */
+.d4-connections {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  overflow: visible;
+}
+.d4-connections line {
+  stroke: var(--d4-line-strong);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+  vector-effect: non-scaling-stroke;
+}
+@media (max-width: 900px) { .d4-connections { display: none; } }
+
+/* ---------- hero ---------- */
+.d4-hero { position: relative; padding-top: clamp(120px, 17vw, 210px); padding-bottom: clamp(60px, 8vw, 110px); }
+.d4-hero .d4-display { font-size: clamp(2.9rem, 8vw, 6rem); max-width: 15ch; }
+.d4-hero-ctas { display: flex; align-items: center; gap: 22px; margin-top: 38px; flex-wrap: wrap; }
+.d4-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 46px; padding: 0 26px;
+  font: 500 14px var(--font-label); letter-spacing: 0.01em;
+  border: 1px solid transparent; cursor: pointer;
+  transition: background-color 0.25s, color 0.25s, border-color 0.25s, transform 0.25s;
+}
+.d4-btn-primary { background: var(--d4-ink); color: var(--d4-bg); }
+.d4-btn-primary:hover { transform: translateY(-1px); }
+.d4-btn-primary:active { transform: translateY(0); }
+.d4-btn-ghost { padding: 0; min-height: auto; border: 0; color: var(--d4-ink-soft); }
+.d4-btn-ghost .d4-arrow { display: inline-block; transition: transform 0.3s ease; }
+.d4-btn-ghost:hover { color: var(--d4-ink); }
+.d4-btn-ghost:hover .d4-arrow { transform: translateX(4px); }
+
+/* ---------- closing ---------- */
+.d4-closing { text-align: center; padding-block: clamp(110px, 15vw, 210px); }
+.d4-closing .d4-display { margin-inline: auto; max-width: 17ch; }
+.d4-closing .d4-lede { margin-inline: auto; }
+.d4-closing .d4-btn { margin-top: 36px; }
+
+/* ---------- footer ---------- */
+.d4-footer {
+  position: relative; overflow: hidden;
+  border-top: 1px solid var(--d4-line);
+  padding: clamp(38px, 5vw, 56px) 0 0;
+  transition: border-color 0.7s ease;
+}
+.d4-foot-row {
+  position: relative; z-index: 1;
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 24px; flex-wrap: wrap;
+  font-size: 12.5px; color: var(--d4-ink-faint);
+  padding-bottom: 26px;
+  transition: color 0.7s ease;
+}
+.d4-foot-links { display: flex; gap: 20px; }
+.d4-foot-links a:hover { color: var(--d4-ink); }
+.d4-foot-mark {
+  display: block; margin-top: 10px;
+  font-family: var(--font-display); font-weight: 400;
+  font-size: clamp(5rem, 19vw, 17rem); line-height: 0.78;
+  letter-spacing: -0.035em; color: var(--d4-ink);
+  opacity: 0.07; white-space: nowrap; pointer-events: none;
+  transition: color 0.7s ease;
+}
+.d4-foot-mark i { font-style: italic; }
+
+@media (prefers-reduced-motion: reduce) {
+  .d4-page, .d4-page * { animation: none !important; transition: none !important; }
+}

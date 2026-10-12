@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation'
 const Direction1 = lazy(() => import('./Direction1').then(m => ({ default: m.Direction1 })))
 const Direction2 = lazy(() => import('./Direction2').then(m => ({ default: m.Direction2 })))
 const Direction3 = lazy(() => import('./Direction3').then(m => ({ default: m.Direction3 })))
+const Direction4 = lazy(() => import('./Direction4').then(m => ({ default: m.Direction4 })))
 
 const SWITCHER_STYLE: React.CSSProperties = {
   position: 'fixed',
@@ -32,12 +33,12 @@ const SWITCHER_STYLE: React.CSSProperties = {
  * direction is lazy-loaded so only the active one's JS bundle is fetched. */
 export function DirectionSwitcher() {
   const searchParams = useSearchParams()
-  const [direction, setDirection] = useState<1 | 2 | 3>(() => {
+  const [direction, setDirection] = useState<1 | 2 | 3 | 4>(() => {
     const dir = searchParams.get('dir')
-    return dir === '3' ? 3 : dir === '2' ? 2 : 1
+    return dir === '4' ? 4 : dir === '3' ? 3 : dir === '2' ? 2 : 1
   })
 
-  const pick = (d: 1 | 2 | 3) => {
+  const pick = (d: 1 | 2 | 3 | 4) => {
     setDirection(d)
     const url = d === 1 ? window.location.pathname : `?dir=${d}`
     window.history.replaceState(null, '', url)
@@ -92,10 +93,33 @@ export function DirectionSwitcher() {
         >
           3
         </button>
+        <button
+          type="button"
+          onClick={() => pick(4)}
+          style={{
+            background: direction === 4 ? '#c8a06a' : 'transparent',
+            color: direction === 4 ? '#111' : '#eee',
+            border: '1px solid rgba(255,255,255,0.2)',
+            borderRadius: 6,
+            padding: '4px 10px',
+            cursor: 'pointer',
+            fontWeight: 600,
+          }}
+        >
+          4
+        </button>
       </div>
 
       <Suspense fallback={null}>
-        {direction === 1 ? <Direction1 /> : direction === 2 ? <Direction2 /> : <Direction3 />}
+        {direction === 1 ? (
+          <Direction1 />
+        ) : direction === 2 ? (
+          <Direction2 />
+        ) : direction === 3 ? (
+          <Direction3 />
+        ) : (
+          <Direction4 />
+        )}
       </Suspense>
     </>
   )
