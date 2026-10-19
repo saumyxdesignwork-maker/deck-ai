@@ -1,0 +1,25 @@
+<section class="slide a-bullets v-numbered-grid" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if show_chrome}}
+  <header class="chrome chrome--top"><span class="t-caption" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <div class="ng-head">
+    {{#if content.eyebrow}}<p class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    <h2 class="t-display-2" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h2>
+    {{#if content.intro}}<p class="t-body-s" data-slot="content.intro" data-slot-type="text">{{content.intro}}</p>{{/if}}
+  </div>
+  <div class="ng-panel">
+    <ol class="ng-items" data-region="items" data-slot="content.items" data-slot-type="list" data-min="4" data-max="6" data-count="{{content.items.length}}">
+      {{#each content.items}}
+      <li class="ng-item" data-slot-item="{{@index}}">
+        <span class="ng-num t-numeral" aria-hidden="true"></span>
+        <span class="ng-title t-title" data-slot="content.items[{{@index}}].title" data-slot-type="text" data-fit="shrink" data-min-step="body-s">{{title}}</span>
+        {{#if text}}<span class="ng-text t-body-s" data-slot="content.items[{{@index}}].text" data-slot-type="text" data-fit="shrink" data-min-step="caption">{{text}}</span>{{/if}}
+        {{#if tag}}<span class="ng-tag t-caption" data-slot="content.items[{{@index}}].tag" data-slot-type="text" data-nowrap>{{tag}}</span>{{/if}}
+      </li>
+      {{/each}}
+    </ol>
+  </div>
+  <div data-decor="edge"></div>
+</section>

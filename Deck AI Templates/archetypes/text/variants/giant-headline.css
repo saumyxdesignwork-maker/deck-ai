@@ -1,0 +1,12 @@
+/* poster word bleeds to the top-left edge; reading text sits in up to four columns underneath */
+.a-text.v-giant-headline {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  padding: calc(var(--space-frame-y) * 0.3) var(--space-frame-x) var(--space-frame-y) calc(var(--space-frame-x) * 0.4);
+  row-gap: var(--space-section);
+}
+.a-text.v-giant-headline .gh-word { display: flex; align-items: flex-start; overflow: hidden; }
+.a-text.v-giant-headline .gh-index { vertical-align: top; margin-left: 0.12em; font-size: 0.24em; line-height: 1; position: relative; top: 0.5em; }
+.a-text.v-giant-headline .gh-cols { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 9fr); column-gap: var(--space-gutter); padding-left: calc(var(--space-frame-x) * 0.6); overflow: hidden; }
+/* one column per paragraph */
+.a-text.v-giant-headline .gh-body { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); column-gap: var(--space-gutter); align-items: start; }

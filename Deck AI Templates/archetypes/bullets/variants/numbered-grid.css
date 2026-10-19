@@ -1,0 +1,32 @@
+/* agenda/contents: big numerals in a dark panel that overlaps the slide's lower-right */
+.a-bullets.v-numbered-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 8fr);
+  grid-template-rows: minmax(0, 1fr);
+  padding: calc(var(--space-frame-y) * 1.3) 0 0 var(--space-frame-x);
+  column-gap: var(--space-gutter);
+}
+.a-bullets.v-numbered-grid .ng-head { display: grid; align-content: start; gap: var(--space-gutter); padding-right: var(--space-gutter); }
+.a-bullets.v-numbered-grid .ng-panel {
+  align-self: end;
+  height: 82%;
+  padding: calc(var(--space-gutter) * 1.4) var(--space-frame-x) var(--space-frame-y) calc(var(--space-gutter) * 1.4);
+  background: var(--color-ground-inverse);
+  color: var(--color-ink-on-inverse);
+  border-top-left-radius: var(--radius-card);
+}
+.a-bullets.v-numbered-grid .ng-items {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: minmax(0, 1fr);
+  gap: var(--space-gutter) calc(var(--space-gutter) * 1.4);
+  height: 100%;
+  counter-reset: ng;
+  overflow: hidden;
+}
+.a-bullets.v-numbered-grid .ng-items[data-count="4"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.a-bullets.v-numbered-grid .ng-item { display: flex; flex-direction: column; gap: calc(var(--space-tight) * 0.6); counter-increment: ng; min-width: 0; }
+.a-bullets.v-numbered-grid .ng-num::before { content: counter(ng, decimal-leading-zero); }
+.a-bullets.v-numbered-grid .ng-num { color: var(--color-emphasis); line-height: 1; margin-bottom: var(--space-tight); }
+.a-bullets.v-numbered-grid .ng-text { opacity: 0.65; }
+.a-bullets.v-numbered-grid .ng-tag { align-self: flex-start; margin-top: auto; padding: 0.2em 0.7em; border-radius: var(--radius-pill); background: var(--color-emphasis); color: var(--color-ink-on-emphasis, #fff); white-space: nowrap; }

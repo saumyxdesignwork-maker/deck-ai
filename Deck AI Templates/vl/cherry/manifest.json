@@ -1,0 +1,13 @@
+{
+  "id": "cherry",
+  "version": "0.1.0",
+  "name": "Cherry",
+  "tags": ["bold", "editorial", "proposal", "red", "premium"],
+  "best_for": ["proposal", "pitch", "agency credentials", "strategy"],
+  "palettes": ["default"],
+  "fonts": [
+    { "family": "Instrument Serif", "licence": "OFL-1.1", "package": "@fontsource/instrument-serif" },
+    { "family": "Instrument Sans", "licence": "OFL-1.1", "package": "@fontsource/instrument-sans" }
+  ],
+  "references": "1 user-supplied 24-slide board, 19 Oct 2026 — principles only, see analysis.md"
+}

@@ -1,0 +1,54 @@
+{
+  "archetype": "bullets",
+  "variant": "split-ledger",
+  "slots": {
+    "eyebrow": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 40
+    },
+    "title": {
+      "type": "text",
+      "chars_ideal": 36,
+      "chars_max": 64
+    },
+    "intro": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 220
+    },
+    "items": {
+      "type": "list",
+      "min": 3,
+      "max": 6,
+      "of": {
+        "title": {
+          "type": "text",
+          "chars_max": 36
+        },
+        "text": {
+          "type": "text",
+          "optional": true,
+          "chars_max": 120
+        },
+        "tag": {
+          "type": "text",
+          "optional": true,
+          "chars_max": 14,
+          "nowrap": true
+        }
+      }
+    }
+  },
+  "decor_anchors": [
+    "frame",
+    "edge"
+  ],
+  "supports_aspects": [
+    "16:9",
+    "4:3"
+  ],
+  "grounds": [
+    "base"
+  ]
+}

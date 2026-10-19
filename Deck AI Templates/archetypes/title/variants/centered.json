@@ -2,11 +2,42 @@
   "archetype": "title",
   "variant": "centered",
   "slots": {
-    "eyebrow": { "type": "text", "optional": true, "chars_max": 40 },
-    "title": { "type": "text", "chars_ideal": 24, "chars_max": 60, "words_max": 8 },
-    "subtitle": { "type": "text", "optional": true, "chars_max": 90 },
-    "date": { "type": "text", "optional": true, "chars_max": 40 }
+    "eyebrow": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 40
+    },
+    "title": {
+      "type": "text",
+      "chars_ideal": 24,
+      "chars_max": 60,
+      "words_max": 8
+    },
+    "subtitle": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 90
+    },
+    "date": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 40
+    },
+    "byline": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 60
+    }
   },
-  "decor_anchors": ["frame", "edge"],
-  "supports_aspects": ["16:9", "4:3", "1:1", "4:5", "A4"]
+  "decor_anchors": [
+    "frame",
+    "edge"
+  ],
+  "supports_aspects": [
+    "16:9",
+    "4:3",
+    "1:1",
+    "4:5",
+    "A4"
+  ]
 }

@@ -1,0 +1,14 @@
+{
+  "archetype": "chart",
+  "variant": "takeaway",
+  "slots": {
+    "eyebrow": { "type": "text", "optional": true, "chars_max": 40 },
+    "title": { "type": "text", "optional": true, "chars_ideal": 50, "chars_max": 90 },
+    "takeaway": { "type": "text", "optional": true, "chars_max": 120 },
+    "body": { "type": "text", "optional": true, "chars_max": 260 },
+    "chart": { "type": "chart" },
+    "source": { "type": "text", "optional": true, "chars_max": 100 }
+  },
+  "decor_anchors": ["frame", "edge"],
+  "supports_aspects": ["16:9", "4:3", "1:1", "4:5", "A4"]
+}

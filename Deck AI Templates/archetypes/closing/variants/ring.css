@@ -1,0 +1,12 @@
+.a-closing.v-ring {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  place-items: center;
+  padding: var(--space-frame-y) var(--space-frame-x);
+  text-align: center;
+}
+.a-closing.v-ring .cr-ring { position: absolute; z-index: 0; left: 50%; top: 50%; height: 104cqh; aspect-ratio: 1; transform: translate(-50%, -50%); }
+.a-closing.v-ring > :not([data-decor]) { position: relative; z-index: 1; }
+.a-closing.v-ring .cr-main { max-width: 52cqh; max-height: 100%; overflow: hidden; display: grid; place-items: center; }
+.a-closing.v-ring .cr-foot { width: 100%; display: flex; justify-content: space-between; align-items: end; gap: var(--space-gutter); text-align: left; }
+.a-closing.v-ring .cr-contact { text-align: right; }

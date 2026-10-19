@@ -1,0 +1,68 @@
+/* Cherry — skin. One hue (cherry red) on warm black / blush cream; Didone caps for poster moments. */
+
+/* ---------- layers ---------- */
+.vl-cherry .slide > [data-decor="frame"] { position: absolute; inset: 0; z-index: 0; }
+.vl-cherry .slide > :not([data-decor]):not(.chrome) { position: relative; z-index: 1; }
+.vl-cherry .slide > :is([data-decor="edge"], [data-decor="corner-tl"]) { display: none; }
+.vl-cherry .slide :is(.rg-ring, .cr-ring) { position: absolute; z-index: 0; }
+
+/* ---------- grounds ---------- */
+.vl-cherry .slide[data-ground="base"] {
+  --color-emphasis: var(--color-emphasis-on-base);
+  --color-line: var(--color-line-on-base);
+}
+.vl-cherry .slide[data-ground="accent"] { --color-emphasis: var(--color-ink-on-accent-0); --color-line: color-mix(in srgb, currentColor 30%, transparent); }
+
+/* ---------- chrome: boxed section tag top-left, page number bottom-right ---------- */
+.vl-cherry .chrome { opacity: 1; }
+.vl-cherry .chrome--top { top: calc(var(--space-frame-y) * 0.45); }
+.vl-cherry .chrome--top > span { display: inline-block; padding: 0.35em 0.8em; border: var(--line-hair) solid color-mix(in srgb, currentColor 45%, transparent); border-radius: 3px; }
+.vl-cherry .chrome--bottom { bottom: calc(var(--space-frame-y) * 0.45); opacity: 0.6; }
+
+/* ---------- Didone caps moments: giant words, chapter titles, quotes, closing ---------- */
+.vl-cherry :is(.a-section .t-display-1, .a-closing .cr-title, .a-quote .qb-quote) {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  line-height: 0.92;
+}
+.vl-cherry .a-section .t-display-1 { font-size: calc(var(--t-display-0-size) * 0.6); }
+.vl-cherry .a-closing .cr-title { font-size: calc(var(--t-display-0-size) * 0.42); }
+.vl-cherry .a-quote .qb-quote { font-size: var(--t-display-2-size); line-height: 1; }
+.vl-cherry :is(.gh-index, .gs-index) { color: var(--color-emphasis); font-family: var(--font-text); letter-spacing: 0; }
+
+/* ---------- small type & numbers ---------- */
+.vl-cherry .slide .t-label { color: var(--color-emphasis); }
+.vl-cherry .slide[data-ground="accent"] .t-label { color: inherit; }
+.vl-cherry .slide em { opacity: 1; color: var(--color-emphasis); }
+
+/* ---------- photos: red duotone ---------- */
+.vl-cherry img { filter: grayscale(1) contrast(1.15) brightness(0.95); }
+.vl-cherry .bn-card:has(img)::after { content: ""; position: absolute; inset: 0; background: var(--color-ground-accent-0); mix-blend-mode: multiply; opacity: 0.9; pointer-events: none; }
+.vl-cherry .bn-caption { z-index: 1; }
+
+/* ---------- filled red surfaces use the deeper accent red so white text passes AA ---------- */
+.vl-cherry .a-comparison .is-emphasis { background: var(--color-ground-accent-0); border-color: var(--color-ground-accent-0); color: var(--color-ink-on-accent-0); }
+.vl-cherry .a-comparison .ti-col { border-color: color-mix(in srgb, var(--color-emphasis) 45%, transparent); }
+.vl-cherry .a-comparison .ti-value { color: var(--color-emphasis); }
+.vl-cherry .a-comparison .is-emphasis .ti-value { color: inherit; }
+.vl-cherry .ng-tag { background: var(--color-ground-accent-0); color: var(--color-ink-on-accent-0); }
+
+/* ---------- data ---------- */
+.vl-cherry .ht-item:not(:first-child) { border-color: color-mix(in srgb, var(--color-emphasis) 45%, transparent); }
+.vl-cherry .ht-value, .vl-cherry .gs-value { color: var(--color-emphasis); }
+.vl-cherry .ch--bar .ch-bar, .vl-cherry .ch--hbar .ch-bar { background: var(--color-emphasis); opacity: 0.4; }
+.vl-cherry .ch--bar .is-hl .ch-bar, .vl-cherry .ch--hbar .is-hl .ch-bar { opacity: 1; }
+.vl-cherry .a-metric.v-nested-circles .nc-item { background: color-mix(in srgb, var(--color-emphasis) 13%, transparent); }
+.vl-cherry .a-metric.v-nested-circles .nc-value { color: var(--color-emphasis); }
+.vl-cherry .a-metric .m-value, .vl-cherry .a-metric .hn-value { color: var(--color-emphasis); }
+.vl-cherry .a-table th { color: var(--color-emphasis); }
+
+/* ---------- lists ---------- */
+.vl-cherry :is(.sl-num, .bl-index, .tc2-index) { color: var(--color-emphasis); }
+.vl-cherry .a-bullets .cg-card { border-color: color-mix(in srgb, var(--color-emphasis) 40%, transparent); }
+
+/* ---------- cover ---------- */
+.vl-cherry .a-title.v-ring .rt-meta .t-caption { color: var(--color-emphasis); }
+.vl-cherry .a-title.v-ring .rt-date { color: inherit; }

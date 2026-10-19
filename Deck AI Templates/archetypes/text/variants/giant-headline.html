@@ -1,0 +1,16 @@
+<section class="slide a-text v-giant-headline" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if show_chrome}}
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <div class="gh-word" data-region="word">
+    <h2 class="gh-title t-display-0" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-1">{{rich content.title}}{{#if content.eyebrow}}<sup class="gh-index t-display-3" data-slot="content.eyebrow" data-slot-type="text">({{content.eyebrow}})</sup>{{/if}}</h2>
+  </div>
+  <div class="gh-cols" data-region="cols">
+    {{#if content.lead}}<p class="gh-lead t-caption" data-slot="content.lead" data-slot-type="text">{{content.lead}}</p>{{/if}}
+    <div class="gh-body" data-slot="content.body" data-slot-type="paragraphs">
+      {{#each content.body}}<p class="t-body-s" data-slot="content.body[{{@index}}]" data-slot-type="text" data-fit="shrink" data-min-step="caption">{{this}}</p>{{/each}}
+    </div>
+  </div>
+  <div data-decor="edge"></div>
+</section>

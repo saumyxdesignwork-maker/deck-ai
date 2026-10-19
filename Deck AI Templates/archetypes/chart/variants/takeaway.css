@@ -1,0 +1,36 @@
+.a-chart.v-takeaway {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  grid-template-rows: minmax(0, 1fr);
+  padding: calc(var(--space-frame-y) * 1.4) var(--space-frame-x) var(--space-frame-y);
+  column-gap: calc(var(--space-gutter) * 2);
+}
+.a-chart.v-takeaway .ct-text { display: flex; flex-direction: column; gap: var(--space-gutter); overflow: hidden; }
+.a-chart.v-takeaway .ct-source { margin-top: auto; }
+.a-chart.v-takeaway .ct-chart { min-height: 0; display: grid; align-items: end; padding-top: var(--space-section); }
+@container slide (aspect-ratio < 1) {
+  .a-chart.v-takeaway { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); row-gap: var(--space-section); }
+}
+
+/* ---------- shared chart primitives (any VL restyles via .ch-*) ---------- */
+.deck .ch { width: 100%; height: 100%; min-height: 0; position: relative; }
+.deck .ch--empty { display: grid; place-items: center; border: var(--line-hair) dashed var(--color-line); }
+.deck .ch--bar { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: var(--space-tight); align-items: end; }
+.deck .ch--bar .ch-col { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; height: 100%; text-align: center; gap: 0.4em; }
+.deck .ch--bar .ch-bar { align-self: end; height: var(--h); background: currentColor; opacity: 0.35; border-radius: 2px 2px 0 0; }
+.deck .ch--bar .ch-val { align-self: end; }
+.deck .ch--bar .is-hl .ch-bar { background: var(--color-emphasis); opacity: 1; }
+.deck .ch--hbar { display: grid; align-content: center; gap: var(--space-gutter); }
+.deck .ch--hbar .ch-row { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 5fr) auto; align-items: center; gap: var(--space-gutter); }
+.deck .ch--hbar .ch-track { height: 10px; background: color-mix(in srgb, currentColor 12%, transparent); border-radius: 999px; overflow: hidden; }
+.deck .ch--hbar .ch-bar { display: block; height: 100%; width: var(--w); background: currentColor; opacity: 0.55; border-radius: inherit; }
+.deck .ch--hbar .is-hl .ch-bar { background: var(--color-emphasis); opacity: 1; }
+.deck .ch--area { display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: var(--space-tight); }
+.deck .ch--area .ch-plot { position: relative; min-height: 0; border-bottom: var(--line-hair) solid var(--color-line); }
+.deck .ch--area svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.deck .ch--area .ch-line { fill: none; stroke: var(--color-emphasis); stroke-width: 2.5; }
+.deck .ch--area .ch-fill-a { stop-color: var(--color-emphasis); stop-opacity: 0.45; }
+.deck .ch--area .ch-fill-b { stop-color: var(--color-emphasis); stop-opacity: 0; }
+.deck .ch--area .ch-dot { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: var(--color-emphasis); transform: translate(-50%, -50%); box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-emphasis) 25%, transparent); }
+.deck .ch--area .ch-flag { position: absolute; transform: translate(-100%, -170%); white-space: nowrap; padding-right: 0.4em; }
+.deck .ch--area .ch-x { display: flex; justify-content: space-between; opacity: 0.7; }

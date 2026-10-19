@@ -1,0 +1,37 @@
+/* split ground: left half paints the inverse role, right half keeps the slide's own ground */
+.a-bullets.v-split-ledger {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  grid-template-rows: minmax(0, 1fr);
+}
+.a-bullets.v-split-ledger .sl-left {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-gutter);
+  padding: calc(var(--space-frame-y) * 1.4) calc(var(--space-gutter) * 1.5) var(--space-frame-y) var(--space-frame-x);
+  background: var(--color-ground-inverse);
+  color: var(--color-ink-on-inverse);
+  overflow: hidden;
+}
+.a-bullets.v-split-ledger .sl-intro { margin-top: auto; max-width: 26em; opacity: 0.75; }
+.a-bullets.v-split-ledger .sl-items {
+  display: grid;
+  grid-auto-rows: minmax(0, 1fr);
+  padding: calc(var(--space-frame-y) * 1.4) var(--space-frame-x) var(--space-frame-y) calc(var(--space-gutter) * 1.5);
+  counter-reset: sl;
+  overflow: hidden;
+}
+.a-bullets.v-split-ledger .sl-item {
+  display: grid;
+  grid-template-columns: 2.4em minmax(0, 1fr) minmax(0, 1.3fr);
+  column-gap: var(--space-gutter);
+  align-items: start;
+  padding-top: var(--space-tight);
+  border-top: var(--line-hair) solid var(--color-line);
+  counter-increment: sl;
+  min-height: 0;
+}
+.a-bullets.v-split-ledger .sl-num::before { content: counter(sl, decimal-leading-zero); }
+.a-bullets.v-split-ledger .sl-name { display: grid; justify-items: start; gap: var(--space-tight); }
+.a-bullets.v-split-ledger .sl-tag { padding: 0.2em 0.7em; border-radius: var(--radius-pill); border: var(--line-hair) solid var(--color-emphasis); color: var(--color-emphasis); white-space: nowrap; }
+.a-bullets.v-split-ledger .sl-text { opacity: 0.75; }

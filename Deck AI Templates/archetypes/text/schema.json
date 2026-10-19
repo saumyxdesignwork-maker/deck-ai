@@ -1,12 +1,58 @@
 {
   "type": "object",
-  "required": ["title", "body"],
+  "required": [
+    "title",
+    "body"
+  ],
   "additionalProperties": false,
   "properties": {
-    "eyebrow": { "type": "string" },
-    "title": { "type": "string" },
-    "lead": { "type": "string" },
-    "body": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
-    "pull_quote": { "type": "string" }
+    "eyebrow": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "lead": {
+      "type": "string"
+    },
+    "body": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "pull_quote": {
+      "type": "string"
+    },
+    "image": {
+      "type": "object",
+      "required": [
+        "src",
+        "alt"
+      ],
+      "properties": {
+        "src": {
+          "type": "string"
+        },
+        "alt": {
+          "type": "string"
+        },
+        "focal": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            }
+          }
+        },
+        "credit": {
+          "type": "string"
+        }
+      }
+    }
   }
 }

@@ -1,0 +1,34 @@
+{
+  "archetype": "closing",
+  "variant": "ring",
+  "slots": {
+    "title": {
+      "type": "text",
+      "chars_ideal": 18,
+      "chars_max": 32,
+      "words_max": 5
+    },
+    "body": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 80
+    },
+    "contact": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 60
+    }
+  },
+  "decor_anchors": [
+    "ring",
+    "edge"
+  ],
+  "supports_aspects": [
+    "16:9",
+    "4:3",
+    "1:1"
+  ],
+  "grounds": [
+    "inverse"
+  ]
+}

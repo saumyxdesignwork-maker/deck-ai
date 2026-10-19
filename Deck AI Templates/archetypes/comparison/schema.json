@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "required": ["columns"],
+  "additionalProperties": false,
+  "properties": {
+    "eyebrow": { "type": "string" },
+    "title": { "type": "string" },
+    "intro": { "type": "string" },
+    "verdict": { "type": "string" },
+    "columns": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["heading"],
+        "additionalProperties": false,
+        "properties": {
+          "heading": { "type": "string" },
+          "value": { "type": "string" },
+          "note": { "type": "string" },
+          "tag": { "type": "string" },
+          "points": { "type": "array", "items": { "type": "string" } },
+          "emphasis": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}

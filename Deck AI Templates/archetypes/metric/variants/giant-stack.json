@@ -1,0 +1,20 @@
+{
+  "archetype": "metric",
+  "variant": "giant-stack",
+  "slots": {
+    "eyebrow": { "type": "text", "optional": true, "chars_max": 6 },
+    "title": { "type": "text", "chars_ideal": 12, "chars_max": 18, "words_max": 3 },
+    "body": { "type": "text", "optional": true, "chars_max": 420 },
+    "items": {
+      "type": "list", "min": 2, "max": 3,
+      "of": {
+        "value": { "type": "text", "chars_max": 8, "nowrap": true },
+        "label": { "type": "text", "chars_max": 32 },
+        "note": { "type": "text", "optional": true, "chars_max": 70 }
+      }
+    },
+    "source": { "type": "text", "optional": true, "chars_max": 100 }
+  },
+  "decor_anchors": ["frame", "edge"],
+  "supports_aspects": ["16:9", "4:3"]
+}

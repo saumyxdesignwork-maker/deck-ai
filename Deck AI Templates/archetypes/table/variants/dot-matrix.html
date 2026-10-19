@@ -1,0 +1,25 @@
+<section class="slide a-table v-dot-matrix" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if show_chrome}}
+  <header class="chrome chrome--top"><span class="t-caption" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <div class="dm-wrap" data-region="table">
+    <table class="dm-table" data-slot="content.table" data-slot-type="table">
+      <thead><tr>{{#each content.table.columns}}<th class="t-caption" data-slot="content.table.columns[{{@index}}]" data-slot-type="text">{{this}}</th>{{/each}}</tr></thead>
+      <tbody>
+        {{#each content.table.rows}}
+        <tr{{#eq @index content.table.highlight_row}} class="is-highlight"{{/eq}}>
+          {{#each this}}<td>{{#eq @index 0}}<span class="t-caption" data-slot="content.table.rows[{{@../index}}][{{@index}}]" data-slot-type="text">{{this}}</span>{{else}}<span class="dm-dot" data-slot="content.table.rows[{{@../index}}][{{@index}}]" data-slot-type="symbol" data-value="{{this}}" role="img" aria-label="{{#eq this "●"}}Full{{/eq}}{{#eq this "◐"}}Partial{{/eq}}{{#eq this "○"}}None{{/eq}}"></span>{{/eq}}</td>{{/each}}
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+    {{#if content.note}}<p class="dm-note t-caption" data-slot="content.note" data-slot-type="text">{{content.note}}</p>{{/if}}
+  </div>
+  <div class="dm-side">
+    {{#if content.eyebrow}}<p class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    {{#if content.title}}<h2 class="t-display-2" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h2>{{/if}}
+  </div>
+  <div data-decor="edge"></div>
+</section>

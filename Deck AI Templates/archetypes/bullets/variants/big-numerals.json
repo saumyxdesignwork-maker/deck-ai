@@ -1,0 +1,21 @@
+{
+  "archetype": "bullets",
+  "variant": "big-numerals",
+  "slots": {
+    "eyebrow": { "type": "text", "optional": true, "chars_max": 40 },
+    "title": { "type": "text", "optional": true, "chars_max": 60 },
+    "intro": { "type": "text", "optional": true, "chars_max": 70 },
+    "image": { "type": "image", "optional": true },
+    "items": {
+      "type": "list", "min": 2, "max": 4,
+      "of": {
+        "title": { "type": "text", "chars_max": 40 },
+        "text": { "type": "text", "optional": true, "chars_max": 110 },
+        "tag": { "type": "text", "optional": true, "chars_max": 14, "nowrap": true }
+      }
+    }
+  },
+  "image_led": true,
+  "decor_anchors": ["frame", "photo", "edge"],
+  "supports_aspects": ["16:9", "4:3"]
+}

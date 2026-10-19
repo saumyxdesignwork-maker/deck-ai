@@ -28,7 +28,10 @@ export function planDeck(deck: Deck, vl: VisualLanguage): PlannedSlide[] {
       notes.push(`no ${slide.archetype} layout fits this content — split the slide or cut items`, ...(closest?.cap.hard ?? []));
     }
     const sameRoleBefore = out.filter((p) => p.slide.archetype === slide.archetype).length;
-    const ground = slide.ground ?? chooseGround(vl, slide.archetype, out.map((p) => p.ground), index, deck.slides.length, sameRoleBefore);
+    let ground = slide.ground ?? chooseGround(vl, slide.archetype, out.map((p) => p.ground), index, deck.slides.length, sameRoleBefore);
+    if (!slide.ground && variant.grounds && !variant.grounds.includes(groundKindOf(ground))) {
+      ground = variant.grounds[0] === "accent" ? "accent:0" : variant.grounds[0]!;
+    }
     out.push({ slide, index, variant, ground, alternates: fitting.map((f) => f.v).filter((v) => v !== variant), notes });
   });
   return out;
@@ -97,6 +100,8 @@ function chooseGround(vl: VisualLanguage, archetype: string, previous: Ground[],
   }
   return pick;
 }
+
+const groundKindOf = (g: Ground) => (g.startsWith("accent") ? "accent" : g) as "base" | "inverse" | "accent" | "image";
 
 /** FNV-1a, 32-bit */
 export function hash(s: string): number {

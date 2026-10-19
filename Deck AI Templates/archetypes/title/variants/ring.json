@@ -1,0 +1,44 @@
+{
+  "archetype": "title",
+  "variant": "ring",
+  "slots": {
+    "eyebrow": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 32
+    },
+    "title": {
+      "type": "text",
+      "chars_ideal": 24,
+      "chars_max": 44,
+      "words_max": 6
+    },
+    "subtitle": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 60
+    },
+    "byline": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 60
+    },
+    "date": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 24
+    }
+  },
+  "decor_anchors": [
+    "ring",
+    "edge"
+  ],
+  "supports_aspects": [
+    "16:9",
+    "4:3",
+    "1:1"
+  ],
+  "grounds": [
+    "inverse"
+  ]
+}

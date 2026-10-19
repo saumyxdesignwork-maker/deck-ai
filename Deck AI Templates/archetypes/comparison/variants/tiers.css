@@ -1,0 +1,39 @@
+.a-comparison.v-tiers {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
+  grid-template-rows: minmax(0, 1fr);
+  padding: calc(var(--space-frame-y) * 1.3) var(--space-frame-x) var(--space-frame-y);
+  column-gap: calc(var(--space-gutter) * 1.5);
+}
+.a-comparison.v-tiers .ti-head { display: grid; align-content: start; gap: var(--space-gutter); }
+.a-comparison.v-tiers .ti-cols {
+  display: grid;
+  grid-template-columns: repeat(var(--item-count), minmax(0, 1fr));
+  gap: var(--space-tight);
+  align-items: stretch;
+  overflow: hidden;
+}
+.a-comparison.v-tiers .ti-col {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--space-tight) * 0.8);
+  padding: calc(var(--space-gutter) * 1.4) var(--space-gutter) var(--space-gutter);
+  border: var(--line-hair) solid var(--color-line);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-card, transparent);
+  min-width: 0;
+  overflow: hidden;
+}
+.a-comparison.v-tiers .is-emphasis { background: var(--color-emphasis); border-color: var(--color-emphasis); color: var(--color-ink-on-emphasis, #fff); }
+.a-comparison.v-tiers .ti-tag {
+  position: absolute;
+  top: var(--space-tight);
+  left: var(--space-gutter);
+  padding: 0.2em 0.7em;
+  border-radius: var(--radius-pill);
+  border: var(--line-hair) solid currentColor;
+  white-space: nowrap;
+}
+.a-comparison.v-tiers .ti-value { display: block; max-width: 100%; overflow: hidden; margin-top: var(--space-tight); }
+.a-comparison.v-tiers .ti-points { display: grid; gap: 0.35em; margin-top: auto; padding-left: 1em; list-style: disc; }

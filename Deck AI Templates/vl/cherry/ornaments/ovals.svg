@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <g style="fill: var(--color-ink-on-accent-0)" opacity="0.92">
+    <ellipse cx="96" cy="540" rx="58" ry="300"/>
+    <ellipse cx="236" cy="540" rx="58" ry="300"/>
+    <ellipse cx="376" cy="540" rx="58" ry="300"/>
+  </g>
+</svg>

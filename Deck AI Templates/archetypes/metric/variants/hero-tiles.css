@@ -1,0 +1,41 @@
+/* first item is the hero (giant figure, left); the rest sit as bordered tiles in a 2-column grid on the right */
+.a-metric.v-hero-tiles {
+  display: grid;
+  grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  padding: calc(var(--space-frame-y) * 1.3) var(--space-frame-x) var(--space-frame-y);
+  column-gap: calc(var(--space-gutter) * 2);
+  row-gap: var(--space-gutter);
+}
+.a-metric.v-hero-tiles .ht-head { grid-column: 1; display: grid; gap: var(--space-tight); }
+.a-metric.v-hero-tiles .ht-items {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 6fr) repeat(2, minmax(0, 2.5fr));
+  grid-auto-rows: minmax(0, 1fr);
+  column-gap: var(--space-tight);
+  row-gap: var(--space-tight);
+  overflow: hidden;
+}
+.a-metric.v-hero-tiles .ht-item {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--space-tight) * 0.6);
+  padding: var(--space-gutter);
+  border: var(--line-hair) solid var(--color-line);
+  border-radius: var(--radius-card);
+  min-width: 0;
+  overflow: hidden;
+}
+.a-metric.v-hero-tiles .ht-item:first-child {
+  grid-row: 1 / span 2;
+  justify-content: center;
+  border: 0;
+  padding: 0 calc(var(--space-gutter) * 2) 0 0;
+}
+.a-metric.v-hero-tiles .ht-item:first-child .ht-value { font-size: var(--t-display-0-size); line-height: 0.95; color: var(--color-emphasis); }
+.a-metric.v-hero-tiles .ht-items[data-count="3"] .ht-item:not(:first-child) { grid-column: span 2; }
+.a-metric.v-hero-tiles .ht-value { display: block; max-width: 100%; overflow: hidden; }
+.a-metric.v-hero-tiles .is-emphasis:not(:first-child) .ht-value { color: var(--color-emphasis); }
+.a-metric.v-hero-tiles .ht-foot { grid-column: 1 / -1; display: flex; justify-content: space-between; gap: var(--space-gutter); }

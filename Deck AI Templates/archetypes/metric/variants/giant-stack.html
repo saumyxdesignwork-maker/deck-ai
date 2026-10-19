@@ -1,0 +1,23 @@
+<section class="slide a-metric v-giant-stack" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if show_chrome}}
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <div class="gs-word" data-region="word">
+    <h2 class="gs-title t-display-0" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-1">{{rich content.title}}{{#if content.eyebrow}}<sup class="gs-index t-display-3" data-slot="content.eyebrow" data-slot-type="text">({{content.eyebrow}})</sup>{{/if}}</h2>
+  </div>
+  <ol class="gs-items" data-region="items" data-slot="content.items" data-slot-type="list" data-min="2" data-max="3">
+    {{#each content.items}}
+    <li class="gs-item{{#if emphasis}} is-emphasis{{/if}}" data-slot-item="{{@index}}">
+      <span class="gs-value t-display-2" data-slot="content.items[{{@index}}].value" data-slot-type="text" data-fit="shrink" data-nowrap data-min-step="display-3">{{value}}</span>
+      <span class="gs-label t-caption" data-slot="content.items[{{@index}}].label" data-slot-type="text">{{label}}</span>
+      {{#if note}}<span class="gs-note t-body-s" data-slot="content.items[{{@index}}].note" data-slot-type="text">{{note}}</span>{{/if}}
+    </li>
+    {{/each}}
+  </ol>
+  <div class="gs-foot">
+    {{#if content.body}}<p class="gs-body t-body-s" data-slot="content.body" data-slot-type="text" data-fit="shrink" data-min-step="caption">{{content.body}}</p>{{/if}}
+    {{#if content.source}}<p class="t-caption" data-slot="content.source" data-slot-type="text">{{content.source}}</p>{{/if}}
+  </div>
+  <div data-decor="edge"></div>
+</section>

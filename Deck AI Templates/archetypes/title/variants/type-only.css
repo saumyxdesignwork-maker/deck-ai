@@ -1,6 +1,6 @@
 .a-title.v-type-only {
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr) auto auto;
   padding: var(--space-frame-y) var(--space-frame-x);
   gap: var(--space-section);
 }

@@ -1,9 +1,12 @@
-import { compile, type Template } from "./compiler";
+import { chartHtml } from "./chart";
+import { compile, registerHelper, type Template } from "./compiler";
 import { hash, planDeck } from "./planner";
 import { getVisualLanguage, variants } from "./registry";
 import { groundKind, groundStyle, resolvePalette, tokensToCss } from "./tokens";
 import { FRAMES, type Deck, type PlannedSlide, type Variant, type VisualLanguage } from "./types";
 import baseCss from "./base.css?raw";
+
+registerHelper("chart", chartHtml);
 
 const cache = new WeakMap<Variant, Template>();
 const templateFor = (v: Variant) => {
@@ -68,7 +71,38 @@ function viewModel(content: Record<string, unknown>): Record<string, unknown> {
       return m ? { ...item, value_pct: Math.max(0, Math.min(100, Number(m[1]))) } : item;
     });
   }
+  if (content.image) out.image = safeImage(content.image);
+  if (Array.isArray(content.items)) out.items = withSpans(out.items as unknown[]);
   return out;
+}
+
+const RANGE_NUMS = /(\d+)(?:\s*[–—-]\s*(\d+))?/;
+
+/** Gantt geometry: "Weeks 3–6" → start/span as % of the longest end. Only added when every item parses. */
+function withSpans(items: unknown[]): unknown[] {
+  const spans = items.map((it) => {
+    const d = (it as { date?: unknown })?.date;
+    const m = typeof d === "string" ? RANGE_NUMS.exec(d) : null;
+    return m ? [Number(m[1]), Number(m[2] ?? m[1])] as const : null;
+  });
+  if (!spans.length || spans.some((s) => !s)) return items;
+  const lo = Math.min(...spans.map((s) => s![0])) - 1;
+  const hi = Math.max(...spans.map((s) => s![1]));
+  const total = hi - lo || 1;
+  return items.map((it, i) => {
+    const [a, b] = spans[i]!;
+    return { ...(it as object), start_pct: (((a - 1 - lo) / total) * 100).toFixed(2), span_pct: (((b - a + 1) / total) * 100).toFixed(2) };
+  });
+}
+
+const SAFE_SRC = /^(?:https:\/\/|\.{0,2}\/?[\w./ -]+\.(?:png|jpe?g|webp|avif|gif|svg)$|data:image\/(?:png|jpeg|webp);base64,)/i;
+
+/** Images: only relative/https/data-image sources survive; focal point becomes a sanitised object-position. */
+function safeImage(raw: unknown): unknown {
+  const img = raw as { src?: unknown; alt?: unknown; focal?: { x?: unknown; y?: unknown } };
+  if (typeof img?.src !== "string" || !SAFE_SRC.test(img.src)) return undefined;
+  const pct = (n: unknown) => (typeof n === "number" && Number.isFinite(n) ? Math.max(0, Math.min(1, n)) * 100 : 50);
+  return { src: img.src, alt: typeof img.alt === "string" ? img.alt : "", pos: `${pct(img.focal?.x)}% ${pct(img.focal?.y)}%` };
 }
 
 /** Shift each rotating palette role by the slide index so hues differ slide to slide. */

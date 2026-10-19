@@ -15,8 +15,21 @@ export function mapToArchetype(ex: Extracted, pos: { index: number; total: numbe
   if (!mapper) return { archetype, content: generic(ex), warnings: [`no Markdown mapper for "${archetype}"; generic slots used`] };
   const warnings: string[] = [];
   const content = prune(mapper(ex, warnings));
+  if (ex.image && !content.image) warnings.push(`image "${ex.image.src}" ignored — ${archetype} slides take no image`);
   return { archetype, content, warnings };
 }
+
+const TAG = /\s*\[([^\]]{1,24})\]\s*$/;
+/** "Text … [Weeks 1–4]" → ["Text …", "Weeks 1–4"] */
+function splitTag(s: string): [string, string | undefined] {
+  const m = TAG.exec(s);
+  return m ? [s.slice(0, m.index).trim(), m[1]!.trim()] : [s, undefined];
+}
+
+const toNumber = (s: string) => {
+  const n = Number(s.replace(/[^\d.\-−]/g, "").replace("−", "-"));
+  return Number.isFinite(n) ? n : 0;
+};
 
 /** Content-shape classifier (deck-template-system.md §11.6). */
 export function classify(ex: Extracted, { index, total }: { index: number; total: number }): string {
@@ -34,11 +47,10 @@ export function classify(ex: Extracted, { index, total }: { index: number; total
 
 const MAPPERS: Record<string, (ex: Extracted, warn: string[]) => Content> = {
   title: (ex, warn) => {
-    const [a, b, ...rest] = ex.lines;
+    const lines = ex.subtitle ? [ex.subtitle, ...ex.lines] : ex.lines;
+    const [subtitle, date, byline, ...rest] = lines;
     if (rest.length) warn.push(`${rest.length} extra line(s) ignored on title slide`);
-    return ex.subtitle
-      ? { eyebrow: ex.eyebrow, title: ex.title, subtitle: ex.subtitle, date: a }
-      : { eyebrow: ex.eyebrow, title: ex.title, subtitle: a, date: b };
+    return { eyebrow: ex.eyebrow, title: ex.title, subtitle, date, byline };
   },
 
   section: (ex) => {
@@ -62,9 +74,42 @@ const MAPPERS: Record<string, (ex: Extracted, warn: string[]) => Content> = {
       eyebrow: ex.eyebrow,
       title: ex.title,
       intro: ex.subtitle ?? ex.paragraphs[0],
-      items: ex.lists.flat().map((i) => (i.lead ? { title: i.lead, text: i.rest || undefined } : { title: i.rest })),
+      image: ex.image,
+      items: ex.lists.flat().map((i) => {
+        const [rest, tag] = splitTag(i.rest);
+        return i.lead ? { title: i.lead, text: rest || undefined, tag } : { title: rest, tag };
+      }),
     };
   },
+
+  chart: (ex, warn) => {
+    const t = ex.table;
+    if (!t) warn.push("chart slides need a Markdown table: first column = categories, second = values");
+    return {
+      eyebrow: ex.eyebrow,
+      title: ex.title,
+      takeaway: ex.subtitle,
+      body: ex.paragraphs[0],
+      chart: t && {
+        kind: ["area", "bar", "hbar"].includes(ex.directives.kind ?? "") ? ex.directives.kind : "bar",
+        categories: t.rows.map((r) => r[0] ?? ""),
+        series: [{ name: t.columns[1], values: t.rows.map((r) => toNumber(r[1] ?? "")), labels: t.rows.map((r) => r[1] ?? "") }],
+        highlight: t.highlight_row,
+      },
+      source: ex.quote?.replace(/^source:\s*/i, ""),
+    };
+  },
+
+  comparison: (ex) => ({
+    eyebrow: ex.eyebrow,
+    title: ex.title,
+    intro: ex.subtitle ?? ex.paragraphs[0],
+    columns: (ex.lists[0] ?? []).map((i) => {
+      const [rest, tag] = splitTag(i.rest);
+      const [value, note] = splitOnce(rest, /\s+[—–]\s+|\s+-\s+/);
+      return { heading: i.lead ?? value, value: i.lead ? value : undefined, note, tag, points: i.points, emphasis: i.flags.has("emphasis") || undefined };
+    }),
+  }),
 
   timeline: (ex) => {
     const range = ex.subtitle && RANGE.test(ex.subtitle) ? ex.subtitle.split(RANGE) : undefined;

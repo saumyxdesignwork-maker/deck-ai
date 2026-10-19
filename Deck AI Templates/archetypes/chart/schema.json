@@ -1,0 +1,35 @@
+{
+  "type": "object",
+  "required": ["chart"],
+  "additionalProperties": false,
+  "properties": {
+    "eyebrow": { "type": "string" },
+    "title": { "type": "string" },
+    "takeaway": { "type": "string" },
+    "body": { "type": "string" },
+    "source": { "type": "string" },
+    "chart": {
+      "type": "object",
+      "required": ["kind", "categories", "series"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "enum": ["area", "bar", "hbar"] },
+        "categories": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "series": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["values"],
+            "properties": {
+              "name": { "type": "string" },
+              "values": { "type": "array", "items": { "type": "number" } },
+              "labels": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        },
+        "highlight": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

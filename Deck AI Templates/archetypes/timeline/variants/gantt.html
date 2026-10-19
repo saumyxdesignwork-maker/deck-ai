@@ -1,0 +1,30 @@
+<section class="slide a-timeline v-gantt" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if show_chrome}}
+  <header class="chrome chrome--top"><span class="t-caption" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <div class="gt-head">
+    <div class="gt-titles">
+      {{#if content.eyebrow}}<p class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+      {{#if content.title}}<h2 class="t-display-2" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h2>{{/if}}
+    </div>
+    {{#if content.intro}}<p class="gt-intro t-body-s" data-slot="content.intro" data-slot-type="text">{{content.intro}}</p>{{/if}}
+  </div>
+  <ol class="gt-rows" data-region="rows" data-slot="content.items" data-slot-type="list" data-min="3" data-max="8">
+    {{#each content.items}}
+    <li class="gt-row{{#if emphasis}} is-emphasis{{/if}}" data-slot-item="{{@index}}">
+      <span class="gt-label">
+        <span class="t-caption" data-slot="content.items[{{@index}}].label" data-slot-type="text">{{label}}</span>
+        {{#if text}}<span class="gt-text t-caption" data-slot="content.items[{{@index}}].text" data-slot-type="text">{{text}}</span>{{/if}}
+      </span>
+      <span class="gt-track"><span class="gt-bar" style="--start: {{start_pct}}%; --span: {{span_pct}}%"><span class="gt-date t-caption" data-slot="content.items[{{@index}}].date" data-slot-type="text" data-nowrap>{{date}}</span></span></span>
+    </li>
+    {{/each}}
+  </ol>
+  <div class="gt-axis">
+    {{#if content.start}}<span class="t-caption" data-slot="content.start" data-slot-type="text">{{content.start}}</span>{{/if}}
+    {{#if content.end}}<span class="t-caption" data-slot="content.end" data-slot-type="text">{{content.end}}</span>{{/if}}
+  </div>
+  <div data-decor="edge"></div>
+</section>

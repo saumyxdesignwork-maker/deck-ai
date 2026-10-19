@@ -1,0 +1,22 @@
+/* a large ring motif (VL ornament) sits left; the title is set inside it */
+.a-title.v-ring {
+  display: grid;
+  grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  padding: var(--space-frame-y) var(--space-frame-x);
+}
+.a-title.v-ring .rg-ring { position: absolute; z-index: 0; left: -14cqh; top: 50%; height: 128cqh; aspect-ratio: 1; transform: translateY(-50%); }
+.a-title.v-ring > :not([data-decor]) { position: relative; z-index: 1; }
+.a-title.v-ring .rt-meta { grid-column: 2; display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-tight); text-align: right; }
+.a-title.v-ring .rt-date { padding: 0.25em 0.8em; border: var(--line-hair) solid currentColor; border-radius: var(--radius-pill); }
+.a-title.v-ring .rt-main {
+  grid-column: 1;
+  grid-row: 2;
+  align-self: center;
+  display: grid;
+  gap: var(--space-gutter);
+  padding-left: 9cqh;
+  max-width: 38cqw;
+  overflow: hidden;
+}
+.a-title.v-ring .rt-byline { grid-column: 2; grid-row: 3; text-align: right; align-self: end; max-width: 22em; justify-self: end; }

@@ -1,0 +1,6 @@
+[
+  { "id": "ring", "file": "ring.svg", "anchors": ["ring"], "roles": ["title", "closing"], "max_per_slide": 1 },
+  { "id": "ovals", "file": "ovals.svg", "anchors": ["frame"], "roles": ["section"], "grounds": ["accent"], "max_per_slide": 1 },
+  { "id": "ember-glow", "file": "ember-glow.svg", "anchors": ["frame"], "roles": ["quote", "metric", "chart", "comparison", "timeline", "bullets"], "grounds": ["inverse"], "max_per_slide": 1 },
+  { "id": "photo-red", "file": "photo-red.svg", "anchors": ["photo"], "roles": ["*"], "max_per_slide": 1 }
+]

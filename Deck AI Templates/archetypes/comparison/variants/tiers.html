@@ -1,0 +1,24 @@
+<section class="slide a-comparison v-tiers" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if show_chrome}}
+  <header class="chrome chrome--top"><span class="t-caption" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <div class="ti-head">
+    {{#if content.eyebrow}}<p class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    {{#if content.title}}<h2 class="t-display-2" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h2>{{/if}}
+    {{#if content.intro}}<p class="ti-intro t-body-s" data-slot="content.intro" data-slot-type="text">{{content.intro}}</p>{{/if}}
+  </div>
+  <ol class="ti-cols" data-region="cols" data-slot="content.columns" data-slot-type="list" data-min="2" data-max="4" style="--item-count: {{content.columns.length}}">
+    {{#each content.columns}}
+    <li class="ti-col{{#if emphasis}} is-emphasis{{/if}}" data-slot-item="{{@index}}">
+      {{#if tag}}<span class="ti-tag t-caption" data-slot="content.columns[{{@index}}].tag" data-slot-type="text" data-nowrap>{{tag}}</span>{{/if}}
+      <span class="ti-heading t-title" data-slot="content.columns[{{@index}}].heading" data-slot-type="text">{{heading}}</span>
+      {{#if value}}<span class="ti-value t-display-3" data-slot="content.columns[{{@index}}].value" data-slot-type="text" data-nowrap data-fit="shrink" data-min-step="title">{{value}}</span>{{/if}}
+      {{#if note}}<span class="ti-note t-caption" data-slot="content.columns[{{@index}}].note" data-slot-type="text">{{note}}</span>{{/if}}
+      {{#if points}}<ul class="ti-points">{{#each points}}<li class="t-body-s" data-slot="content.columns[{{@../index}}].points[{{@index}}]" data-slot-type="text" data-fit="shrink" data-min-step="caption">{{this}}</li>{{/each}}</ul>{{/if}}
+    </li>
+    {{/each}}
+  </ol>
+  <div data-decor="edge"></div>
+</section>

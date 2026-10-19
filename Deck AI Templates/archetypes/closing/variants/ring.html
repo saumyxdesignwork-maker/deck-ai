@@ -1,0 +1,11 @@
+<section class="slide a-closing v-ring" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div class="cr-ring" data-decor="ring"></div>
+  <div class="cr-main" data-region="main">
+    <h2 class="cr-title t-display-1" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h2>
+  </div>
+  <div class="cr-foot">
+    {{#if content.body}}<p class="t-body-s" data-slot="content.body" data-slot-type="text">{{content.body}}</p>{{/if}}
+    {{#if content.contact}}<p class="cr-contact t-caption" data-slot="content.contact" data-slot-type="text">{{content.contact}}</p>{{/if}}
+  </div>
+  <div data-decor="edge"></div>
+</section>

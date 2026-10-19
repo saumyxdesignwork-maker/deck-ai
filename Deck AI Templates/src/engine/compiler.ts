@@ -9,11 +9,21 @@ type Node =
   | { t: "text"; v: string }
   | { t: "var"; path: string }
   | { t: "rich"; path: string }
+  | { t: "helper"; name: string; path: string }
   | { t: "each"; path: string; body: Node[] }
   | { t: "if"; path: string; body: Node[]; alt: Node[] }
   | { t: "eq"; a: string; b: string; body: Node[]; alt: Node[] };
 
 export type Template = (ctx: Record<string, unknown>) => string;
+
+/**
+ * Trusted markup generators callable as {{name path}} (e.g. {{chart content.chart}}).
+ * A helper must escape any text it emits; registration happens in engine code only, never from templates.
+ */
+const helpers: Record<string, (value: unknown) => string> = {};
+export function registerHelper(name: string, fn: (value: unknown) => string) {
+  helpers[name] = fn;
+}
 
 const TAG = /\{\{\s*([#/]?)\s*([^}]*?)\s*\}\}/g;
 
@@ -45,6 +55,9 @@ export function compile(src: string): Template {
       top.list = n.alt;
     } else if (body.startsWith("rich ")) {
       top.list.push({ t: "rich", path: body.slice(5).trim() });
+    } else if (/^[a-z]+ \S+$/.test(body) && body.split(" ")[0]! in helpers) {
+      const [name, path] = body.split(" ") as [string, string];
+      top.list.push({ t: "helper", name, path });
     } else {
       top.list.push({ t: "var", path: body });
     }
@@ -71,6 +84,9 @@ function run(nodes: Node[], scopes: unknown[], idx: number[]): string {
         out += v == null ? "" : richHtml(String(v));
         break;
       }
+      case "helper":
+        out += helpers[n.name]!(lookup(n.path, scopes, idx));
+        break;
       case "each": {
         const list = lookup(n.path, scopes, idx);
         if (Array.isArray(list)) list.forEach((item, i) => (out += run(n.body, [item, ...scopes], [i, ...idx])));
@@ -94,6 +110,9 @@ function run(nodes: Node[], scopes: unknown[], idx: number[]): string {
 }
 
 function lookup(path: string, scopes: unknown[], idx: number[]): unknown {
+  // literals for {{#eq}}: "text" or a plain number
+  if (/^".*"$/.test(path)) return path.slice(1, -1);
+  if (/^-?\d+(\.\d+)?$/.test(path)) return Number(path);
   if (path === "@index") return idx[0];
   if (path === "@../index") return idx[1];
   if (path === "this") return scopes[0];
@@ -132,6 +151,7 @@ export function richFromDom(el: globalThis.Node): string {
   let out = "";
   el.childNodes.forEach((n) => {
     if (n.nodeType === 3) out += n.textContent ?? "";
+    else if ((n as Element).hasAttribute?.("data-slot")) return; // a nested slot (e.g. an index badge) is its own field
     else if (n.nodeName === "EM") out += `*${n.textContent ?? ""}*`;
     else if (n.nodeName === "MARK") out += `==${n.textContent ?? ""}==`;
     else out += richFromDom(n);

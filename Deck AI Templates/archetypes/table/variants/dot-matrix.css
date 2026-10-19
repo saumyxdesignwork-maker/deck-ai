@@ -1,0 +1,24 @@
+.a-table.v-dot-matrix {
+  display: grid;
+  grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+  grid-template-rows: minmax(0, 1fr);
+  padding: calc(var(--space-frame-y) * 1.3) var(--space-frame-x) var(--space-frame-y);
+  column-gap: calc(var(--space-gutter) * 2);
+}
+.a-table.v-dot-matrix .dm-wrap { display: flex; flex-direction: column; gap: var(--space-gutter); overflow: hidden; }
+.a-table.v-dot-matrix .dm-side { display: grid; align-content: start; gap: var(--space-gutter); }
+.a-table.v-dot-matrix .dm-table { width: 100%; border-collapse: collapse; }
+.a-table.v-dot-matrix th { text-align: center; padding: 0 0 var(--space-tight); border-bottom: var(--line-hair) solid var(--color-line); }
+.a-table.v-dot-matrix th:first-child,
+.a-table.v-dot-matrix td:first-child { text-align: left; }
+.a-table.v-dot-matrix td { text-align: center; padding: var(--space-tight) 0; border-bottom: var(--line-hair) solid var(--color-line); }
+.a-table.v-dot-matrix .is-highlight td { background: color-mix(in srgb, var(--color-emphasis) 10%, transparent); }
+/* filled / half / empty dots; colours from the VL emphasis */
+.a-table.v-dot-matrix .dm-dot { display: inline-block; width: 22px; height: 22px; border-radius: 50%; border: var(--line-rule) solid var(--color-emphasis); vertical-align: middle; }
+.a-table.v-dot-matrix .dm-dot[data-value="●"] { background: var(--color-emphasis); }
+.a-table.v-dot-matrix .dm-dot[data-value="◐"] { background: linear-gradient(90deg, var(--color-emphasis) 50%, transparent 50%); }
+.a-table.v-dot-matrix .dm-dot[data-value=""] { border-color: transparent; }
+@container slide (aspect-ratio < 1) {
+  .a-table.v-dot-matrix { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); }
+  .a-table.v-dot-matrix .dm-side { order: -1; }
+}

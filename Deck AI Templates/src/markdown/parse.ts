@@ -19,6 +19,7 @@ export interface Extracted {
   lists: MdItem[][];
   table?: { columns: string[]; rows: string[][]; highlight_row?: number };
   quote?: string;
+  image?: { src: string; alt: string };
 }
 
 export interface MdItem {
@@ -139,9 +140,16 @@ function extract(tree: Root): Extracted {
         else addParagraph(text);
         break;
       }
-      case "paragraph":
+      case "paragraph": {
+        // a paragraph that is just an image becomes the slide's image
+        const only = (node as Paragraph).children.filter((c) => !(c.type === "text" && !c.value.trim()));
+        if (only.length === 1 && only[0]!.type === "image") {
+          ex.image ??= { src: only[0]!.url, alt: only[0]!.alt ?? "" };
+          break;
+        }
         addParagraph(toString(node).trim());
         break;
+      }
       case "list":
         ex.lists.push((node as List).children.map(parseItem));
         break;

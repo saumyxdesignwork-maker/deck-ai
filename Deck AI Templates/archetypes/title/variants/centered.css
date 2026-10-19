@@ -1,6 +1,6 @@
 .a-title.v-centered {
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr) auto auto;
   justify-items: center;
   padding: var(--space-frame-y) var(--space-frame-x);
   text-align: center;

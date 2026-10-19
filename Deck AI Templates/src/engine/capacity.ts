@@ -33,10 +33,16 @@ export function checkCapacity(variant: Variant, content: Record<string, unknown>
       });
       return;
     }
+    if (spec.type === "chart" || spec.type === "image") return;
     if (spec.type === "table" && typeof value === "object") {
       const t = value as { columns?: unknown[]; rows?: unknown[] };
       if (spec.cols_max && (t.columns?.length ?? 0) > spec.cols_max) hard.push(`${path}: ${t.columns?.length} columns > ${spec.cols_max}`);
       if (spec.rows_max && (t.rows?.length ?? 0) > spec.rows_max) hard.push(`${path}: ${t.rows?.length} rows > ${spec.rows_max}`);
+      if (spec.cell_pattern) {
+        const re = new RegExp(spec.cell_pattern);
+        const bad = (t.rows as unknown[][] | undefined)?.some((r) => r.slice(1).some((cell) => !re.test(String(cell ?? "").trim())));
+        if (bad) hard.push(`${path}: cells are not in the expected format`);
+      }
       return;
     }
     if (typeof value === "string" || Array.isArray(value)) {

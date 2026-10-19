@@ -1,28 +1,77 @@
 {
   "variant_allow": {
-    "title": ["centered", "word-fill"],
-    "section": ["centered"],
-    "text": ["centered-block", "lead-column"],
-    "bullets": ["two-column", "list"],
-    "quote": ["centered-badge", "corner-question"],
-    "metric": ["hero-number", "row"],
-    "table": ["ruled"],
-    "closing": ["thank-you"],
-    "freeform": ["block"]
+    "title": [
+      "centered",
+      "word-fill"
+    ],
+    "section": [
+      "centered"
+    ],
+    "text": [
+      "centered-block",
+      "lead-column"
+    ],
+    "bullets": [
+      "two-column",
+      "list"
+    ],
+    "quote": [
+      "centered-badge",
+      "corner-question"
+    ],
+    "metric": [
+      "hero-number",
+      "row",
+      "hero-tiles"
+    ],
+    "table": [
+      "ruled"
+    ],
+    "closing": [
+      "thank-you"
+    ],
+    "freeform": [
+      "block"
+    ]
   },
-  "variant_weights": { "title.word-fill": 1.4, "text.centered-block": 1.2, "bullets.two-column": 1.3 },
+  "variant_weights": {
+    "title.word-fill": 1.4,
+    "text.centered-block": 1.2,
+    "bullets.two-column": 1.3
+  },
   "grounds": {
     "rotation": "role-based",
     "by_role": {
-      "title": ["inverse"],
-      "section": ["inverse", "accent:0", "inverse", "accent:1"],
-      "quote": ["accent:2", "base"],
-      "text": ["inverse", "base"],
-      "closing": ["inverse"]
+      "title": [
+        "inverse"
+      ],
+      "section": [
+        "inverse",
+        "accent:0",
+        "inverse",
+        "accent:1"
+      ],
+      "quote": [
+        "accent:2",
+        "base"
+      ],
+      "text": [
+        "inverse",
+        "base"
+      ],
+      "closing": [
+        "inverse"
+      ]
     },
     "default": "inverse",
     "max_consecutive_same": 5
   },
-  "chrome": { "show_on": "all-but-title" },
-  "rotate_roles": ["field.heat", "field.cool", "field.pale"]
+  "chrome": {
+    "show_on": "all-but-title"
+  },
+  "rotate_roles": [
+    "field.heat",
+    "field.cool",
+    "field.pale"
+  ]
 }

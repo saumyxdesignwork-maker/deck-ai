@@ -63,6 +63,8 @@ export interface SlotSpec {
   /** table capacity */
   cols_max?: number;
   rows_max?: number;
+  /** every body cell after the first column must match (e.g. dot symbols) */
+  cell_pattern?: string;
 }
 
 export interface VariantDef {
@@ -72,6 +74,8 @@ export interface VariantDef {
   slots: Record<string, SlotSpec>;
   decor_anchors: string[];
   supports_aspects: Aspect[];
+  /** grounds this layout reads well on; the planner swaps an unpinned ground that is not listed */
+  grounds?: GroundKind[];
   fallback_variants?: string[];
 }
 

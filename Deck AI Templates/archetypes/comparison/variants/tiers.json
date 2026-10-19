@@ -1,0 +1,21 @@
+{
+  "archetype": "comparison",
+  "variant": "tiers",
+  "slots": {
+    "eyebrow": { "type": "text", "optional": true, "chars_max": 40 },
+    "title": { "type": "text", "optional": true, "chars_ideal": 24, "chars_max": 60 },
+    "intro": { "type": "text", "optional": true, "chars_max": 140 },
+    "columns": {
+      "type": "list", "min": 2, "max": 4,
+      "of": {
+        "heading": { "type": "text", "chars_max": 32 },
+        "value": { "type": "text", "optional": true, "chars_max": 10, "nowrap": true },
+        "note": { "type": "text", "optional": true, "chars_max": 50 },
+        "tag": { "type": "text", "optional": true, "chars_max": 16, "nowrap": true },
+        "points": { "type": "list", "optional": true, "max": 6 }
+      }
+    }
+  },
+  "decor_anchors": ["frame", "edge"],
+  "supports_aspects": ["16:9", "4:3"]
+}

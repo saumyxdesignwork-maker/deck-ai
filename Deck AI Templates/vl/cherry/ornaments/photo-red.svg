@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="800" gradientUnits="userSpaceOnUse">
+      <stop offset="0" style="stop-color: var(--color-ground-accent-0)"/>
+      <stop offset="1" style="stop-color: var(--color-ground-inverse)"/>
+    </linearGradient>
+    <radialGradient id="light" cx="420" cy="220" r="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0" style="stop-color: var(--color-glow-b)" stop-opacity="0.9"/>
+      <stop offset="1" style="stop-color: var(--color-glow-b)" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="18"/></filter>
+  </defs>
+  <rect width="600" height="800" fill="url(#bg)"/>
+  <rect width="600" height="800" fill="url(#light)"/>
+  <g filter="url(#blur)" style="fill: var(--color-ground-inverse)" opacity="0.55">
+    <rect x="40" y="0" width="38" height="800"/>
+    <rect x="150" y="0" width="22" height="800"/>
+    <rect x="300" y="0" width="54" height="800"/>
+    <rect x="470" y="0" width="30" height="800"/>
+  </g>
+</svg>

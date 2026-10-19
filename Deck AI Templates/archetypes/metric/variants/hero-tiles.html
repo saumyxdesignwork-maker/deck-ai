@@ -1,0 +1,25 @@
+<section class="slide a-metric v-hero-tiles" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if show_chrome}}
+  <header class="chrome chrome--top"><span class="t-caption" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <div class="ht-head">
+    {{#if content.eyebrow}}<p class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    {{#if content.title}}<h2 class="t-display-2" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h2>{{/if}}
+  </div>
+  <ol class="ht-items" data-region="items" data-slot="content.items" data-slot-type="list" data-min="3" data-max="5" data-count="{{content.items.length}}">
+    {{#each content.items}}
+    <li class="ht-item{{#if emphasis}} is-emphasis{{/if}}" data-slot-item="{{@index}}">
+      <span class="ht-label t-caption" data-slot="content.items[{{@index}}].label" data-slot-type="text">{{label}}</span>
+      <span class="ht-value t-display-3" data-slot="content.items[{{@index}}].value" data-slot-type="text" data-fit="shrink" data-nowrap data-min-step="title">{{value}}</span>
+      {{#if note}}<span class="ht-note t-body-s" data-slot="content.items[{{@index}}].note" data-slot-type="text" data-fit="shrink" data-min-step="caption">{{note}}</span>{{/if}}
+    </li>
+    {{/each}}
+  </ol>
+  <div class="ht-foot">
+    {{#if content.body}}<p class="t-body-s" data-slot="content.body" data-slot-type="text">{{content.body}}</p>{{/if}}
+    {{#if content.source}}<p class="t-caption" data-slot="content.source" data-slot-type="text">{{content.source}}</p>{{/if}}
+  </div>
+  <div data-decor="edge"></div>
+</section>
