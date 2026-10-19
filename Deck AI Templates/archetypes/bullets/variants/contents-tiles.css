@@ -9,7 +9,9 @@
 .a-bullets.v-contents-tiles .ct-cell { position: relative; display: grid; place-items: center; padding: 8%; min-height: 0; }
 .a-bullets.v-contents-tiles .ct-cell--art .il-art { width: 100%; height: 100%; }
 .a-bullets.v-contents-tiles .ct-cell--art .il-art svg { width: 100%; height: 100%; display: block; }
-.a-bullets.v-contents-tiles .ct-tile { display: grid; place-items: center; height: 82%; aspect-ratio: 4 / 5; border-radius: 18%; background: currentColor; }
+/* sized to the cell on both axes so narrow columns (5–6 items) shrink the tile instead of spilling */
+.a-bullets.v-contents-tiles .ct-cell--num { container-type: size; }
+.a-bullets.v-contents-tiles .ct-tile { display: grid; place-items: center; height: min(82cqh, 125cqw); aspect-ratio: 4 / 5; border-radius: 18%; background: currentColor; }
 .a-bullets.v-contents-tiles .ct-tile::before { content: counter(ct); color: var(--slide-bg); font-family: var(--font-text); font-size: var(--t-display-1-size); font-weight: 300; line-height: 1; }
 .a-bullets.v-contents-tiles .ct-label { display: grid; justify-items: center; text-align: center; gap: 0.2em; margin: 0 8%; padding: var(--space-tight) 0; border-top: var(--line-hair) solid currentColor; border-bottom: var(--line-hair) solid currentColor; }
 .a-bullets.v-contents-tiles .ct-hidden-title { display: none; }

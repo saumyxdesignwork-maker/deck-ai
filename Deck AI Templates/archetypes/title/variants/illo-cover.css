@@ -3,8 +3,10 @@
 .a-title.v-illo-cover .ic-art :is(img, .il-art) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
 .a-title.v-illo-cover .ic-art .il-art svg { width: 100%; height: 100%; display: block; }
 .a-title.v-illo-cover > :not(.ic-art):not([data-decor]) { position: relative; z-index: 1; }
-.a-title.v-illo-cover .ic-main { display: grid; place-items: center; text-align: center; padding: 0 12%; overflow: hidden; }
+/* the cast stands in the side gutters, so the title keeps to the middle and shrinks rather than running under them */
+.a-title.v-illo-cover .ic-main { display: grid; place-items: center; text-align: center; padding: 0 25%; overflow: hidden; }
 .a-title.v-illo-cover .ic-foot { display: flex; justify-content: center; gap: var(--space-gutter); align-items: baseline; }
 .a-title.v-illo-cover .ic-eyebrow { grid-row: 1; }
 .a-title.v-illo-cover .ic-main { grid-row: 2; }
 .a-title.v-illo-cover .ic-foot { grid-row: 3; }
+.a-title.v-illo-cover .ic-title { font-size: calc(var(--t-display-1-size) * 0.7); text-align: center; }

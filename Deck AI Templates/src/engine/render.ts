@@ -1,10 +1,9 @@
 import { chartHtml } from "./chart";
 import { compile, registerHelper, type Template } from "./compiler";
 import { hash, planDeck } from "./planner";
-import { getVisualLanguage, variants } from "./registry";
+import { baseCss, getVisualLanguage, variants } from "./registry";
 import { groundKind, groundStyle, resolvePalette, tokensToCss } from "./tokens";
 import { FRAMES, type Deck, type PlannedSlide, type Variant, type VisualLanguage } from "./types";
-import baseCss from "./base.css?raw";
 
 registerHelper("chart", chartHtml);
 
@@ -145,6 +144,7 @@ function decorate(html: string, p: PlannedSlide, vl: VisualLanguage, deck: Deck,
   const used = new Map<string, number>();
   const seen = new Map<string, number>();
   const kind = groundKind(p.ground);
+  const noPlaceholders = deck.design.theme.placeholders === false;
   p.decor ??= {};
   return html.replace(/<div([^>]*)\bdata-decor="([\w-]+)"([^>]*)><\/div>/g, (whole, pre: string, anchor: string, post: string) => {
     // repeated anchors (one per list item) get keys like "item-mark#2" so each item can differ
@@ -158,6 +158,7 @@ function decorate(html: string, p: PlannedSlide, vl: VisualLanguage, deck: Deck,
         (!o.grounds || o.grounds.includes(kind)) &&
         (!o.variants || o.variants.includes(p.variant.variant)) &&
         !o.exclude_variants?.includes(p.variant.variant) &&
+        (noPlaceholders ? !o.placeholder : !o.fill) &&
         (used.get(o.id) ?? 0) < o.max_per_slide,
     );
     if (!eligible.length) return whole;

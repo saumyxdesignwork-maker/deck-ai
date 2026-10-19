@@ -27,7 +27,11 @@ export interface Deck {
   meta: DeckMeta;
   design: {
     visual_language: string;
-    theme: { palette?: string; density?: Density; ornament?: "none" | "subtle" | "standard" | "bold" };
+    theme: {
+      palette?: string; density?: Density; ornament?: "none" | "subtle" | "standard" | "bold";
+      /** false = avoid layouts that would show an empty photo frame when a slide has no image (default true: show the frame as a drop target) */
+      placeholders?: boolean;
+    };
     aspect: Aspect;
   };
   slides: Slide[];
@@ -95,6 +99,10 @@ export interface OrnamentDef {
   variants?: string[];
   /** never place on these layout variants */
   exclude_variants?: string[];
+  /** stand-in for a missing photo (a drop target); skipped when theme.placeholders is false */
+  placeholder?: boolean;
+  /** finished-looking fill for a photo slot with no image; used only when theme.placeholders is false */
+  fill?: boolean;
 }
 
 export interface VisualLanguage {

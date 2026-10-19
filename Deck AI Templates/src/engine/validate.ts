@@ -46,7 +46,8 @@ const deckSchema = {
 };
 
 const validateDeckShape = ajv.compile(deckSchema);
-const contentValidators = Object.fromEntries(Object.entries(schemas).map(([id, s]) => [id, ajv.compile(s)]));
+let contentValidators: Record<string, ReturnType<typeof ajv.compile>> | undefined;
+const validators = () => (contentValidators ??= Object.fromEntries(Object.entries(schemas).map(([id, s]) => [id, ajv.compile(s)])));
 
 export interface ValidationIssue { path: string; message: string }
 
@@ -59,7 +60,7 @@ export function validateDeck(deck: unknown): ValidationIssue[] {
   d.slides?.forEach((s, i) => {
     if (ids.has(s.id)) issues.push({ path: `slides[${i}].id`, message: `duplicate slide id "${s.id}"` });
     ids.add(s.id);
-    const v = contentValidators[s.archetype];
+    const v = validators()[s.archetype];
     if (!v) issues.push({ path: `slides[${i}].archetype`, message: `unknown archetype "${s.archetype}"` });
     else if (!v(s.content)) issues.push(...fmt(v.errors, `slides[${i}].content`));
   });

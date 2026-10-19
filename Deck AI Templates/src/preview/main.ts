@@ -1,3 +1,4 @@
+import "../engine/registry-vite";
 import { escapeHtml, richFromDom } from "../engine/compiler";
 import { fitSlide, type FitIssue } from "../engine/fit";
 import { DeckDoc, type Op } from "../engine/ops";

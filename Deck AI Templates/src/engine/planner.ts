@@ -38,6 +38,8 @@ export function planDeck(deck: Deck, vl: VisualLanguage): PlannedSlide[] {
   return out;
 }
 
+const PHOTO_PLACEHOLDER = /data-decor="photo"/;
+
 export function rankVariants(
   deck: Deck, vl: VisualLanguage, archetype: string, content: Record<string, unknown>,
   slideId: string, prev?: Variant, prev2?: Variant,
@@ -53,6 +55,7 @@ export function rankVariants(
       if (prev2 && r.v === prev2) score -= 1;
       if (prev && Boolean(r.v.image_led) !== Boolean(prev.image_led)) score += 1;
       score -= 2 * r.cap.soft.length;
+      if (deck.design.theme.placeholders === false && !content.image && PHOTO_PLACEHOLDER.test(r.v.html)) score -= 4;
       score += r.cap.headroom;
       return { ...r, score, tie: hash(`${deck.id}:${slideId}:${r.v.variant}`) };
     });
