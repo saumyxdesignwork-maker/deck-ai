@@ -32,18 +32,118 @@ export async function captureSlides(nodes: HTMLElement[], pixelRatio = 2): Promi
     // SVG <foreignObject> internally; doing every slide at once against the
     // same document has caused occasional cross-slide font/layout bleed in
     // testing, and a deck is small enough that sequential capture is still fast.
-    images.push(await toPng(node, {
-      pixelRatio,
-      cacheBust: true,
-      // The browser has already painted every font correctly by the time we
-      // capture — html-to-image's font-embedding step is only for portable
-      // standalone SVGs, and just throws noisy (harmless) console errors
-      // trying to read `cssRules` off cross-origin stylesheets (Typekit,
-      // Google Fonts) that don't allow it.
-      skipFonts: true,
-    }))
+    const native = nativeEngineCopy(node)
+    try {
+      const target = native?.el ?? node
+      images.push(await toPng(target, {
+        // An engine slide is captured at its native frame size (1920×1080)
+        // — already full resolution, no extra pixel ratio needed.
+        pixelRatio: native ? 1 : pixelRatio,
+        cacheBust: true,
+        // The SVG snapshot is rendered as an isolated image, so it can't see
+        // the page's web fonts: embed the faces this slide actually uses.
+        // html-to-image's own embedding would also try (and noisily fail) to
+        // read cross-origin stylesheets (Typekit, Google Fonts).
+        fontEmbedCSS: await fontEmbedCss(target),
+      }))
+    } finally {
+      native?.remove()
+    }
   }
   return images
+}
+
+/**
+ * Engine slides (components/deck/EngineDeck.tsx) are drawn at their native
+ * frame size and shrunk with a CSS transform. Capturing that scaled node
+ * would rasterize at on-screen size (and pick up the canvas's active-slide
+ * outline), so capture an unscaled copy of the slide instead, parked
+ * off-screen inside the same document so the engine's stylesheet still applies.
+ */
+function nativeEngineCopy(node: HTMLElement): { el: HTMLElement; remove: () => void } | null {
+  const deck = node.matches('[data-engine-slide]') ? node.querySelector<HTMLElement>(':scope > .deck') : null
+  if (!deck) return null
+  const copy = deck.cloneNode(true) as HTMLElement
+  copy.style.transform = 'none'
+  copy.style.visibility = 'visible'
+  copy.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'))
+  const host = document.createElement('div')
+  host.setAttribute('aria-hidden', 'true')
+  host.style.cssText = 'position:fixed;left:-100000px;top:0;pointer-events:none;'
+  host.appendChild(copy)
+  document.body.appendChild(host)
+  // html-to-image copies inline SVG verbatim, so its contents lose anything
+  // the page's CSS resolved — engine ornaments colour gradient stops with
+  // `var(--color-…)`, which would otherwise paint black. Pin the paint
+  // properties to their computed values.
+  for (const el of copy.querySelectorAll<SVGElement>('svg *')) {
+    const cs = getComputedStyle(el)
+    for (const prop of SVG_PAINT) el.style.setProperty(prop, cs.getPropertyValue(prop))
+  }
+  return { el: copy, remove: () => host.remove() }
+}
+
+const SVG_PAINT = ['fill', 'fill-opacity', 'stroke', 'stroke-opacity', 'stroke-width', 'stop-color', 'stop-opacity', 'opacity']
+
+/**
+ * @font-face CSS, with font files inlined, for the faces the browser has
+ * actually loaded and that `root` uses. Only same-origin stylesheets are
+ * read; fonts from cross-origin ones fall back like before.
+ */
+async function fontEmbedCss(root: HTMLElement): Promise<string> {
+  const used = new Set<string>()
+  for (const el of [root, ...root.querySelectorAll<HTMLElement>('*')])
+    for (const f of getComputedStyle(el).fontFamily.split(',')) used.add(normFamily(f))
+
+  const loaded = new Set<string>()
+  document.fonts.forEach(f => { if (f.status === 'loaded') loaded.add(faceKey(f.family, f.weight, f.style, f.unicodeRange)) })
+
+  const rules: CSSFontFaceRule[] = []
+  for (const sheet of Array.from(document.styleSheets)) {
+    let list: CSSRuleList
+    try { list = sheet.cssRules } catch { continue } // cross-origin
+    for (const rule of Array.from(list)) {
+      if (!(rule instanceof CSSFontFaceRule)) continue
+      const s = rule.style
+      const family = s.getPropertyValue('font-family')
+      if (!used.has(normFamily(family))) continue
+      const key = faceKey(family, s.getPropertyValue('font-weight') || '400', s.getPropertyValue('font-style') || 'normal', s.getPropertyValue('unicode-range') || 'U+0-10FFFF')
+      if (loaded.has(key)) rules.push(rule)
+    }
+  }
+
+  const css = await Promise.all(rules.map(async rule => {
+    let text = rule.cssText
+    const base = rule.parentStyleSheet?.href ?? document.baseURI
+    for (const [, url] of text.matchAll(/url\(\s*["']?([^"')]+)["']?\s*\)/g)) {
+      if (url.startsWith('data:')) continue
+      try {
+        const blob = await (await fetch(new URL(url, base))).blob()
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result as string)
+          reader.onerror = reject
+          reader.readAsDataURL(blob)
+        })
+        text = text.split(url).join(dataUrl)
+      } catch {
+        // Leave the URL as is — that face just falls back in the image.
+      }
+    }
+    return text
+  }))
+  return css.join('\n')
+}
+
+const normFamily = (f: string) => f.trim().replace(/["']/g, '').toLowerCase()
+
+/** One key for a face whether it comes from a CSS rule or a FontFace (they spell ranges differently). */
+function faceKey(family: string, weight: string, style: string, range: string): string {
+  const ranges = range.split(',').map(r => {
+    const [a, b = a] = r.trim().replace(/^u\+/i, '').split('-')
+    return `${parseInt(a, 16)}-${parseInt(b, 16)}`
+  })
+  return [normFamily(family), weight.trim(), style.trim(), ranges.join(',')].join('|')
 }
 
 export async function exportToPdf(images: string[], title: string, aspectRatio: AspectRatio | undefined) {

@@ -212,11 +212,12 @@ export function useDeckEditor(streamedDeck: DeckData | null, isDone: boolean, se
   // controlled and responsive) without spamming undo history — the pre-edit
   // snapshot is captured once on focus and committed as ONE history entry
   // on blur, so "undo" reverts a whole editing pass, not one keystroke.
+  //
+  // Refs are read and written outside setState updaters: StrictMode runs an
+  // updater twice, and a second run that sees the ref already cleared would
+  // drop the history entry.
   const beginBlockEdit = useCallback(() => {
-    setState(prev => {
-      if (pendingSnapshotRef.current === null) pendingSnapshotRef.current = prev.deck
-      return prev
-    })
+    if (pendingSnapshotRef.current === null) pendingSnapshotRef.current = deckRef.current
   }, [])
 
   const updateBlockContent = useCallback(
@@ -235,13 +236,12 @@ export function useDeckEditor(streamedDeck: DeckData | null, isDone: boolean, se
   )
 
   const commitBlockEdit = useCallback(() => {
-    setState(prev => {
-      const snapshot = pendingSnapshotRef.current
-      pendingSnapshotRef.current = null
-      if (!snapshot || !prev.deck || snapshot === prev.deck) return prev
-      logHistory('Edited text', prev.deck)
-      return { deck: prev.deck, past: [...prev.past, snapshot].slice(-MAX_HISTORY), future: [] }
-    })
+    const snapshot = pendingSnapshotRef.current
+    const current = deckRef.current
+    pendingSnapshotRef.current = null
+    if (!snapshot || !current || snapshot === current) return
+    logHistory('Edited text', current)
+    setState(prev => ({ deck: prev.deck, past: [...prev.past, snapshot].slice(-MAX_HISTORY), future: [] }))
   }, [logHistory])
 
   // Adopts a whole deck returned by an agent edit (POST /edit) as ONE

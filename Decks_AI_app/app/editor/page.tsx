@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import { DeckTemplateProvider } from '@/components/deck/DeckThemeScope'
 import { EditorTopBar } from '@/components/editor/EditorTopBar'
 import { SectionNavigator } from '@/components/editor/SectionNavigator'
@@ -77,7 +77,9 @@ export default function EditorPage() {
     setSections(prev => prev.map(s => ({ ...s, blocks: s.blocks.map(b => (b.id === blockId ? { ...b, content: text } : b)) })))
   }, [])
 
-  const makeDefaultSection = (): DeckSection => ({
+  const engineDeck = useMemo(() => ({ ...MOCK_DECK, title: deckTitle, sections }), [deckTitle, sections])
+
+  const makeDefaultSection =(): DeckSection => ({
     id: `ds-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     title: 'New Section',
     layout: 'key-points',
@@ -141,7 +143,7 @@ export default function EditorPage() {
           }}
         >
           {engineVl ? (
-            <EngineDeck deck={{ ...MOCK_DECK, title: deckTitle, sections }} vl={engineVl} />
+            <EngineDeck deck={engineDeck} vl={engineVl} onUpdateBlockContent={handleUpdateBlockContent} />
           ) : (
           <DeckTemplateProvider templateId={templateOverride}>
             {/* Cover block */}

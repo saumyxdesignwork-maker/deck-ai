@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { X, Check } from 'lucide-react'
-import { TEMPLATES, getTemplate, type DeckTemplate, type TemplateCategory } from '@/lib/deckTemplates'
+import { ENGINE_TEMPLATES, getTemplate, type DeckTemplate, type TemplateCategory } from '@/lib/deckTemplates'
 import { DeckTemplateProvider, DeckThemeScope } from '@/components/deck/DeckThemeScope'
 import { resolveCoverVars } from '@/lib/deckTemplates/toCssVars'
 import { renderBlockPreview } from '@/components/editor/PresentationMode'
@@ -50,7 +50,7 @@ export function TemplatePreviewModal({ initialTemplateId, mode, onAdd, onClose }
 
   const template = getTemplate(activeId)
   const visibleTemplates = useMemo(
-    () => (category === 'all' ? TEMPLATES : TEMPLATES.filter(t => t.category === category)),
+    () => (category === 'all' ? ENGINE_TEMPLATES : ENGINE_TEMPLATES.filter(t => t.category === category)),
     [category],
   )
 

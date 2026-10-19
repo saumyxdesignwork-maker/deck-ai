@@ -6,11 +6,12 @@ import { Sparkles, Layers, Briefcase, Palette, RectangleHorizontal, Square, Wand
 import { AnimatePresence } from 'motion/react'
 import { Composer } from './Composer'
 import { TemplatePreviewModal } from './TemplatePreviewModal'
-import { STUDIO_TEMPLATES, AspectRatio } from '@/lib/fixtures'
+import { EngineDeck } from '@/components/deck/EngineDeck'
+import { STUDIO_TEMPLATES, AspectRatio, MOCK_DECK } from '@/lib/fixtures'
 import { SERVICE_BASE_URL } from '@/lib/deckStream'
 import { getSavedDecks, SavedDeck } from '@/lib/deckHistory'
 import type { DeckStyle } from '@/lib/useStudioSession'
-import { TEMPLATES, DEFAULT_TEMPLATE_ID, getTemplate } from '@/lib/deckTemplates'
+import { ENGINE_TEMPLATES, DEFAULT_ENGINE_TEMPLATE_ID, getTemplate } from '@/lib/deckTemplates'
 
 export type { DeckStyle }
 
@@ -54,9 +55,9 @@ const LAST_TEMPLATE_KEY = 'deckai.lastTemplate'
 function readLastTemplate(): string {
   try {
     const saved = localStorage.getItem(LAST_TEMPLATE_KEY)
-    return saved && TEMPLATES.some(t => t.id === saved) ? saved : DEFAULT_TEMPLATE_ID
+    return saved && ENGINE_TEMPLATES.some(t => t.id === saved) ? saved : DEFAULT_ENGINE_TEMPLATE_ID
   } catch {
-    return DEFAULT_TEMPLATE_ID
+    return DEFAULT_ENGINE_TEMPLATE_ID
   }
 }
 
@@ -83,11 +84,14 @@ export function StudioLanding({ onSubmit, onResume }: StudioLandingProps) {
   const composerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
-  // Starts at the default (Meridian) for a consistent server render, then
-  // picks up the user's last choice right after mount — same pattern as the
-  // temp `?template=` override elsewhere, but for real persisted intent
-  // instead of a dev flag.
-  const [templateId, setTemplateId] = useState<string>(DEFAULT_TEMPLATE_ID)
+  // Starts at the default engine template for a consistent server render,
+  // then picks up the user's last choice right after mount — same pattern as
+  // the temp `?template=` override elsewhere, but for real persisted intent
+  // instead of a dev flag. The classic, block-rendered templates (Meridian,
+  // Ledger, …) aren't offered here anymore — only the template-engine visual
+  // languages — though getTemplate() still renders one fine if an older
+  // saved deck references it by id.
+  const [templateId, setTemplateId] = useState<string>(DEFAULT_ENGINE_TEMPLATE_ID)
   useEffect(() => {
     setTemplateId(readLastTemplate())
   }, [])
@@ -141,7 +145,7 @@ export function StudioLanding({ onSubmit, onResume }: StudioLandingProps) {
   useEffect(() => {
     const prompt = searchParams.get('prompt')
     const template = searchParams.get('template')
-    if (template && TEMPLATES.some(t => t.id === template)) {
+    if (template && ENGINE_TEMPLATES.some(t => t.id === template)) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time seed from the URL on mount, not a sync loop
       selectTemplate(template)
     }
@@ -255,9 +259,9 @@ export function StudioLanding({ onSubmit, onResume }: StudioLandingProps) {
         ))}
       </div>
 
-      {/* Composer — the theme dropdown in its toolbar drives the actual
-          palette/type/layout of the generated slides, not just a thumbnail
-          choice (see ThemeMenu). */}
+      {/* Composer — no theme dropdown here anymore; the only way to pick a
+          look is "Try these" (below) opening the template preview modal,
+          which still drives the actual palette/type/layout via templateId. */}
       <div ref={composerRef} style={{ width: '100%', maxWidth: 660, marginBottom: 40 }}>
         <Composer
           onSubmit={handleSend}
@@ -268,7 +272,6 @@ export function StudioLanding({ onSubmit, onResume }: StudioLandingProps) {
           inputRef={inputRef}
           errorMessage={sendError}
           pendingLabel="Starting your deck…"
-          themePicker={{ selectedId: templateId, onSelect: selectTemplate }}
           attachedTemplate={
             attachedChipId
               ? (() => {
@@ -284,7 +287,7 @@ export function StudioLanding({ onSubmit, onResume }: StudioLandingProps) {
                     },
                     onRemove: () => {
                       setAttachedChipId(null)
-                      selectTemplate(DEFAULT_TEMPLATE_ID)
+                      selectTemplate(DEFAULT_ENGINE_TEMPLATE_ID)
                     },
                   }
                 })()
@@ -316,10 +319,11 @@ export function StudioLanding({ onSubmit, onResume }: StudioLandingProps) {
         </div>
 
         {activeTab === 'try' ? (
-          // Exactly 6 cards, one real thumbnail each — 3 per row so they read
-          // left-to-right, top-to-bottom in the same order as the thumbnails.
+          // One card per template-engine visual language, a live render each
+          // (see StudioTemplateThumb) — 3 per row so they read left-to-right,
+          // top-to-bottom in the same order as lib/fixtures' STUDIO_TEMPLATES.
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 }}>
-            {STUDIO_TEMPLATES.map(({ prompt, thumbnail, templateId: cardTemplateId }, i) => (
+            {STUDIO_TEMPLATES.map(({ prompt, templateId: cardTemplateId }, i) => (
               <button
                 key={i}
                 type="button"
@@ -336,15 +340,7 @@ export function StudioLanding({ onSubmit, onResume }: StudioLandingProps) {
                   flexDirection: 'column',
                 }}
               >
-                <div style={{ aspectRatio: '16 / 9', overflow: 'hidden', background: 'var(--surface-muted)' }}>
-                  {/* Decorative — the button's accessible name comes from the
-                      prompt text below, not this image. */}
-                  <img
-                    src={thumbnail}
-                    alt=""
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                  />
-                </div>
+                <StudioTemplateThumb templateId={cardTemplateId} />
                 <span style={{ padding: '12px 14px', fontSize: 12.5, color: 'var(--text)', lineHeight: 1.5 }}>
                   {prompt}
                 </span>
@@ -415,6 +411,35 @@ export function StudioLanding({ onSubmit, onResume }: StudioLandingProps) {
           />
         )}
       </AnimatePresence>
+    </div>
+  )
+}
+
+/**
+ * A "Try these" card's thumbnail — the template's own cover color shows
+ * immediately (no flash of an empty box while the engine loads), with the
+ * real engine-rendered cover slide fading in on top once it's ready. Same
+ * pattern as TemplatePreviewModal's RailThumb, so a card and its own preview
+ * modal never disagree about what the template actually looks like.
+ */
+function StudioTemplateThumb({ templateId }: { templateId: string }) {
+  const template = getTemplate(templateId)
+  const cover = template.surfaces.cover
+  const coverBg = cover.kind === 'deck-color' ? template.colors.accent : cover.background
+  return (
+    <div
+      style={{
+        aspectRatio: '16 / 9', overflow: 'hidden', position: 'relative',
+        backgroundColor: coverBg,
+        backgroundImage: cover.kind === 'pattern' ? cover.pattern : undefined,
+        backgroundSize: cover.kind === 'pattern' ? (cover.patternSize ?? 'auto') : undefined,
+      }}
+    >
+      {template.engine && (
+        <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+          <EngineDeck deck={MOCK_DECK} vl={template.engine.vl} only={[0]} />
+        </div>
+      )}
     </div>
   )
 }

@@ -2,18 +2,47 @@ import type { Block, DeckData, DeckSection } from './fixtures'
 import type { Deck, Slide } from './template-engine/types'
 
 /**
+ * Where an engine slot's text came from: one app block, possibly only part of
+ * it (a key-point "Lead: rest" is split into a bullet's title and text). An
+ * edit writes `before + value + after` back to the block's content.
+ */
+export interface SlotSource {
+  blockId: string
+  before: string
+  after: string
+}
+
+/** Per engine slide (same indexes as the deck), slot path → source block. */
+export type SlotSources = Record<string, SlotSource>[]
+
+/**
  * Maps the app's block-based DeckData onto the template engine's deck.json.
  * One app slide → one engine slide (cover first), so slide indexes line up
  * with PreviewPane's slideRefs / activeIndex. The engine picks each slide's
  * variant from the content; the app's layout only chooses the archetype.
  */
 export function toEngineDeck(deck: DeckData, vl: string): Deck {
+  return toEngineDeckWithSources(deck, vl).deck
+}
+
+/**
+ * toEngineDeck plus, for every slide, which block each text slot
+ * (`data-slot="content.…"` in the engine HTML) was drawn from — what inline
+ * editing writes back to. Slots with no block behind them (the cover, card
+ * values, a heading that falls back to the section title) are left out, the
+ * same things the classic templates don't edit inline.
+ */
+export function toEngineDeckWithSources(deck: DeckData, vl: string): { deck: Deck; sources: SlotSources } {
+  const built = deck.sections.map((s, i) => sectionSlide(s, i))
   return {
-    id: `app-${hashString(deck.title)}`,
-    version: 1,
-    meta: { title: deck.title, subtitle: deck.subtitle || undefined, author: deck.author || undefined },
-    design: { visual_language: vl, theme: { placeholders: false }, aspect: deck.aspectRatio === '4:3' ? '4:3' : '16:9' },
-    slides: [coverSlide(deck), ...deck.sections.map((s, i) => sectionSlide(s, i))],
+    deck: {
+      id: `app-${hashString(deck.title)}`,
+      version: 1,
+      meta: { title: deck.title, subtitle: deck.subtitle || undefined, author: deck.author || undefined },
+      design: { visual_language: vl, theme: { placeholders: false }, aspect: deck.aspectRatio === '4:3' ? '4:3' : '16:9' },
+      slides: [coverSlide(deck), ...built.map(b => b.slide)],
+    },
+    sources: [{}, ...built.map(b => b.sources)],
   }
 }
 
@@ -21,52 +50,80 @@ function coverSlide(deck: DeckData): Slide {
   return slide('cover', 'title', clean({ title: deck.title || 'Untitled deck', subtitle: deck.subtitle, byline: deck.author }))
 }
 
-function sectionSlide(section: DeckSection, index: number): Slide {
-  const of = (t: Block['type']) => section.blocks.filter(b => b.type === t)
-  const title = of('heading')[0]?.content.trim() || section.title
-  const paras = of('paragraph').map(b => b.content.trim()).filter(Boolean)
-  const callouts = of('callout').map(b => b.content.trim()).filter(Boolean)
-  const quotes = of('quote').map(b => b.content.trim()).filter(Boolean)
-  const cards = of('card-group').flatMap(b => b.cards ?? [])
-  const imageBlock = of('image').find(b => b.imageUrl)
+interface Text { text: string; block: Block }
+
+function sectionSlide(section: DeckSection, index: number): { slide: Slide; sources: Record<string, SlotSource> } {
+  const of = (t: Block['type']): Text[] =>
+    section.blocks.filter(b => b.type === t).map(block => ({ text: block.content.trim(), block })).filter(t => t.text)
+  const heading = of('heading')[0]
+  const title = heading?.text || section.title
+  const paras = of('paragraph')
+  const callouts = of('callout')
+  const quotes = of('quote')
+  const cards = section.blocks.filter(b => b.type === 'card-group').flatMap(b => b.cards ?? [])
+  const imageBlock = section.blocks.find(b => b.type === 'image' && b.imageUrl)
   const image = imageBlock ? { src: imageBlock.imageUrl!, alt: imageBlock.alt ?? imageBlock.content } : undefined
   const id = section.id
 
+  const sources: Record<string, SlotSource> = {}
+  const from = (path: string, t: Text | undefined) => {
+    if (t) sources[path] = { blockId: t.block.id, before: '', after: '' }
+    return t?.text
+  }
+  if (heading) from('content.title', heading)
+  const done = (archetype: string, content: Record<string, unknown>) => ({ slide: slide(id, archetype, clean(content)), sources })
+
   switch (section.layout) {
     case 'divider':
-      return slide(id, 'section', clean({ number: String(index + 1).padStart(2, '0'), title, kicker: paras[0], image }))
+      return done('section', { number: String(index + 1).padStart(2, '0'), title, kicker: from('content.kicker', paras[0]), image })
     case 'closing':
-      return slide(id, 'closing', clean({ title, body: paras[0], contact: callouts[0], image }))
+      return done('closing', { title, body: from('content.body', paras[0]), contact: from('content.contact', callouts[0]), image })
   }
 
-  if (quotes.length && !paras.length && !cards.length)
-    return slide(id, 'quote', clean({ quote: quotes[0], attribution: callouts[0] ?? section.title, image }))
+  if (quotes.length && !paras.length && !cards.length) {
+    const attribution = callouts[0] ? from('content.attribution', callouts[0]) : section.title
+    return done('quote', { quote: from('content.quote', quotes[0]), attribution, image })
+  }
 
   if (cards.length && (section.layout === 'data' || cards.every(c => /\d/.test(c.value) && c.value.length <= 12)))
-    return slide(id, 'metric', clean({
+    return done('metric', {
       title,
-      body: paras[0],
+      body: from('content.body', paras[0]),
       items: cards.map(c => ({ value: c.value, label: c.title })),
-      source: callouts[0],
-    }))
+      source: from('content.source', callouts[0]),
+    })
 
   if (cards.length)
-    return slide(id, 'bullets', clean({ title, intro: paras[0], items: cards.map(c => clean({ title: c.title, text: c.value })) }))
+    return done('bullets', { title, intro: from('content.intro', paras[0]), items: cards.map(c => clean({ title: c.title, text: c.value })) })
 
   if (section.layout === 'key-points' && paras.length + callouts.length >= 2) {
-    const items = [...paras, ...callouts].map(splitLead)
-    return slide(id, 'bullets', clean({ title, items }))
+    const items = [...paras, ...callouts].map((t, i) => {
+      const lead = splitLead(t.text)
+      if (!lead) return { title: from(`content.items[${i}].title`, t)! }
+      sources[`content.items[${i}].title`] = { blockId: t.block.id, before: '', after: lead.titleAfter }
+      sources[`content.items[${i}].text`] = { blockId: t.block.id, before: lead.textBefore, after: '' }
+      return { title: lead.title, text: lead.text }
+    })
+    return done('bullets', { title, items })
   }
 
-  const body = paras.length ? paras : callouts.length ? callouts : [quotes[0] ?? section.title]
-  return slide(id, 'text', clean({ title, body, pull_quote: paras.length ? (callouts[0] ?? quotes[0]) : undefined, image }))
+  const bodyFrom = paras.length ? paras : callouts.length ? callouts : quotes.slice(0, 1)
+  const body = bodyFrom.length ? bodyFrom.map((t, i) => from(`content.body[${i}]`, t)!) : [section.title]
+  const pullQuote = paras.length ? (callouts[0] ?? quotes[0]) : undefined
+  return done('text', { title, body, pull_quote: from('content.pull_quote', pullQuote), image })
 }
 
-/** "Lead: the rest" or "Lead. The rest" → a bullet with a short title and supporting text. */
-function splitLead(text: string): { title: string; text?: string } {
-  const m = /^(.{3,70}?)(?::\s+|\s+[—–-]\s+|\.\s+)([\s\S]+)$/.exec(text)
-  if (m) return { title: m[1].trim(), text: m[2].trim() }
-  return { title: text }
+/**
+ * "Lead: the rest" or "Lead. The rest" → a bullet with a short title and
+ * supporting text, plus the surrounding text each part needs to rebuild the
+ * original string when only one of them is edited.
+ */
+function splitLead(text: string): { title: string; text: string; titleAfter: string; textBefore: string } | null {
+  const m = /^(.{3,70}?)(:\s+|\s+[—–-]\s+|\.\s+)([\s\S]+)$/.exec(text)
+  if (!m) return null
+  const title = m[1].trim()
+  const rest = m[3].trim()
+  return { title, text: rest, titleAfter: text.slice(title.length), textBefore: text.slice(0, text.length - rest.length) }
 }
 
 function slide(id: string, archetype: string, content: Record<string, unknown>): Slide {

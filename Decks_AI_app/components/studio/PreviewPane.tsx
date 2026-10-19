@@ -138,8 +138,8 @@ export function PreviewPane({
   // choice — so "Choose your look" reflects the real current pick instead of
   // always showing the default template.
   const effectiveTemplateId = deck?.templateId ?? selectedTemplateId
-  // Engine visual languages draw whole slides from the deck's content (no
-  // per-block editing yet); edits arrive through chat/agent and re-render.
+  // Engine visual languages draw whole slides from the deck's content; inline
+  // text edits map back to the source blocks (see toEngineDeckWithSources).
   const engineVl = getTemplate(effectiveTemplateId).engine?.vl
   const engineDeckData = useMemo<DeckData>(() => ({ ...MOCK_DECK, ...deck, sections: deck?.sections ?? [] }), [deck])
 
@@ -442,7 +442,7 @@ export function PreviewPane({
       {/* Body */}
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>
         {previewState !== 'idle' && (
-          <SlideThumbRail deck={deck} revealedSlides={revealedSlides} activeIndex={activeIndex} onSelect={handleSelect} />
+          <SlideThumbRail deck={deck} engineVl={engineVl} revealedSlides={revealedSlides} activeIndex={activeIndex} onSelect={handleSelect} />
         )}
 
         {/* Canvas */}
@@ -629,6 +629,9 @@ export function PreviewPane({
                 activeIndex={activeIndex}
                 onSelect={isDone ? setActiveIndex : undefined}
                 showFrame={isDone}
+                onUpdateBlockContent={isDone ? onUpdateBlockContent : undefined}
+                onBeginBlockEdit={onBeginBlockEdit}
+                onCommitBlockEdit={onCommitBlockEdit}
               />
             ) : isDone ? (
               // Deck is fully assembled — render every slide stacked, like the standalone editor.

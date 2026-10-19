@@ -3,9 +3,12 @@
 import { motion, useReducedMotion } from 'motion/react'
 import { AspectRatio, DeckData, DeckSection, Block, aspectRatioCss } from '@/lib/fixtures'
 import { motionPresets } from '@/lib/motion'
+import { EngineDeck } from '@/components/deck/EngineDeck'
 
 interface SlideThumbRailProps {
   deck: DeckData | null
+  /** Template-engine visual language — thumbnails are then the real engine slides. */
+  engineVl?: string
   revealedSlides: number[]
   activeIndex: number | null
   onSelect: (index: number) => void
@@ -168,7 +171,7 @@ function MiniSection({ section, height }: { section: DeckSection; height: number
   )
 }
 
-export function SlideThumbRail({ deck, revealedSlides, activeIndex, onSelect }: SlideThumbRailProps) {
+export function SlideThumbRail({ deck, engineVl, revealedSlides, activeIndex, onSelect }: SlideThumbRailProps) {
   const fadeIn = motionPresets(useReducedMotion()).content
   const totalSlides = deck ? 1 + deck.sections.length : 0
   const slots = Array.from({ length: totalSlides }, (_, i) => i)
@@ -193,6 +196,8 @@ export function SlideThumbRail({ deck, revealedSlides, activeIndex, onSelect }: 
         gap: 8,
       }}
     >
+      {/* One copy of the engine stylesheet for every thumbnail below. */}
+      {engineVl && deck && <EngineDeck deck={deck} vl={engineVl} only={[]} />}
       {slots.map(i => {
         const revealed = revealedSlides.includes(i)
         const isActive = activeIndex === i
@@ -226,9 +231,15 @@ export function SlideThumbRail({ deck, revealedSlides, activeIndex, onSelect }: 
                 transition={fadeIn}
                 style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: 'inherit' }}
               >
-                <div style={{ width: DESIGN_WIDTH, height, transform: `scale(${SCALE})`, transformOrigin: 'top left', pointerEvents: 'none' }}>
-                  {i === 0 ? <MiniCover deck={deck} height={height} /> : <MiniSection section={deck.sections[i - 1]} height={height} />}
-                </div>
+                {engineVl ? (
+                  <div style={{ pointerEvents: 'none' }}>
+                    <EngineDeck deck={deck} vl={engineVl} only={[i]} styles={false} />
+                  </div>
+                ) : (
+                  <div style={{ width: DESIGN_WIDTH, height, transform: `scale(${SCALE})`, transformOrigin: 'top left', pointerEvents: 'none' }}>
+                    {i === 0 ? <MiniCover deck={deck} height={height} /> : <MiniSection section={deck.sections[i - 1]} height={height} />}
+                  </div>
+                )}
               </motion.div>
             )}
             <span

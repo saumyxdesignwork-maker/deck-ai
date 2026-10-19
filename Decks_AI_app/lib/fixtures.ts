@@ -244,32 +244,21 @@ export const SUGGESTED_PROMPTS = [
 
 export interface StudioTemplate {
   prompt: string
-  /** Path under /public — one per card, matched left-to-right. */
-  thumbnail: string
-  /** The deck-template id this card opens in the preview modal, picked to
-   * match the thumbnail's own visual vibe (e.g. the bold red/black cover
-   * pairs with Riso's print-bold look). A styling judgment call, not load-
-   * bearing logic — safe to re-map if a thumbnail changes. */
+  /** The deck-template id this card opens in the preview modal. The card's
+   * thumbnail is a real, live render of this template (see StudioLanding),
+   * not a static image — so this is the only thing that needs to change to
+   * re-pick which template a card shows. */
   templateId: string
 }
 
-// Studio's "Try one of these" — one real thumbnail per card (public/Thumbnail-1..6.png),
-// so this stays at exactly 6 entries, mapped left-to-right/top-to-bottom in that order.
-// Slots 3 and 5 use the "alt" variants per design feedback.
-const STUDIO_TEMPLATE_THUMBNAILS = [
-  '/Thumbnail-1.png',
-  '/Thumbnail-2.png',
-  '/Thumbnail-3 alt.png',
-  '/Thumbnail-4.png',
-  '/Thumbnail-5 alt.png',
-  '/Thumbnail-6.png',
-]
-// One of each of the 6 real templates, matched to that card's thumbnail —
-// see the comment on StudioTemplate.templateId above.
-const STUDIO_TEMPLATE_IDS = ['riso', 'noir', 'ledger', 'slate', 'meridian', 'bloom']
-export const STUDIO_TEMPLATES: StudioTemplate[] = SUGGESTED_PROMPTS.slice(0, 6).map((prompt, i) => ({
+// Studio's "Try one of these" — one card per template-engine visual language
+// (lib/template-engine), matched left-to-right/top-to-bottom to the prompt
+// whose use case the template's own `bestFor` tags fit best (e.g. Blues'
+// "investor update" pairs with the Series A prompt). A styling judgment
+// call, not load-bearing logic — safe to re-map if a template changes.
+const STUDIO_TEMPLATE_IDS = ['vl-gradient-burn', 'vl-data-first', 'vl-blues', 'vl-playful', 'vl-cherry', 'vl-illustration', 'vl-editorial']
+export const STUDIO_TEMPLATES: StudioTemplate[] = SUGGESTED_PROMPTS.slice(0, STUDIO_TEMPLATE_IDS.length).map((prompt, i) => ({
   prompt,
-  thumbnail: STUDIO_TEMPLATE_THUMBNAILS[i],
   templateId: STUDIO_TEMPLATE_IDS[i],
 }))
 
