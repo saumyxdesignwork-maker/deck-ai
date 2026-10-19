@@ -1,0 +1,29 @@
+<section class="slide a-metric v-ring-gauges" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if show_chrome}}
+  <header class="chrome chrome--top"><span class="t-caption" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <div class="rg-head">
+    {{#if content.eyebrow}}<p class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    {{#if content.title}}<h2 class="rg-title t-display-1" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-2">{{rich content.title}}</h2>{{/if}}
+    {{#if content.body}}<p class="rg-body t-body" data-slot="content.body" data-slot-type="text">{{content.body}}</p>{{/if}}
+  </div>
+  <ol class="rg-items" data-region="items" data-slot="content.items" data-slot-type="list" data-min="2" data-max="4" style="--item-count: {{content.items.length}}">
+    {{#each content.items}}
+    <li class="rg-item{{#if emphasis}} is-emphasis{{/if}}" data-slot-item="{{@index}}" style="--pct: {{value_pct}}">
+      <div class="rg-gauge">
+        <svg class="rg-ring rg-ring--track" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="47" pathLength="64"/></svg>
+        {{#if value_pct}}<svg class="rg-ring rg-ring--fill" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="47" pathLength="64"/></svg>{{/if}}
+        <div class="rg-core">
+          <span class="rg-value t-numeral" data-slot="content.items[{{@index}}].value" data-slot-type="text" data-fit="shrink" data-nowrap data-min-step="display-3">{{value}}</span>
+          <span class="rg-label t-body-s" data-slot="content.items[{{@index}}].label" data-slot-type="text">{{label}}</span>
+          {{#if note}}<span class="rg-note t-caption" data-slot="content.items[{{@index}}].note" data-slot-type="text">{{note}}</span>{{/if}}
+        </div>
+      </div>
+    </li>
+    {{/each}}
+  </ol>
+  {{#if content.source}}<footer class="rg-source t-caption" data-slot="content.source" data-slot-type="text">{{content.source}}</footer>{{/if}}
+  <div data-decor="edge"></div>
+</section>

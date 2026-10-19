@@ -28,6 +28,7 @@ export function checkCapacity(variant: Variant, content: Record<string, unknown>
       if (spec.max != null && value.length > spec.max) hard.push(`${path}: ${value.length} items > max ${spec.max}`);
       if (spec.max) headroom = Math.min(headroom, 1 - value.length / (spec.max + 1));
       if (spec.of) value.forEach((item, i) => {
+        if (item && typeof item === "object") unplaced(item as Record<string, unknown>, spec.of!, `${path}[${i}]`);
         for (const [k, s] of Object.entries(spec.of!)) visit(s, (item as Record<string, unknown>)?.[k], `${path}[${i}].${k}`);
       });
       return;
@@ -40,6 +41,7 @@ export function checkCapacity(variant: Variant, content: Record<string, unknown>
     }
     if (typeof value === "string" || Array.isArray(value)) {
       const text = Array.isArray(value) ? value.join(" ") : value;
+      if (spec.pattern && typeof value === "string" && !new RegExp(spec.pattern).test(value.trim())) hard.push(`${path}: "${value}" is not the expected format`);
       if (spec.words_max) {
         const words = text.trim().split(/\s+/).length;
         if (words > spec.words_max) hard.push(`${path}: ${words} words > ${spec.words_max}`);
@@ -51,6 +53,15 @@ export function checkCapacity(variant: Variant, content: Record<string, unknown>
     }
   };
 
+  /** Content with no slot in this layout would vanish on screen — that is a hard misfit, never a silent drop. Booleans are flags, not content. */
+  function unplaced(obj: Record<string, unknown>, slots: Record<string, SlotSpec>, path: string) {
+    for (const [k, v] of Object.entries(obj)) {
+      if (k in slots || typeof v === "boolean" || v == null || v === "" || (Array.isArray(v) && !v.length)) continue;
+      hard.push(`${path}.${k} has no place in this layout`);
+    }
+  }
+
+  unplaced(content, variant.slots, "content");
   for (const [slot, spec] of Object.entries(variant.slots)) visit(spec, content[slot], `content.${slot}`);
   return { fits: hard.length === 0, hard, soft, headroom: Math.max(0, headroom) };
 }

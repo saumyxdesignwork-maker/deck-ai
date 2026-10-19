@@ -6,7 +6,7 @@
   {{/if}}
   <div class="tc2-head">
     {{#if content.eyebrow}}<p class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
-    <h2 class="t-display-2" data-slot="content.title" data-slot-type="text" data-fit="shrink" data-min-step="display-3">{{content.title}}</h2>
+    <h2 class="t-display-2" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h2>
     {{#if content.intro}}<p class="t-body" data-slot="content.intro" data-slot-type="text">{{content.intro}}</p>{{/if}}
   </div>
   <ol class="tc2-items" data-region="items" data-slot="content.items" data-slot-type="list" data-min="3" data-max="8" data-count="{{content.items.length}}">

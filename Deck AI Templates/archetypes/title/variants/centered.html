@@ -2,7 +2,7 @@
   <div data-decor="frame"></div>
   <div class="tc-main" data-region="main">
     {{#if content.eyebrow}}<p class="tc-eyebrow t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
-    <h1 class="tc-title t-display-1" data-slot="content.title" data-slot-type="text" data-fit="shrink" data-min-step="display-3">{{content.title}}</h1>
+    <h1 class="tc-title t-display-1" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h1>
     {{#if content.subtitle}}<p class="tc-subtitle t-label" data-slot="content.subtitle" data-slot-type="text">{{content.subtitle}}</p>{{/if}}
   </div>
   {{#if content.date}}<p class="tc-date t-caption" data-slot="content.date" data-slot-type="text">{{content.date}}</p>{{/if}}

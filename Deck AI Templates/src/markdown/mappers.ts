@@ -5,6 +5,8 @@ interface Mapped { archetype: string; content: Content; warnings: string[] }
 
 const NUMERIC_LEAD = /^[+\-−~≈]?[₹$€£¥]?\s?[\d.,]+\s?(%|x|×|k|K|M|B|Cr|L|bn|mn)?\+?$/;
 const SECTION_TITLE = /^(\d{1,3})[\s.:—–-]+(.+)$/;
+const TEMPORAL_LEAD = /\b(weeks?|wk|days?|months?|quarters?|years?|phase|step|stage|q[1-4]|h[12]|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|(19|20)\d{2})\b/i;
+const RANGE = /\s+(?:→|->|–|—|to)\s+/;
 
 /** Map extracted Markdown onto an archetype's slot names. Unused content is reported, never silently dropped. */
 export function mapToArchetype(ex: Extracted, pos: { index: number; total: number }): Mapped {
@@ -21,6 +23,7 @@ export function classify(ex: Extracted, { index, total }: { index: number; total
   if (ex.table) return "table";
   if (ex.quote && !ex.title && !ex.lists.length) return "quote";
   const list = ex.lists[0];
+  if (list && list.length >= 3 && list.every((i) => i.lead && TEMPORAL_LEAD.test(i.lead))) return "timeline";
   if (list?.length && list.every((i) => i.lead && NUMERIC_LEAD.test(i.lead))) return "metric";
   if (list?.length) return "bullets";
   if (index === 0) return "title";
@@ -63,9 +66,25 @@ const MAPPERS: Record<string, (ex: Extracted, warn: string[]) => Content> = {
     };
   },
 
+  timeline: (ex) => {
+    const range = ex.subtitle && RANGE.test(ex.subtitle) ? ex.subtitle.split(RANGE) : undefined;
+    return {
+      eyebrow: ex.eyebrow,
+      title: ex.title,
+      start: range?.[0],
+      end: range?.[1],
+      intro: range ? ex.paragraphs[0] : ex.subtitle ?? ex.paragraphs[0],
+      items: (ex.lists[0] ?? []).map((i) => {
+        const [label, text] = splitOnce(i.rest, /\s+[—–]\s+|\s+-\s+/);
+        return { date: i.lead, label, text, points: i.points, emphasis: i.flags.has("emphasis") || undefined };
+      }),
+    };
+  },
+
   metric: (ex) => ({
     eyebrow: ex.eyebrow,
     title: ex.title,
+    body: ex.paragraphs.join("\n\n") || undefined,
     items: (ex.lists[0] ?? []).map((i) => {
       const [label, note] = splitOnce(i.rest, /\s+[—–]\s+|\s+-\s+/);
       return { value: i.lead ?? "", label, note, emphasis: i.flags.has("emphasis") || undefined };

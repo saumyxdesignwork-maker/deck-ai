@@ -1,0 +1,23 @@
+<section class="slide a-metric v-nested-circles" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if show_chrome}}
+  <header class="chrome chrome--top"><span class="t-caption" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <div class="nc-text" data-region="text">
+    {{#if content.eyebrow}}<p class="nc-tag t-caption" data-slot="content.eyebrow" data-slot-type="text" data-nowrap>{{content.eyebrow}}</p>{{/if}}
+    {{#if content.title}}<h2 class="nc-title t-display-3" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="lead">{{rich content.title}}</h2>{{/if}}
+    {{#if content.body}}<p class="nc-body t-body-s" data-slot="content.body" data-slot-type="text" data-fit="shrink" data-min-step="caption">{{content.body}}</p>{{/if}}
+    {{#if content.source}}<p class="t-caption" data-slot="content.source" data-slot-type="text">{{content.source}}</p>{{/if}}
+  </div>
+  <ol class="nc-items" data-slot="content.items" data-slot-type="list" data-min="2" data-max="4" data-count="{{content.items.length}}">
+    {{#each content.items}}
+    <li class="nc-item{{#if emphasis}} is-emphasis{{/if}}" data-slot-item="{{@index}}">
+      <span class="nc-value t-display-3" data-slot="content.items[{{@index}}].value" data-slot-type="text" data-fit="shrink" data-nowrap data-min-step="title">{{value}}</span>
+      <span class="nc-label t-caption" data-slot="content.items[{{@index}}].label" data-slot-type="text">{{label}}</span>
+      {{#if note}}<span class="nc-note t-caption" data-slot="content.items[{{@index}}].note" data-slot-type="text">{{note}}</span>{{/if}}
+    </li>
+    {{/each}}
+  </ol>
+  <div data-decor="edge"></div>
+</section>

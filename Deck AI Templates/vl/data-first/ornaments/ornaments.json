@@ -1,0 +1,9 @@
+[
+  { "id": "orbit-sphere", "file": "orbit-sphere.svg", "anchors": ["orbit"], "roles": ["*"], "max_per_slide": 1 },
+  { "id": "orbit-rings", "file": "orbit-rings.svg", "anchors": ["frame"], "roles": ["timeline", "section", "closing"], "variants": ["arc-steps", "numbered", "thank-you"], "max_per_slide": 1 },
+  { "id": "faint-glow", "file": "faint-glow.svg", "anchors": ["frame"], "roles": ["title", "text", "bullets", "metric", "table", "quote", "timeline", "freeform"], "variants": ["type-only", "lead-column", "cards-grid", "list", "ring-gauges", "nested-circles", "row", "hero-number", "ruled", "centered-badge", "wave", "block"], "max_per_slide": 1 },
+  { "id": "lens", "file": "lens.svg", "anchors": ["segment"], "roles": ["timeline"], "max_per_slide": 8 },
+  { "id": "dots-arch", "file": "dots-arch.svg", "anchors": ["item-mark"], "roles": ["bullets"], "variants": ["cards-grid"], "max_per_slide": 2 },
+  { "id": "dots-lens", "file": "dots-lens.svg", "anchors": ["item-mark"], "roles": ["bullets"], "variants": ["cards-grid"], "max_per_slide": 2 },
+  { "id": "dots-steps", "file": "dots-steps.svg", "anchors": ["item-mark"], "roles": ["bullets"], "variants": ["cards-grid"], "max_per_slide": 2 }
+]

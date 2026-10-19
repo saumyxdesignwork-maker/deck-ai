@@ -17,6 +17,9 @@
 .deck .slide :where(h1, h2, h3) { text-wrap: balance; }
 .deck .slide :where(p, li) { text-wrap: pretty; }
 .deck .slide [data-nowrap] { white-space: nowrap; }
+/* rich subset: *muted* and ==highlight== — VLs restyle these */
+.deck .slide em { font-style: normal; opacity: 0.5; }
+.deck .slide mark { background: none; color: var(--color-emphasis); }
 .deck .slide [data-region] { min-height: 0; min-width: 0; }
 
 .deck [data-decor] { pointer-events: none; }
@@ -28,6 +31,6 @@
 .deck .chrome--bottom { bottom: calc(var(--space-frame-y) * 0.4); right: var(--space-frame-x); }
 
 /* edit-mode affordances */
-.deck.is-editing [data-slot-type="text"]:hover { outline: 2px dashed color-mix(in srgb, currentColor 35%, transparent); outline-offset: 6px; }
+.deck.is-editing :is([data-slot-type="text"], [data-slot-type="rich"]):hover { outline: 2px dashed color-mix(in srgb, currentColor 35%, transparent); outline-offset: 6px; }
 .deck.is-editing [contenteditable] { outline: 2px solid #3b82f6; outline-offset: 6px; cursor: text; }
 .deck.is-editing [data-overflow] { outline: 3px solid #f59e0b !important; outline-offset: 4px; }

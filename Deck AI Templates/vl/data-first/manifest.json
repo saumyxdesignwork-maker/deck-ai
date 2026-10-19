@@ -1,0 +1,10 @@
+{
+  "id": "data-first",
+  "version": "0.1.0",
+  "name": "Data First",
+  "tags": ["minimal", "dark", "data", "professional", "research"],
+  "best_for": ["research readout", "market sizing", "methodology", "process", "investor update"],
+  "palettes": ["default", "violet", "paper"],
+  "fonts": [{ "family": "Inter Tight", "licence": "OFL-1.1", "package": "@fontsource/inter-tight" }],
+  "references": "6 user-supplied slides, 19 Oct 2026 — principles only, see analysis.md"
+}

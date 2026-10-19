@@ -7,7 +7,7 @@
   {{/if}}
   <div class="tr-head">
     {{#if content.eyebrow}}<p class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
-    {{#if content.title}}<h2 class="t-display-2" data-slot="content.title" data-slot-type="text" data-fit="shrink" data-min-step="display-3">{{content.title}}</h2>{{/if}}
+    {{#if content.title}}<h2 class="t-display-2" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h2>{{/if}}
   </div>
   <div class="tr-wrap" data-region="table">
     <table class="tr-table" data-slot="content.table" data-slot-type="table">

@@ -1,0 +1,25 @@
+<section class="slide a-timeline v-arc-steps" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if show_chrome}}
+  <header class="chrome chrome--top"><span class="t-caption" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <div class="as-head">
+    {{#if content.eyebrow}}<p class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    {{#if content.title}}<h2 class="t-display-2" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h2>{{/if}}
+    {{#if content.intro}}<p class="as-intro t-body-s" data-slot="content.intro" data-slot-type="text">{{content.intro}}</p>{{/if}}
+  </div>
+  <ol class="as-items" data-region="items" data-slot="content.items" data-slot-type="list" data-min="3" data-max="7" style="--item-count: {{content.items.length}}">
+    {{#each content.items}}
+    <li class="as-item{{#if emphasis}} is-emphasis{{/if}}" data-slot-item="{{@index}}">
+      <span class="as-label t-body" data-slot="content.items[{{@index}}].label" data-slot-type="text" data-fit="shrink" data-min-step="body-s">{{label}}</span>
+      <div class="as-arc" aria-hidden="true"><span class="as-arc-inner"></span><span class="as-dot"></span></div>
+      <div class="as-below">
+        {{#if date}}<span class="as-date t-body-s" data-slot="content.items[{{@index}}].date" data-slot-type="text">{{date}}</span>{{/if}}
+        {{#if text}}<span class="as-text t-caption" data-slot="content.items[{{@index}}].text" data-slot-type="text">{{text}}</span>{{/if}}
+      </div>
+    </li>
+    {{/each}}
+  </ol>
+  <div data-decor="edge"></div>
+</section>

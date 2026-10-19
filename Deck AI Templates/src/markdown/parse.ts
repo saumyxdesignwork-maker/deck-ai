@@ -27,6 +27,8 @@ export interface MdItem {
   /** remaining text after the lead (leading separators stripped) */
   rest: string;
   flags: Set<string>;
+  /** items of a nested sub-list */
+  points?: string[];
 }
 
 export interface ParseResult {
@@ -130,7 +132,8 @@ function extract(tree: Root): Extracted {
         break;
       }
       case "heading": {
-        const text = toString(node).trim();
+        // titles keep *emphasis* as the rich "muted" marker; other headings are plain
+        const text = (node.depth === 1 ? inlineRich(node.children as PhrasingContent[]) : toString(node)).trim();
         const key = node.depth === 1 ? "title" : node.depth === 2 ? "subtitle" : "eyebrow";
         if (ex[key] == null) ex[key] = text;
         else addParagraph(text);
@@ -153,18 +156,26 @@ function extract(tree: Root): Extracted {
   return ex;
 }
 
+function inlineRich(nodes: PhrasingContent[]): string {
+  return nodes.map((n) => (n.type === "emphasis" ? `*${toString(n)}*` : n.type === "delete" ? `==${toString(n)}==` : toString(n))).join("");
+}
+
 function parseItem(li: ListItem): MdItem {
   const first = li.children[0];
   const flags = new Set<string>();
   const clean = (s: string) => s.replace(FLAG, (_, f: string) => (flags.add(f), " ")).trim();
-  if (!first || first.type !== "paragraph") return { rest: clean(toString(li)), flags };
+  // a nested list under an item becomes its sub-points
+  const nested = li.children.find((c): c is List => c.type === "list");
+  const points = nested?.children.map((c) => clean(toString(c))).filter(Boolean);
+  const withPoints = (item: MdItem): MdItem => (points?.length ? { ...item, points } : item);
+  if (!first || first.type !== "paragraph") return withPoints({ rest: clean(toString(li)), flags });
   const inl = (first as Paragraph).children as PhrasingContent[];
   if (inl[0]?.type === "strong") {
     const lead = clean(toString(inl[0]));
     const rest = clean(inl.slice(1).map((n) => toString(n)).join("")).replace(/^[\s:—–-]+/, "");
-    return { lead, rest, flags };
+    return withPoints({ lead, rest, flags });
   }
-  return { rest: clean(toString(first)), flags };
+  return withPoints({ rest: clean(toString(first)), flags });
 }
 
 function parseTable(t: Table): NonNullable<Extracted["table"]> {

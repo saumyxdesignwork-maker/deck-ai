@@ -1,0 +1,20 @@
+{
+  "archetype": "metric",
+  "variant": "ring-gauges",
+  "slots": {
+    "eyebrow": { "type": "text", "optional": true, "chars_max": 40 },
+    "title": { "type": "text", "optional": true, "chars_ideal": 20, "chars_max": 40 },
+    "body": { "type": "text", "optional": true, "chars_max": 160 },
+    "items": {
+      "type": "list", "min": 2, "max": 4,
+      "of": {
+        "value": { "type": "text", "chars_max": 6, "nowrap": true, "pattern": "^[~≈]?\\s*[\\d.]+\\s*%$" },
+        "label": { "type": "text", "chars_max": 48 },
+        "note": { "type": "text", "optional": true, "chars_max": 40 }
+      }
+    },
+    "source": { "type": "text", "optional": true, "chars_max": 100 }
+  },
+  "decor_anchors": ["frame", "edge"],
+  "supports_aspects": ["16:9", "4:3", "1:1"]
+}

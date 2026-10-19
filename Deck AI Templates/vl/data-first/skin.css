@@ -1,0 +1,89 @@
+/* Data First — skin. Greyscale + one signal colour; hairlines and dotted strokes are the ornament system. */
+
+/* ---------- layers ---------- */
+.vl-data-first .slide > [data-decor="frame"] { position: absolute; inset: 0; z-index: 0; color: var(--slide-ink); }
+.vl-data-first .slide > :not([data-decor]):not(.chrome) { position: relative; z-index: 1; }
+.vl-data-first .slide > [data-decor="edge"],
+.vl-data-first .slide > [data-decor="corner-tl"] { display: none; }
+.vl-data-first .slide .lo-orbit { position: absolute; z-index: 2; }
+
+/* ---------- two-tone headings: *muted* part goes grey ---------- */
+.vl-data-first .slide em { opacity: 1; color: var(--color-ink-muted-on-inverse); }
+
+/* ---------- chrome: running label top-left, bracketed page marker top-right ---------- */
+.vl-data-first .chrome { opacity: 1; color: var(--color-ink-muted-on-inverse); }
+.vl-data-first .chrome--bottom {
+  top: calc(var(--space-frame-y) * 0.42);
+  bottom: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-tight);
+}
+.vl-data-first .chrome--bottom::before {
+  content: "";
+  width: 64px;
+  height: 10px;
+  border-left: var(--line-rule) solid var(--slide-ink);
+  border-right: var(--line-rule) solid var(--slide-ink);
+  background: linear-gradient(var(--slide-ink), var(--slide-ink)) center / 100% var(--line-rule) no-repeat;
+}
+
+/* ---------- small type ---------- */
+.vl-data-first .slide .t-label { color: var(--color-ink-muted-on-inverse); }
+.vl-data-first .slide .t-caption { color: var(--color-ink-muted-on-inverse); }
+
+/* ---------- lists ---------- */
+.vl-data-first .a-bullets .bl-item { border-top-color: var(--color-line); }
+.vl-data-first .a-bullets .bl-index { color: var(--color-ink-muted-on-inverse); }
+.vl-data-first .a-bullets .lo-index,
+.vl-data-first .a-bullets .lo-item-text { color: var(--color-ink-muted-on-inverse); }
+
+/* cards: no border, soft vertical fill, pictogram on top */
+.vl-data-first .a-bullets .cg-card {
+  border: 0;
+  background: linear-gradient(to bottom, transparent 0%, var(--color-surface-card) 45%, var(--color-surface-card) 100%);
+  padding: 0 var(--space-gutter) var(--space-gutter);
+  justify-content: flex-end;
+}
+.vl-data-first .a-bullets .cg-card > [data-decor="item-mark"] { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: var(--space-gutter) 12%; }
+.vl-data-first .a-bullets .cg-card > [data-decor="item-mark"] svg { max-height: 100%; width: auto; max-width: 100%; }
+.vl-data-first .a-bullets .cg-text { color: var(--color-ink-muted-on-inverse); }
+
+/* ---------- metrics ---------- */
+.vl-data-first .a-metric .m-item { border-top: var(--line-hair) solid var(--color-line); }
+.vl-data-first .a-metric .is-emphasis .m-value,
+.vl-data-first .a-metric .hn-value { color: var(--color-emphasis); }
+.vl-data-first .a-metric .rg-core { background: color-mix(in srgb, var(--slide-ink) 5%, var(--slide-bg)); }
+.vl-data-first .a-metric .rg-label { color: var(--color-ink-muted-on-inverse); }
+.vl-data-first .a-metric .rg-ring circle { stroke-width: 2.8; }
+.vl-data-first .a-metric .nc-tag {
+  background: var(--slide-ink);
+  color: var(--slide-bg);
+  padding: 0.25em 0.6em;
+  border-radius: 4px;
+}
+.vl-data-first .a-metric .nc-title em { color: var(--color-ink-muted-on-inverse); }
+.vl-data-first .a-metric .nc-label,
+.vl-data-first .a-metric .nc-note { color: color-mix(in srgb, var(--slide-ink) 70%, transparent); }
+.vl-data-first .a-metric .nc-item { background: color-mix(in srgb, var(--slide-ink) 7%, transparent); }
+
+/* ---------- timelines ---------- */
+.vl-data-first .a-timeline.v-wave .tw-seg::before { display: none; }
+.vl-data-first .a-timeline.v-wave .tw-item:nth-child(even) .tw-lens { transform: scaleY(-1); }
+.vl-data-first .a-timeline.v-wave .tw-pill {
+  border: 0;
+  background: linear-gradient(100deg, color-mix(in srgb, var(--color-glow) 45%, transparent), var(--color-surface-card));
+  color: var(--slide-ink);
+}
+.vl-data-first .a-timeline.v-wave .tw-points { color: var(--color-ink-muted-on-inverse); }
+.vl-data-first .a-timeline.v-arc-steps .as-arc-inner { opacity: 0.35; }
+.vl-data-first .a-timeline.v-arc-steps .as-date { color: var(--color-ink-muted-on-inverse); }
+
+/* ---------- tables ---------- */
+.vl-data-first .a-table th { border-bottom: var(--line-hair) solid var(--color-line-strong); }
+.vl-data-first .a-table td { color: var(--color-ink-muted-on-inverse); }
+.vl-data-first .a-table td:first-child { color: var(--slide-ink); }
+.vl-data-first .a-table .is-highlight td { color: var(--color-emphasis); }
+
+/* ---------- quotes ---------- */
+.vl-data-first .a-quote .qb-badge { border-width: var(--line-hair); }

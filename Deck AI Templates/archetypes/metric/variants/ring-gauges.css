@@ -1,0 +1,39 @@
+.a-metric.v-ring-gauges {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  padding: calc(var(--space-frame-y) * 1.4) var(--space-frame-x) var(--space-frame-y);
+  row-gap: var(--space-section);
+}
+.a-metric.v-ring-gauges .rg-head { display: grid; gap: var(--space-tight); max-width: 60%; }
+.a-metric.v-ring-gauges .rg-items {
+  display: grid;
+  grid-template-columns: repeat(var(--item-count), minmax(0, 1fr));
+  gap: var(--space-gutter);
+  overflow: hidden;
+}
+.a-metric.v-ring-gauges .rg-item { container-type: size; display: grid; place-items: center; min-height: 0; }
+.a-metric.v-ring-gauges .rg-gauge { position: relative; width: min(100cqw, 100cqh); aspect-ratio: 1; }
+/* dotted rings: 64 round dots; the fill ring is clipped to the percentage with a conic mask */
+.a-metric.v-ring-gauges .rg-ring { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.a-metric.v-ring-gauges .rg-ring circle { fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-dasharray: 0 1; }
+.a-metric.v-ring-gauges .rg-ring--track { opacity: 0.28; }
+.a-metric.v-ring-gauges .rg-ring--fill {
+  color: var(--color-emphasis);
+  -webkit-mask-image: conic-gradient(#000 calc(var(--pct) * 3.6deg), transparent 0);
+  mask-image: conic-gradient(#000 calc(var(--pct) * 3.6deg), transparent 0);
+}
+.a-metric.v-ring-gauges .rg-core {
+  position: absolute;
+  inset: 11%;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--space-tight) * 0.6);
+  padding: 0 12%;
+  text-align: center;
+  background: var(--color-surface-card, transparent);
+  border: var(--line-hair) solid var(--color-line);
+}
+.a-metric.v-ring-gauges .rg-value { display: block; width: 100%; overflow: hidden; }

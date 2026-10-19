@@ -6,7 +6,7 @@
   {{/if}}
   <div class="cb-main" data-region="main">
     {{#if content.eyebrow}}<p class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
-    <h2 class="cb-title t-display-2" data-slot="content.title" data-slot-type="text" data-fit="shrink" data-min-step="display-3">{{content.title}}</h2>
+    <h2 class="cb-title t-display-2" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h2>
     {{#if content.lead}}<p class="t-lead" data-slot="content.lead" data-slot-type="text" data-fit="shrink" data-min-step="body">{{content.lead}}</p>{{/if}}
     <div class="cb-body" data-slot="content.body" data-slot-type="paragraphs">
       {{#each content.body}}<p class="t-body" data-slot="content.body[{{@index}}]" data-slot-type="text" data-fit="shrink" data-min-step="body-s">{{this}}</p>{{/each}}

@@ -5,7 +5,7 @@
   <header class="chrome chrome--top"><span class="t-label" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
   {{/if}}
   <div class="ty-main" data-region="main">
-    <h2 class="t-display-1" data-slot="content.title" data-slot-type="text" data-fit="shrink" data-min-step="display-3">{{content.title}}</h2>
+    <h2 class="t-display-1" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h2>
     {{#if content.body}}<p class="t-lead" data-slot="content.body" data-slot-type="text" data-fit="shrink" data-min-step="body">{{content.body}}</p>{{/if}}
   </div>
   {{#if content.contact}}<p class="ty-contact t-label" data-slot="content.contact" data-slot-type="text">{{content.contact}}</p>{{/if}}

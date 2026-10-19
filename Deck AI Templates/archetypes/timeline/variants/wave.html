@@ -1,0 +1,34 @@
+<section class="slide a-timeline v-wave" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if show_chrome}}
+  <header class="chrome chrome--top"><span class="t-caption" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <div class="tw-head">
+    {{#if content.eyebrow}}<p class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    {{#if content.title}}<h2 class="t-display-2" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h2>{{/if}}
+    <div class="tw-range">
+      {{#if content.start}}<span class="t-caption" data-slot="content.start" data-slot-type="text">{{content.start}}</span>{{/if}}
+      {{#if content.intro}}<span class="tw-intro t-body-s" data-slot="content.intro" data-slot-type="text">{{content.intro}}</span>{{/if}}
+      {{#if content.end}}<span class="tw-end t-caption" data-slot="content.end" data-slot-type="text">{{content.end}}</span>{{/if}}
+    </div>
+  </div>
+  <ol class="tw-items" data-region="items" data-slot="content.items" data-slot-type="list" data-min="3" data-max="6" style="--item-count: {{content.items.length}}">
+    {{#each content.items}}
+    <li class="tw-item{{#if emphasis}} is-emphasis{{/if}}" data-slot-item="{{@index}}">
+      <div class="tw-text">
+        {{#if date}}<span class="tw-pill t-caption" data-slot="content.items[{{@index}}].date" data-slot-type="text" data-nowrap data-fit="shrink">{{date}}</span>{{/if}}
+        <span class="tw-label t-title" data-slot="content.items[{{@index}}].label" data-slot-type="text" data-fit="shrink" data-min-step="body">{{label}}</span>
+        {{#if text}}<span class="tw-desc t-body-s" data-slot="content.items[{{@index}}].text" data-slot-type="text" data-fit="shrink" data-min-step="caption">{{text}}</span>{{/if}}
+        {{#if points}}<ul class="tw-points">{{#each points}}<li class="t-body-s" data-slot="content.items[{{@../index}}].points[{{@index}}]" data-slot-type="text" data-fit="shrink" data-min-step="caption">{{this}}</li>{{/each}}</ul>{{/if}}
+      </div>
+      <div class="tw-seg">
+        <div class="tw-lens" data-decor="segment"></div>
+        <span class="tw-stem" aria-hidden="true"></span>
+        <span class="tw-node" aria-hidden="true"></span>
+      </div>
+    </li>
+    {{/each}}
+  </ol>
+  <div data-decor="edge"></div>
+</section>

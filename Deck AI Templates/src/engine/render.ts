@@ -44,12 +44,31 @@ export function renderSlide(deck: Deck, p: PlannedSlide, vl: VisualLanguage, pre
     page: String(p.index + 1).padStart(2, "0"),
     total: deck.slides.length,
     meta: deck.meta,
-    content: p.slide.content,
+    content: viewModel(p.slide.content),
     show_chrome: showOn === "all" || (showOn === "all-but-title" && p.slide.archetype !== "title"),
   });
   const style = groundStyle(p.ground) + rotationStyle(vl, deck, p.index);
   const withGround = html.replace(/^(\s*<section\b)/, `$1 style="${style}"`);
   return decorate(withGround, p, vl, deck, prevDecor);
+}
+
+const PERCENT = /^[~≈]?\s*([\d.]+)\s*%$/;
+
+/**
+ * Render-time derived values (never stored in deck.json). List items whose `value` is a percentage get
+ * `value_pct` (0–100) so gauges can draw it; templates only ever see sanitised numbers here.
+ */
+function viewModel(content: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...content };
+  for (const [k, v] of Object.entries(content)) {
+    if (!Array.isArray(v)) continue;
+    out[k] = v.map((item) => {
+      if (!item || typeof item !== "object" || typeof (item as { value?: unknown }).value !== "string") return item;
+      const m = PERCENT.exec((item as { value: string }).value.trim());
+      return m ? { ...item, value_pct: Math.max(0, Math.min(100, Number(m[1]))) } : item;
+    });
+  }
+  return out;
 }
 
 /** Shift each rotating palette role by the slide index so hues differ slide to slide. */
@@ -86,25 +105,31 @@ function scopeSvgIds(svg: string, scope: string): string {
 function decorate(html: string, p: PlannedSlide, vl: VisualLanguage, deck: Deck, prevDecor?: Record<string, string>): string {
   if (deck.design.theme.ornament === "none") return html;
   const used = new Map<string, number>();
+  const seen = new Map<string, number>();
   const kind = groundKind(p.ground);
   p.decor ??= {};
   return html.replace(/<div([^>]*)\bdata-decor="([\w-]+)"([^>]*)><\/div>/g, (whole, pre: string, anchor: string, post: string) => {
+    // repeated anchors (one per list item) get keys like "item-mark#2" so each item can differ
+    const n = seen.get(anchor) ?? 0;
+    seen.set(anchor, n + 1);
+    const key = n ? `${anchor}#${n}` : anchor;
     const eligible = vl.ornaments.filter(
       (o) =>
         o.anchors.includes(anchor) &&
         (o.roles.includes("*") || o.roles.includes(p.slide.archetype)) &&
         (!o.grounds || o.grounds.includes(kind)) &&
+        (!o.variants || o.variants.includes(p.variant.variant)) &&
         (used.get(o.id) ?? 0) < o.max_per_slide,
     );
     if (!eligible.length) return whole;
-    let o = eligible.find((e) => e.id === p.decor![anchor]);
+    let o = eligible.find((e) => e.id === p.decor![key]);
     if (!o) {
-      const start = hash(`${deck.id}:${p.slide.id}:${anchor}`) % eligible.length;
+      const start = (hash(`${deck.id}:${p.slide.id}:${anchor}`) + n) % eligible.length;
       o = eligible[start]!;
-      if (eligible.length > 1 && o.id === prevDecor?.[anchor]) o = eligible[(start + 1) % eligible.length]!;
+      if (eligible.length > 1 && o.id === prevDecor?.[key]) o = eligible[(start + 1) % eligible.length]!;
     }
-    p.decor![anchor] = o.id;
+    p.decor![key] = o.id;
     used.set(o.id, (used.get(o.id) ?? 0) + 1);
-    return `<div${pre}data-decor="${anchor}"${post} data-ornament="${o.id}" aria-hidden="true">${scopeSvgIds(o.svg, `${p.slide.id}-${anchor}`)}</div>`;
+    return `<div${pre}data-decor="${anchor}"${post} data-ornament="${o.id}" aria-hidden="true">${scopeSvgIds(o.svg, `${p.slide.id}-${key}`)}</div>`;
   });
 }

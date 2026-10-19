@@ -8,6 +8,7 @@
 type Node =
   | { t: "text"; v: string }
   | { t: "var"; path: string }
+  | { t: "rich"; path: string }
   | { t: "each"; path: string; body: Node[] }
   | { t: "if"; path: string; body: Node[]; alt: Node[] }
   | { t: "eq"; a: string; b: string; body: Node[]; alt: Node[] };
@@ -42,6 +43,8 @@ export function compile(src: string): Template {
       const n = top.node;
       if (!n || (n.t !== "if" && n.t !== "eq")) throw new Error("{{else}} outside {{#if}}/{{#eq}}");
       top.list = n.alt;
+    } else if (body.startsWith("rich ")) {
+      top.list.push({ t: "rich", path: body.slice(5).trim() });
     } else {
       top.list.push({ t: "var", path: body });
     }
@@ -61,6 +64,11 @@ function run(nodes: Node[], scopes: unknown[], idx: number[]): string {
       case "var": {
         const v = lookup(n.path, scopes, idx);
         out += v == null ? "" : escapeHtml(String(v));
+        break;
+      }
+      case "rich": {
+        const v = lookup(n.path, scopes, idx);
+        out += v == null ? "" : richHtml(String(v));
         break;
       }
       case "each": {
@@ -107,6 +115,28 @@ function walk(obj: unknown, segs: string[]): unknown {
     cur = (cur as Record<string, unknown>)[s];
   }
   return cur;
+}
+
+/**
+ * Rich subset for display text: `*muted*` → <em>, `==highlight==` → <mark>.
+ * Escapes first, so only these two tags can ever be produced.
+ */
+export function richHtml(s: string): string {
+  return escapeHtml(s)
+    .replace(/\*([^*\n]+)\*/g, "<em>$1</em>")
+    .replace(/==([^=\n]+)==/g, "<mark>$1</mark>");
+}
+
+/** Inverse of richHtml for inline-edited DOM: <em>/<mark> back to markers, everything else to plain text. */
+export function richFromDom(el: globalThis.Node): string {
+  let out = "";
+  el.childNodes.forEach((n) => {
+    if (n.nodeType === 3) out += n.textContent ?? "";
+    else if (n.nodeName === "EM") out += `*${n.textContent ?? ""}*`;
+    else if (n.nodeName === "MARK") out += `==${n.textContent ?? ""}==`;
+    else out += richFromDom(n);
+  });
+  return out;
 }
 
 export function escapeHtml(s: string): string {

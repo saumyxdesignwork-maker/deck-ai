@@ -1,0 +1,20 @@
+{
+  "archetype": "metric",
+  "variant": "nested-circles",
+  "slots": {
+    "eyebrow": { "type": "text", "optional": true, "chars_max": 32 },
+    "title": { "type": "text", "optional": true, "chars_ideal": 60, "chars_max": 140 },
+    "body": { "type": "text", "optional": true, "chars_max": 320 },
+    "items": {
+      "type": "list", "min": 2, "max": 4,
+      "of": {
+        "value": { "type": "text", "chars_max": 8, "nowrap": true },
+        "label": { "type": "text", "chars_max": 60 },
+        "note": { "type": "text", "optional": true, "chars_max": 40 }
+      }
+    },
+    "source": { "type": "text", "optional": true, "chars_max": 100 }
+  },
+  "decor_anchors": ["frame", "edge"],
+  "supports_aspects": ["16:9", "4:3"]
+}

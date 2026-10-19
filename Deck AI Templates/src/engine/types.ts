@@ -55,6 +55,8 @@ export interface SlotSpec {
   words_max?: number;
   lines_max?: number;
   nowrap?: boolean;
+  /** hard requirement on the value's shape, e.g. percentages only for gauges */
+  pattern?: string;
   min?: number;
   max?: number;
   of?: Record<string, SlotSpec>;
@@ -85,6 +87,8 @@ export interface OrnamentDef {
   roles: string[];
   max_per_slide: number;
   grounds?: GroundKind[];
+  /** limit to specific layout variants (by variant name) */
+  variants?: string[];
 }
 
 export interface VisualLanguage {

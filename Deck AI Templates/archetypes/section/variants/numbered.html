@@ -8,7 +8,7 @@
   <div class="sn-main" data-region="main">
     {{#if content.number}}<span class="sn-number t-numeral" data-slot="content.number" data-slot-type="text" data-nowrap data-fit="shrink">{{content.number}}</span>{{/if}}
     <div class="sn-text">
-      <h2 class="sn-title t-display-1" data-slot="content.title" data-slot-type="text" data-fit="shrink" data-min-step="display-3">{{content.title}}</h2>
+      <h2 class="sn-title t-display-1" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h2>
       {{#if content.kicker}}<p class="t-lead" data-slot="content.kicker" data-slot-type="text">{{content.kicker}}</p>{{/if}}
     </div>
   </div>

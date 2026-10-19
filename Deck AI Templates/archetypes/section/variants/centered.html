@@ -6,7 +6,7 @@
   {{/if}}
   <div class="sc-main" data-region="main">
     {{#if content.number}}<p class="sc-number t-label" data-slot="content.number" data-slot-type="text" data-nowrap>{{content.number}}</p>{{/if}}
-    <h2 class="sc-title t-display-1" data-slot="content.title" data-slot-type="text" data-fit="shrink" data-min-step="display-3">{{content.title}}</h2>
+    <h2 class="sc-title t-display-1" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h2>
     {{#if content.kicker}}<p class="sc-kicker t-body" data-slot="content.kicker" data-slot-type="text">{{content.kicker}}</p>{{/if}}
   </div>
   <div data-decor="edge"></div>

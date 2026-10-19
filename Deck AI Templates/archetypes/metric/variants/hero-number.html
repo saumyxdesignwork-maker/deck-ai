@@ -13,7 +13,7 @@
         {{#if content.eyebrow}}<p class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
         <span class="hn-label t-display-3" data-slot="content.items[{{@index}}].label" data-slot-type="text" data-fit="shrink" data-min-step="lead">{{label}}</span>
         {{#if note}}<span class="t-body" data-slot="content.items[{{@index}}].note" data-slot-type="text">{{note}}</span>{{/if}}
-        {{#if content.title}}<span class="t-body-s" data-slot="content.title" data-slot-type="text">{{content.title}}</span>{{/if}}
+        {{#if content.title}}<span class="t-body-s" data-slot="content.title" data-slot-type="rich">{{rich content.title}}</span>{{/if}}
       </div>
     </div>
     {{/each}}

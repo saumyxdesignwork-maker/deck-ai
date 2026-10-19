@@ -1,0 +1,33 @@
+.a-bullets.v-leader-orbit {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  grid-template-rows: minmax(0, 1fr);
+  padding: calc(var(--space-frame-y) * 1.4) 0 var(--space-frame-y) var(--space-frame-x);
+  column-gap: var(--space-gutter);
+}
+.a-bullets.v-leader-orbit .lo-head { display: grid; align-content: start; gap: var(--space-gutter); max-width: 92%; overflow: hidden; }
+.a-bullets.v-leader-orbit .lo-intro { max-width: 22em; }
+/* labels stagger left/right; each leader line runs to the slide edge, where the orbit (if the VL draws one) covers it */
+.a-bullets.v-leader-orbit .lo-items { display: grid; grid-auto-rows: minmax(0, 1fr); align-content: space-evenly; counter-reset: lo; overflow: hidden; }
+.a-bullets.v-leader-orbit .lo-item { --indent: 0%; display: flex; align-items: center; padding-left: var(--indent); counter-increment: lo; min-height: 0; }
+.a-bullets.v-leader-orbit .lo-item:nth-child(7n + 1) { --indent: 28%; }
+.a-bullets.v-leader-orbit .lo-item:nth-child(7n + 2) { --indent: 4%; }
+.a-bullets.v-leader-orbit .lo-item:nth-child(7n + 3) { --indent: 36%; }
+.a-bullets.v-leader-orbit .lo-item:nth-child(7n + 4) { --indent: 18%; }
+.a-bullets.v-leader-orbit .lo-item:nth-child(7n + 5) { --indent: 36%; }
+.a-bullets.v-leader-orbit .lo-item:nth-child(7n + 6) { --indent: 2%; }
+.a-bullets.v-leader-orbit .lo-item:nth-child(7n + 7) { --indent: 28%; }
+.a-bullets.v-leader-orbit .lo-label { display: flex; gap: 0.5em; max-width: 15em; flex-shrink: 0; }
+.a-bullets.v-leader-orbit .lo-index::before { content: counter(lo) "."; }
+.a-bullets.v-leader-orbit .lo-name { display: grid; }
+.a-bullets.v-leader-orbit .lo-line { flex: 1; height: var(--line-hair); margin-left: var(--space-gutter); background: var(--color-line); min-width: 40px; }
+.a-bullets.v-leader-orbit .lo-orbit {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  right: -66cqh;
+  height: 116cqh;
+  aspect-ratio: 1;
+  transform: translateY(-50%);
+  pointer-events: none;
+}

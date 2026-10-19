@@ -4,6 +4,7 @@
   "slots": {
     "eyebrow": { "type": "text", "optional": true, "chars_max": 48 },
     "title": { "type": "text", "optional": true, "chars_ideal": 40, "chars_max": 70 },
+    "body": { "type": "text", "optional": true, "chars_max": 220 },
     "items": {
       "type": "list", "min": 2, "max": 4,
       "of": {

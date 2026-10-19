@@ -1,0 +1,22 @@
+{
+  "archetype": "timeline",
+  "variant": "wave",
+  "slots": {
+    "eyebrow": { "type": "text", "optional": true, "chars_max": 40 },
+    "title": { "type": "text", "optional": true, "chars_ideal": 24, "chars_max": 48 },
+    "intro": { "type": "text", "optional": true, "chars_max": 120 },
+    "start": { "type": "text", "optional": true, "chars_max": 24 },
+    "end": { "type": "text", "optional": true, "chars_max": 24 },
+    "items": {
+      "type": "list", "min": 3, "max": 6,
+      "of": {
+        "date": { "type": "text", "optional": true, "chars_max": 14, "nowrap": true },
+        "label": { "type": "text", "chars_max": 32 },
+        "text": { "type": "text", "optional": true, "chars_max": 90 },
+        "points": { "type": "list", "optional": true, "max": 4 }
+      }
+    }
+  },
+  "decor_anchors": ["frame", "segment", "edge"],
+  "supports_aspects": ["16:9", "4:3"]
+}

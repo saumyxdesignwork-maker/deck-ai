@@ -1,0 +1,28 @@
+<section class="slide a-bullets v-leader-orbit" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if show_chrome}}
+  <header class="chrome chrome--top"><span class="t-caption" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <div class="lo-head" data-region="head">
+    {{#if content.eyebrow}}<p class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    <h2 class="lo-title t-display-1" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h2>
+    {{#if content.intro}}<p class="lo-intro t-body-s" data-slot="content.intro" data-slot-type="text">{{content.intro}}</p>{{/if}}
+  </div>
+  <ol class="lo-items" data-region="items" data-slot="content.items" data-slot-type="list" data-min="3" data-max="7" data-count="{{content.items.length}}">
+    {{#each content.items}}
+    <li class="lo-item" data-slot-item="{{@index}}">
+      <span class="lo-label">
+        <span class="lo-index t-body-s" aria-hidden="true"></span>
+        <span class="lo-name">
+          <span class="lo-item-title t-body-s" data-slot="content.items[{{@index}}].title" data-slot-type="text">{{title}}</span>
+          {{#if text}}<span class="lo-item-text t-caption" data-slot="content.items[{{@index}}].text" data-slot-type="text">{{text}}</span>{{/if}}
+        </span>
+      </span>
+      <span class="lo-line" aria-hidden="true"></span>
+    </li>
+    {{/each}}
+  </ol>
+  <div class="lo-orbit" data-decor="orbit"></div>
+  <div data-decor="edge"></div>
+</section>

@@ -7,7 +7,8 @@
   {{/if}}
   <div class="m-head">
     {{#if content.eyebrow}}<p class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
-    {{#if content.title}}<h2 class="t-display-2" data-slot="content.title" data-slot-type="text" data-fit="shrink" data-min-step="display-3">{{content.title}}</h2>{{/if}}
+    {{#if content.title}}<h2 class="t-display-2" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h2>{{/if}}
+    {{#if content.body}}<p class="m-body t-body-s" data-slot="content.body" data-slot-type="text">{{content.body}}</p>{{/if}}
   </div>
   <ol class="m-items" data-region="items" data-slot="content.items" data-slot-type="list" data-min="2" data-max="4" style="--item-count: {{content.items.length}}">
     {{#each content.items}}

@@ -1,4 +1,4 @@
-import { escapeHtml } from "../engine/compiler";
+import { escapeHtml, richFromDom } from "../engine/compiler";
 import { fitSlide, type FitIssue } from "../engine/fit";
 import { DeckDoc, type Op } from "../engine/ops";
 import { visualLanguages } from "../engine/registry";
@@ -164,7 +164,7 @@ let typingTimer = 0;
 
 deckEl.addEventListener("click", (e) => {
   if (!editEl.checked) return;
-  const el = (e.target as HTMLElement).closest<HTMLElement>("[data-slot-type='text']");
+  const el = (e.target as HTMLElement).closest<HTMLElement>("[data-slot-type='text'], [data-slot-type='rich']");
   if (!el || el.isContentEditable) return;
   el.contentEditable = "plaintext-only";
   el.focus();
@@ -175,7 +175,7 @@ deckEl.addEventListener("input", (e) => {
   if (!el.dataset.slot) return;
   clearTimeout(typingTimer);
   typingTimer = window.setTimeout(() => {
-    doc.applyMerged(opFor(el, el.textContent ?? ""));
+    doc.applyMerged(opFor(el, slotValue(el)));
     const id = el.closest<HTMLElement>(".slide")?.dataset.slideId;
     if (id) fitIn(id);
     jsonEl.textContent = JSON.stringify(doc.deck, null, 2);
@@ -196,7 +196,7 @@ deckEl.addEventListener(
     const el = e.target as HTMLElement;
     if (!el.isContentEditable) return;
     clearTimeout(typingTimer);
-    const value = el.textContent ?? "";
+    const value = slotValue(el);
     const current = readSlot(el);
     if (current !== value) doc.applyMerged(opFor(el, value));
     doc.seal();
@@ -271,3 +271,7 @@ togglePane("toggle-json", "pane-json");
 window.addEventListener("resize", () => doc && scaleFrames(renderDeck(doc.deck).frame));
 
 loadFixture();
+
+function slotValue(el: HTMLElement): string {
+  return el.dataset.slotType === "rich" ? richFromDom(el) : el.textContent ?? "";
+}

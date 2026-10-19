@@ -1,0 +1,63 @@
+.a-timeline.v-wave {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  padding: calc(var(--space-frame-y) * 1.3) var(--space-frame-x) var(--space-frame-y);
+  row-gap: var(--space-gutter);
+}
+.a-timeline.v-wave .tw-head { display: grid; gap: var(--space-tight); }
+.a-timeline.v-wave .tw-range {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-gutter);
+  padding-bottom: var(--space-tight);
+  border-bottom: var(--line-hair) solid var(--color-line);
+}
+.a-timeline.v-wave .tw-end { margin-left: auto; }
+/* every item spans three shared rows: text above / track / text below. Odd items speak above, even below. */
+.a-timeline.v-wave .tw-items {
+  display: grid;
+  grid-template-columns: repeat(var(--item-count), minmax(0, 1fr));
+  grid-template-rows: minmax(0, 1fr) 22% minmax(0, 1fr);
+  overflow: hidden;
+}
+.a-timeline.v-wave .tw-item { grid-row: 1 / 4; display: grid; grid-template-rows: subgrid; min-width: 0; }
+.a-timeline.v-wave .tw-text {
+  grid-row: 1;
+  align-self: end;
+  display: grid;
+  justify-items: start;
+  gap: calc(var(--space-tight) * 0.6);
+  padding: 0 var(--space-gutter) var(--space-gutter) 0;
+  min-width: 0;
+}
+.a-timeline.v-wave .tw-item:nth-child(even) .tw-text { grid-row: 3; align-self: start; padding: var(--space-gutter) var(--space-gutter) 0 0; }
+.a-timeline.v-wave .tw-pill {
+  display: inline-flex;
+  padding: 0.5em 1.1em;
+  border-radius: var(--radius-pill);
+  border: var(--line-hair) solid var(--color-line);
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  margin-bottom: var(--space-tight);
+}
+.a-timeline.v-wave .tw-points { display: grid; gap: 0.3em; padding-left: 1em; list-style: disc; }
+.a-timeline.v-wave .tw-seg { grid-row: 2; position: relative; }
+/* fallback track when the VL draws no segment ornament */
+.a-timeline.v-wave .tw-seg::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; border-top: var(--line-hair) solid var(--color-line); }
+.a-timeline.v-wave .tw-lens { position: absolute; inset: 0; }
+.a-timeline.v-wave .tw-node {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--slide-bg);
+  border: var(--line-hair) solid currentColor;
+  z-index: 1;
+}
+.a-timeline.v-wave .is-emphasis .tw-node { background: var(--color-emphasis); border-color: var(--color-emphasis); }
+.a-timeline.v-wave .tw-stem { position: absolute; left: 0; bottom: 50%; height: 50%; border-left: var(--line-hair) solid var(--color-line); }
+.a-timeline.v-wave .tw-item:nth-child(even) .tw-stem { top: 50%; bottom: auto; }
