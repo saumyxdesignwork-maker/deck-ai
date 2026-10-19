@@ -1,0 +1,12 @@
+<section class="slide a-title v-illo-cover" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  <figure class="ic-art" data-slot="content.image" data-slot-type="image">{{#if content.image}}<img src="{{content.image.src}}" alt="{{content.image.alt}}" style="object-position: {{content.image.pos}}" />{{else}}<div class="il-art" data-decor="cast"></div>{{/if}}</figure>
+  {{#if content.eyebrow}}<p class="ic-eyebrow t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+  <div class="ic-main" data-region="main"><h1 class="ic-title t-display-1" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-2">{{rich content.title}}</h1></div>
+  <div class="ic-foot">
+    {{#if content.subtitle}}<span class="t-body-s" data-slot="content.subtitle" data-slot-type="text">{{content.subtitle}}</span>{{/if}}
+    {{#if content.byline}}<span class="t-label" data-slot="content.byline" data-slot-type="text">{{content.byline}}</span>{{/if}}
+    {{#if content.date}}<span class="t-label" data-slot="content.date" data-slot-type="text">{{content.date}}</span>{{/if}}
+  </div>
+  <div data-decor="edge"></div>
+</section>

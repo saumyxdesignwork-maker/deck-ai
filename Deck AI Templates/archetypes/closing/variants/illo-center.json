@@ -1,0 +1,36 @@
+{
+  "archetype": "closing",
+  "variant": "illo-center",
+  "slots": {
+    "title": {
+      "type": "text",
+      "chars_ideal": 12,
+      "chars_max": 28,
+      "words_max": 4
+    },
+    "body": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 160
+    },
+    "contact": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 60
+    },
+    "image": {
+      "type": "image",
+      "optional": true
+    }
+  },
+  "decor_anchors": [
+    "frame",
+    "illo",
+    "edge"
+  ],
+  "supports_aspects": [
+    "16:9",
+    "4:3"
+  ],
+  "image_led": true
+}

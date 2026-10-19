@@ -1,0 +1,9 @@
+[
+  { "id": "illo-cast", "file": "illo-cast.svg", "anchors": ["cast"], "roles": ["*"], "max_per_slide": 1 },
+  { "id": "illo-reader", "file": "illo-reader.svg", "anchors": ["illo", "tile-art"], "roles": ["*"], "max_per_slide": 1 },
+  { "id": "illo-magnifier", "file": "illo-magnifier.svg", "anchors": ["illo", "tile-art"], "roles": ["*"], "max_per_slide": 1 },
+  { "id": "illo-leap", "file": "illo-leap.svg", "anchors": ["illo", "tile-art"], "roles": ["*"], "max_per_slide": 1 },
+  { "id": "illo-laptop", "file": "illo-laptop.svg", "anchors": ["illo", "tile-art"], "roles": ["*"], "max_per_slide": 1 },
+  { "id": "illo-duo", "file": "illo-duo.svg", "anchors": ["illo", "tile-art"], "roles": ["*"], "max_per_slide": 1 },
+  { "id": "scribble", "file": "scribble.svg", "anchors": ["scribble"], "roles": ["*"], "max_per_slide": 1 }
+]

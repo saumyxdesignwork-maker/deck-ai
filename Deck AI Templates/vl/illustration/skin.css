@@ -1,0 +1,53 @@
+/* Illustration — skin. Cream and flat chapter colours, heavy tight caps, serif reading, drawn characters. */
+
+/* ---------- illustration colour wiring: palette roles → figure variables ---------- */
+.vl-illustration .slide {
+  --illo-ink: var(--color-ink-primary);
+  --illo-paper: var(--color-illo-paper);
+  --illo-skin-0: var(--color-illo-skin-0);
+  --illo-skin-1: var(--color-illo-skin-1);
+  --illo-skin-2: var(--color-illo-skin-2);
+  --illo-c0: var(--r-illo-cloth-0);
+  --illo-c1: var(--r-illo-cloth-1);
+  --illo-c2: var(--r-illo-cloth-2);
+  --illo-c3: var(--r-illo-cloth-3);
+  --illo-c4: var(--r-illo-cloth-4);
+  --illo-panel: var(--color-ground-accent-3);
+}
+/* on flat colour grounds the characters become black line art on the ground colour */
+.vl-illustration .slide[data-ground="accent"] .il-art:not(.st-art .il-art) {
+  --illo-paper: var(--slide-bg);
+  --illo-skin-0: var(--slide-bg);
+  --illo-skin-1: var(--slide-bg);
+  --illo-skin-2: var(--slide-bg);
+  --illo-c0: var(--slide-bg);
+  --illo-c1: var(--slide-bg);
+  --illo-c2: var(--slide-bg);
+  --illo-c3: var(--illo-ink);
+  --illo-c4: var(--illo-ink);
+}
+
+/* ---------- layers & chrome ---------- */
+.vl-illustration .slide > :is([data-decor="frame"], [data-decor="corner-tl"], [data-decor="edge"]) { display: none; }
+.vl-illustration .chrome { opacity: 1; }
+.vl-illustration .chrome--bottom { bottom: calc(var(--space-frame-y) * 0.4); }
+.vl-illustration img { filter: none; }
+
+/* ---------- type ---------- */
+.vl-illustration .slide em { opacity: 1; font-family: var(--font-text); font-style: italic; font-weight: 400; text-transform: none; letter-spacing: -0.02em; }
+.vl-illustration .slide mark { color: inherit; background: none; text-decoration: underline; text-decoration-thickness: 0.06em; text-underline-offset: 0.12em; }
+.vl-illustration .t-display-3 { font-variation-settings: "opsz" 72; }
+
+/* ---------- generic layouts in this voice ---------- */
+.vl-illustration .a-bullets :is(.bl-item, .tc2-item) { border-top-color: currentColor; }
+.vl-illustration .a-bullets :is(.bl-index, .tc2-index) { font-family: var(--font-text); }
+.vl-illustration .a-table th { border-bottom: var(--line-rule) solid currentColor; }
+.vl-illustration .a-table td { border-bottom-color: currentColor; }
+.vl-illustration .ch--bar .ch-bar, .vl-illustration .ch--hbar .ch-bar { background: currentColor; opacity: 1; border-radius: 8px 8px 0 0; }
+.vl-illustration .ch--bar .is-hl .ch-bar, .vl-illustration .ch--hbar .is-hl .ch-bar { background: var(--color-ground-accent-1); }
+.vl-illustration .a-metric .m-value, .vl-illustration .a-metric .hn-value, .vl-illustration .ht-value { font-family: var(--font-text); font-weight: 300; }
+.vl-illustration .a-comparison .ti-col { border-color: currentColor; background: var(--color-surface-card); }
+.vl-illustration .a-comparison .is-emphasis { background: var(--color-ground-accent-1); border-color: var(--color-ground-accent-1); color: var(--color-ink-primary); }
+.vl-illustration .gt-bar { background: var(--color-ground-accent-0); border: var(--line-hair) solid currentColor; }
+.vl-illustration .is-emphasis .gt-bar { background: var(--color-ground-accent-1); }
+.vl-illustration :is(.t-display-0, .t-display-1, .t-display-2) { word-spacing: 0.1em; }

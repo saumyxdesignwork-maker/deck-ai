@@ -1,0 +1,14 @@
+{
+  "id": "illustration",
+  "version": "0.1.0",
+  "name": "Illustration",
+  "tags": ["illustrated", "warm", "friendly", "report", "colourful"],
+  "best_for": ["report", "research findings", "education", "people and culture"],
+  "palettes": ["default"],
+  "fonts": [
+    { "family": "Archivo", "licence": "OFL-1.1", "package": "@fontsource-variable/archivo" },
+    { "family": "Newsreader", "licence": "OFL-1.1", "package": "@fontsource-variable/newsreader" }
+  ],
+  "illustrations": "Original SVG character set drawn for this package (vl/illustration/ornaments), colour driven by palette roles",
+  "references": "1 user-supplied board, 19 Oct 2026 — principles only, see analysis.md"
+}

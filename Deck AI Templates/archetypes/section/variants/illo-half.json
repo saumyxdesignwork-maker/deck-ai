@@ -1,0 +1,37 @@
+{
+  "archetype": "section",
+  "variant": "illo-half",
+  "slots": {
+    "number": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 3
+    },
+    "title": {
+      "type": "text",
+      "chars_ideal": 12,
+      "chars_max": 22,
+      "words_max": 3
+    },
+    "kicker": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 140
+    },
+    "image": {
+      "type": "image",
+      "optional": true
+    }
+  },
+  "decor_anchors": [
+    "frame",
+    "illo",
+    "scribble",
+    "edge"
+  ],
+  "supports_aspects": [
+    "16:9",
+    "4:3"
+  ],
+  "image_led": true
+}

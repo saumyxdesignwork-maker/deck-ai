@@ -1,0 +1,7 @@
+<section class="slide a-closing v-illo-center" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  <div class="cc-head" data-region="head"><h2 class="cc-title t-display-1" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-2">{{rich content.title}}</h2>{{#if content.body}}<p class="t-body" data-slot="content.body" data-slot-type="text">{{content.body}}</p>{{/if}}</div>
+  <figure class="cc-art" data-slot="content.image" data-slot-type="image">{{#if content.image}}<img src="{{content.image.src}}" alt="{{content.image.alt}}" style="object-position: {{content.image.pos}}" />{{else}}<div class="il-art" data-decor="illo"></div>{{/if}}</figure>
+  {{#if content.contact}}<p class="cc-contact t-label" data-slot="content.contact" data-slot-type="text">{{content.contact}}</p>{{/if}}
+  <div data-decor="edge"></div>
+</section>

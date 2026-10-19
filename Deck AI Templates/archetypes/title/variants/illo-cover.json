@@ -1,0 +1,46 @@
+{
+  "archetype": "title",
+  "variant": "illo-cover",
+  "slots": {
+    "eyebrow": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 40
+    },
+    "title": {
+      "type": "text",
+      "chars_ideal": 24,
+      "chars_max": 40,
+      "words_max": 5
+    },
+    "subtitle": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 80
+    },
+    "byline": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 40
+    },
+    "date": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 24
+    },
+    "image": {
+      "type": "image",
+      "optional": true
+    }
+  },
+  "decor_anchors": [
+    "frame",
+    "cast",
+    "edge"
+  ],
+  "supports_aspects": [
+    "16:9",
+    "4:3"
+  ],
+  "image_led": true
+}

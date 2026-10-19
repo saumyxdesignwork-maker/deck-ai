@@ -1,0 +1,40 @@
+{
+  "archetype": "section",
+  "variant": "illo-chapter",
+  "slots": {
+    "number": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 3,
+      "nowrap": true
+    },
+    "title": {
+      "type": "text",
+      "chars_ideal": 16,
+      "chars_max": 28,
+      "words_max": 3
+    },
+    "kicker": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 360
+    },
+    "image": {
+      "type": "image",
+      "optional": true
+    }
+  },
+  "decor_anchors": [
+    "frame",
+    "illo",
+    "edge"
+  ],
+  "supports_aspects": [
+    "16:9",
+    "4:3"
+  ],
+  "image_led": true,
+  "grounds": [
+    "accent"
+  ]
+}

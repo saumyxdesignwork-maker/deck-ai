@@ -1,0 +1,44 @@
+{
+  "archetype": "quote",
+  "variant": "stat-illo",
+  "slots": {
+    "number": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 8
+    },
+    "eyebrow": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 40
+    },
+    "quote": {
+      "type": "text",
+      "chars_ideal": 70,
+      "chars_max": 120
+    },
+    "attribution": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 60
+    },
+    "image": {
+      "type": "image",
+      "optional": true
+    }
+  },
+  "decor_anchors": [
+    "frame",
+    "illo",
+    "edge"
+  ],
+  "supports_aspects": [
+    "16:9",
+    "4:3"
+  ],
+  "image_led": true,
+  "grounds": [
+    "base",
+    "accent"
+  ]
+}

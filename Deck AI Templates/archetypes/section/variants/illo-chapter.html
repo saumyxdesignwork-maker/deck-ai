@@ -1,0 +1,9 @@
+<section class="slide a-section v-illo-chapter" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if content.number}}<span class="ch-tab t-lead" data-slot="content.number" data-slot-type="text" data-nowrap>{{content.number}}</span>{{/if}}
+  <div class="ch-rule" aria-hidden="true"></div>
+  <div class="ch-head" data-region="head"><h2 class="ch-title t-display-1" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-2">{{rich content.title}}</h2></div>
+  <figure class="ch-art" data-slot="content.image" data-slot-type="image">{{#if content.image}}<img src="{{content.image.src}}" alt="{{content.image.alt}}" style="object-position: {{content.image.pos}}" />{{else}}<div class="il-art" data-decor="illo"></div>{{/if}}</figure>
+  {{#if content.kicker}}<p class="ch-kicker t-body" data-slot="content.kicker" data-slot-type="text" data-fit="shrink" data-min-step="body-s">{{content.kicker}}</p>{{/if}}
+  <div data-decor="edge"></div>
+</section>

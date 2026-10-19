@@ -1,0 +1,10 @@
+<section class="slide a-section v-illo-half" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  <figure class="hf-art" data-slot="content.image" data-slot-type="image">{{#if content.image}}<img src="{{content.image.src}}" alt="{{content.image.alt}}" style="object-position: {{content.image.pos}}" />{{else}}<div class="il-art" data-decor="illo"></div>{{/if}}</figure>
+  <div class="hf-right" data-region="right">
+    {{#if content.number}}<p class="t-label" data-slot="content.number" data-slot-type="text">{{content.number}}</p>{{/if}}
+    <div class="hf-tw"><h2 class="hf-title t-display-2" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h2><div class="hf-scribble" data-decor="scribble"></div></div>
+    {{#if content.kicker}}<p class="hf-kicker t-body" data-slot="content.kicker" data-slot-type="text">{{content.kicker}}</p>{{/if}}
+  </div>
+  <div data-decor="edge"></div>
+</section>

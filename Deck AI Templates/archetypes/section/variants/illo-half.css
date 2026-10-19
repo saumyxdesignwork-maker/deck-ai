@@ -1,0 +1,11 @@
+.a-section.v-illo-half { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
+.a-section.v-illo-half .hf-art { border-right: var(--line-hair) solid currentColor; margin: 0; }
+.a-section.v-illo-half .hf-art { position: relative; min-height: 0; }
+.a-section.v-illo-half .hf-art :is(img, .il-art) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.a-section.v-illo-half .hf-art .il-art svg { width: 100%; height: 100%; display: block; }
+.a-section.v-illo-half .hf-art :is(img, .il-art) { inset: 30% 14% 4%; }
+.a-section.v-illo-half .hf-right { display: grid; align-content: end; justify-items: center; gap: var(--space-gutter); padding: var(--space-frame-y) var(--space-frame-x) calc(var(--space-frame-y) * 2.2); text-align: center; overflow: visible; }
+.a-section.v-illo-half .hf-tw { position: relative; }
+.a-section.v-illo-half .hf-scribble { position: absolute; left: -10%; right: -12%; bottom: -14%; height: 38%; pointer-events: none; }
+.a-section.v-illo-half .hf-scribble svg { width: 100%; height: 100%; display: block; }
+.a-section.v-illo-half .hf-kicker { max-width: 24em; }

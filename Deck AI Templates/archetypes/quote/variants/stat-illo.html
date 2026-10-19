@@ -1,0 +1,10 @@
+<section class="slide a-quote v-stat-illo" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  <div class="st-left" data-region="left">
+    {{#if content.eyebrow}}<p class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    <p class="st-quote t-display-3" data-slot="content.quote" data-slot-type="text" data-fit="shrink" data-min-step="lead">{{content.quote}}</p>
+    {{#if content.attribution}}<p class="t-label" data-slot="content.attribution" data-slot-type="text">{{content.attribution}}</p>{{/if}}
+  </div>
+  <figure class="st-art" data-slot="content.image" data-slot-type="image">{{#if content.image}}<img src="{{content.image.src}}" alt="{{content.image.alt}}" style="object-position: {{content.image.pos}}" />{{else}}<div class="il-art" data-decor="illo"></div>{{/if}}</figure>
+  <div data-decor="edge"></div>
+</section>

@@ -1,0 +1,6 @@
+.a-closing.v-illo-center { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; justify-items: center; padding: var(--space-frame-y) var(--space-frame-x) calc(var(--space-frame-y) * 0.6); text-align: center; row-gap: var(--space-tight); }
+.a-closing.v-illo-center .cc-head { display: grid; gap: var(--space-tight); justify-items: center; max-width: 80%; }
+.a-closing.v-illo-center .cc-art { width: 100%; }
+.a-closing.v-illo-center .cc-art { position: relative; min-height: 0; }
+.a-closing.v-illo-center .cc-art :is(img, .il-art) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.a-closing.v-illo-center .cc-art .il-art svg { width: 100%; height: 100%; display: block; }

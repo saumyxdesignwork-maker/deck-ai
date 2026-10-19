@@ -1,0 +1,18 @@
+<section class="slide a-bullets v-contents-tiles" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  <ol class="ct-cols" data-region="cols" data-slot="content.items" data-slot-type="list" data-min="3" data-max="6" style="--item-count: {{content.items.length}}">
+    {{#each content.items}}
+    <li class="ct-col" data-slot-item="{{@index}}">
+      <div class="ct-cell ct-cell--art"><div class="il-art" data-decor="tile-art"></div></div>
+      <div class="ct-label">
+        {{#if tag}}<span class="t-label ct-page" data-slot="content.items[{{@index}}].tag" data-slot-type="text">{{tag}}</span>{{/if}}
+        <span class="t-title" data-slot="content.items[{{@index}}].title" data-slot-type="text" data-fit="shrink" data-min-step="body-s">{{title}}</span>
+        {{#if text}}<span class="t-body-s" data-slot="content.items[{{@index}}].text" data-slot-type="text">{{text}}</span>{{/if}}
+      </div>
+      <div class="ct-cell ct-cell--num"><span class="ct-tile" aria-hidden="true"></span></div>
+    </li>
+    {{/each}}
+  </ol>
+  {{#if content.title}}<h2 class="ct-hidden-title t-label" data-slot="content.title" data-slot-type="rich">{{rich content.title}}</h2>{{/if}}
+  <div data-decor="edge"></div>
+</section>

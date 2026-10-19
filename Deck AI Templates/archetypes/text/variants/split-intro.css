@@ -1,0 +1,5 @@
+.a-text.v-split-intro { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); grid-template-rows: minmax(0, 1fr); padding: var(--space-frame-y) var(--space-frame-x); }
+.a-text.v-split-intro .si-left { padding-right: var(--space-gutter); overflow: hidden; text-align: center; }
+.a-text.v-split-intro .si-title { overflow-wrap: normal; hyphens: manual; }
+.a-text.v-split-intro .si-right { display: grid; align-content: start; gap: var(--space-gutter); padding-left: calc(var(--space-gutter) * 1.4); border-left: var(--line-hair) solid currentColor; margin: calc(var(--space-frame-y) * -1) 0; padding-top: var(--space-frame-y); padding-bottom: var(--space-frame-y); overflow: hidden; }
+.a-text.v-split-intro .si-body { display: grid; gap: 1em; max-width: 40em; }

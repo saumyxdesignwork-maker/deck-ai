@@ -66,6 +66,16 @@ export function fitSlide(section: HTMLElement): FitIssue[] {
     }
   }
 
+  // A single unbreakable word can overflow sideways inside its own box without the region noticing.
+  for (const el of section.querySelectorAll<HTMLElement>("[data-fit='shrink']:not([data-nowrap])")) {
+    if (el.scrollWidth <= el.clientWidth + 1) continue;
+    shrinkUntil(el, minFor, () => el.scrollWidth > el.clientWidth + 1);
+    if (el.scrollWidth > el.clientWidth + 1) {
+      el.dataset.overflow = "word";
+      issues.push({ slideId, slot: el.dataset.slot ?? "?", kind: "nowrap-overflow" });
+    }
+  }
+
   // Frame-bounds check catches absolutely positioned display text clipped by the slide edge.
   const frame = section.getBoundingClientRect();
   for (const el of section.querySelectorAll<HTMLElement>("[data-slot]")) {
