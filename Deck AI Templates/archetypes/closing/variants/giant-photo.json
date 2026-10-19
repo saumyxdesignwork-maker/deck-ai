@@ -1,0 +1,39 @@
+{
+  "archetype": "closing",
+  "variant": "giant-photo",
+  "slots": {
+    "title": {
+      "type": "text",
+      "chars_ideal": 6,
+      "chars_max": 10,
+      "words_max": 1
+    },
+    "body": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 140
+    },
+    "contact": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 60
+    },
+    "image": {
+      "type": "image",
+      "optional": true
+    }
+  },
+  "decor_anchors": [
+    "frame",
+    "photo",
+    "edge"
+  ],
+  "supports_aspects": [
+    "16:9",
+    "4:3"
+  ],
+  "image_led": true,
+  "grounds": [
+    "inverse"
+  ]
+}

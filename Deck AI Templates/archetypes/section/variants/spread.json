@@ -1,0 +1,41 @@
+{
+  "archetype": "section",
+  "variant": "spread",
+  "slots": {
+    "number": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 5,
+      "nowrap": true
+    },
+    "title": {
+      "type": "text",
+      "chars_ideal": 14,
+      "chars_max": 24,
+      "words_max": 3
+    },
+    "kicker": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 240
+    },
+    "image": {
+      "type": "image",
+      "optional": true
+    }
+  },
+  "decor_anchors": [
+    "frame",
+    "photo",
+    "edge"
+  ],
+  "supports_aspects": [
+    "16:9",
+    "4:3"
+  ],
+  "image_led": true,
+  "grounds": [
+    "accent",
+    "inverse"
+  ]
+}

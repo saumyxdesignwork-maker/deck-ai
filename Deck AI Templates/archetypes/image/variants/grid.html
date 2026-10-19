@@ -1,0 +1,18 @@
+<section class="slide a-image v-grid" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if show_chrome}}
+  <header class="chrome chrome--top"><span class="t-caption" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <div class="ig-left" data-region="left">
+    {{#if content.title}}<h2 class="ig-title t-display-0" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-nowrap data-min-step="display-1">{{rich content.title}}</h2>{{/if}}
+    <div class="ig-body" data-slot="content.body" data-slot-type="paragraphs">
+      {{#if content.eyebrow}}<p class="t-caption" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+      {{#each content.body}}<p class="t-caption" data-slot="content.body[{{@index}}]" data-slot-type="text">{{this}}</p>{{/each}}
+    </div>
+  </div>
+  <div class="ig-grid" data-slot="content.images" data-slot-type="images">
+    {{#if content.images}}{{#each content.images}}<figure class="ig-tile"><img src="{{src}}" alt="{{alt}}" style="object-position: {{pos}}" /></figure>{{/each}}{{else}}<figure class="ig-tile"><div class="ph" data-decor="photo"></div></figure><figure class="ig-tile"><div class="ph" data-decor="photo"></div></figure><figure class="ig-tile"><div class="ph" data-decor="photo"></div></figure><figure class="ig-tile"><div class="ph" data-decor="photo"></div></figure>{{/if}}
+  </div>
+  <div data-decor="edge"></div>
+</section>

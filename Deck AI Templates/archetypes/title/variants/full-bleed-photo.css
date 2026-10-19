@@ -1,0 +1,7 @@
+.a-title.v-full-bleed-photo { display: grid; grid-template-rows: minmax(0, 1fr) auto; padding: var(--space-frame-y) var(--space-frame-x); color: var(--color-ink-on-inverse); }
+.a-title.v-full-bleed-photo .fb-photo { position: absolute; inset: 0; z-index: 0; }
+.a-title.v-full-bleed-photo .fb-photo :is(img, .ph) { width: 100%; height: 100%; object-fit: cover; display: block; }
+.a-title.v-full-bleed-photo > :not(.fb-photo):not([data-decor]) { position: relative; z-index: 1; }
+.a-title.v-full-bleed-photo .fb-main { align-self: center; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.42fr); align-items: end; gap: var(--space-gutter); overflow: hidden; }
+.a-title.v-full-bleed-photo .fb-subtitle { max-width: 22em; }
+.a-title.v-full-bleed-photo .fb-meta { display: flex; justify-content: space-between; gap: var(--space-gutter); padding-top: var(--space-tight); border-top: var(--line-hair) solid currentColor; margin-left: 30%; }

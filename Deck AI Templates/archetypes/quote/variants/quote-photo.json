@@ -1,0 +1,43 @@
+{
+  "archetype": "quote",
+  "variant": "quote-photo",
+  "slots": {
+    "number": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 6
+    },
+    "eyebrow": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 60
+    },
+    "quote": {
+      "type": "text",
+      "chars_ideal": 160,
+      "chars_max": 260
+    },
+    "attribution": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 60
+    },
+    "image": {
+      "type": "image",
+      "optional": true
+    }
+  },
+  "decor_anchors": [
+    "frame",
+    "photo",
+    "edge"
+  ],
+  "supports_aspects": [
+    "16:9",
+    "4:3"
+  ],
+  "image_led": true,
+  "grounds": [
+    "base"
+  ]
+}

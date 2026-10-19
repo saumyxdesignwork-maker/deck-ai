@@ -1,0 +1,58 @@
+{
+  "archetype": "bullets",
+  "variant": "ledger-photo",
+  "slots": {
+    "eyebrow": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 40
+    },
+    "title": {
+      "type": "text",
+      "chars_ideal": 8,
+      "chars_max": 14,
+      "words_max": 2
+    },
+    "intro": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 200
+    },
+    "image": {
+      "type": "image",
+      "optional": true
+    },
+    "items": {
+      "type": "list",
+      "min": 3,
+      "max": 8,
+      "of": {
+        "title": {
+          "type": "text",
+          "chars_max": 40
+        },
+        "text": {
+          "type": "text",
+          "optional": true,
+          "chars_max": 50
+        },
+        "tag": {
+          "type": "text",
+          "optional": true,
+          "chars_max": 12,
+          "nowrap": true
+        }
+      }
+    }
+  },
+  "decor_anchors": [
+    "frame",
+    "photo",
+    "edge"
+  ],
+  "supports_aspects": [
+    "16:9",
+    "4:3"
+  ],
+  "image_led": true
+}

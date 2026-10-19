@@ -1,0 +1,17 @@
+<section class="slide a-text v-notes-portrait" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if show_chrome}}
+  <header class="chrome chrome--top"><span class="t-caption" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <figure class="np-photo" data-slot="content.image" data-slot-type="image">{{#if content.image}}<img src="{{content.image.src}}" alt="{{content.image.alt}}" style="object-position: {{content.image.pos}}" />{{else}}<div class="ph" data-decor="photo"></div>{{/if}}</figure>
+  <div class="np-text" data-region="text">
+    {{#if content.eyebrow}}<p class="t-caption" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    <h2 class="np-title t-display-3" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="title">{{rich content.title}}</h2>
+    {{#if content.lead}}<p class="np-lead t-label" data-slot="content.lead" data-slot-type="text">{{content.lead}}</p>{{/if}}
+    <ol class="np-notes" data-slot="content.body" data-slot-type="paragraphs">
+      {{#each content.body}}<li class="np-note"><p class="t-body-s" data-slot="content.body[{{@index}}]" data-slot-type="text" data-fit="shrink" data-min-step="caption">{{this}}</p><span class="np-num t-caption" aria-hidden="true"></span></li>{{/each}}
+    </ol>
+  </div>
+  <div data-decor="edge"></div>
+</section>

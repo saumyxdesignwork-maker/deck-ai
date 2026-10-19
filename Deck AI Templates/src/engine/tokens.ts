@@ -23,6 +23,7 @@ export function tokensToCss(vl: VisualLanguage, deck: Deck, scope: string): stri
     else vars.push(`--color-${cssName(role)}: ${value};`);
   }
   vars.push(`--font-display: ${fontStack(fonts.display)};`, `--font-text: ${fontStack(fonts.text)};`, `--font-label: ${fontStack(fonts.label)};`);
+  if (fonts.accent) vars.push(`--font-accent: "${fonts.accent}", ui-serif, Georgia, serif;`);
   for (const [k, v] of Object.entries(t.space)) vars.push(`--space-${k}: ${SPACE_SCALED.has(k) ? Math.round(v * density) : v}px;`);
   for (const [k, v] of Object.entries(t.radius)) vars.push(`--radius-${k}: ${v}px;`);
   for (const [k, v] of Object.entries(t.line)) vars.push(`--line-${k}: ${v}px;`);
@@ -44,6 +45,7 @@ function typeDecl(step: string, s: TypeStep): string {
     `line-height: ${s.leading ?? 1.2};`,
     `letter-spacing: ${s.tracking ?? 0}em;`,
   ];
+  if (s.stretch) d.push(`font-stretch: ${s.stretch}%;`);
   if (s.case === "upper") d.push("text-transform: uppercase;");
   if (s.case === "small-caps") d.push("font-variant-caps: all-small-caps;");
   if (s.features) d.push(`font-feature-settings: ${s.features.split(/,\s*/).map((f) => `"${f}"`).join(", ")};`);

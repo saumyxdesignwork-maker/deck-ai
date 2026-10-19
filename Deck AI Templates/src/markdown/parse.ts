@@ -20,6 +20,8 @@ export interface Extracted {
   table?: { columns: string[]; rows: string[][]; highlight_row?: number };
   quote?: string;
   image?: { src: string; alt: string };
+  /** every standalone image paragraph, in order (image = the first) */
+  images: { src: string; alt: string }[];
 }
 
 export interface MdItem {
@@ -117,7 +119,7 @@ function splitSlides(body: string): string[] {
 }
 
 function extract(tree: Root): Extracted {
-  const ex: Extracted = { directives: {}, paragraphs: [], lines: [], lists: [] };
+  const ex: Extracted = { directives: {}, paragraphs: [], lines: [], lists: [], images: [] };
   const addParagraph = (raw: string) => {
     ex.paragraphs.push(raw.replace(/\s*\n\s*/g, " ").trim());
     ex.lines.push(...raw.split("\n").map((l) => l.trim()).filter(Boolean));
@@ -144,7 +146,9 @@ function extract(tree: Root): Extracted {
         // a paragraph that is just an image becomes the slide's image
         const only = (node as Paragraph).children.filter((c) => !(c.type === "text" && !c.value.trim()));
         if (only.length === 1 && only[0]!.type === "image") {
-          ex.image ??= { src: only[0]!.url, alt: only[0]!.alt ?? "" };
+          const img = { src: only[0]!.url, alt: only[0]!.alt ?? "" };
+          ex.image ??= img;
+          ex.images.push(img);
           break;
         }
         addParagraph(toString(node).trim());

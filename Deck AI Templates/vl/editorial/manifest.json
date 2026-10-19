@@ -1,0 +1,14 @@
+{
+  "id": "editorial",
+  "version": "0.1.0",
+  "name": "Editorial",
+  "tags": ["editorial", "swiss", "fashion", "minimal", "photography", "red"],
+  "best_for": ["brand proposal", "creative credentials", "fashion", "architecture", "campaign"],
+  "palettes": ["default", "grey"],
+  "fonts": [
+    { "family": "Archivo", "licence": "OFL-1.1", "package": "@fontsource-variable/archivo" },
+    { "family": "Instrument Serif (italic)", "licence": "OFL-1.1", "package": "@fontsource/instrument-serif" },
+    { "family": "IBM Plex Mono", "licence": "OFL-1.1", "package": "@fontsource/ibm-plex-mono" }
+  ],
+  "references": "4 user-supplied boards, 19 Oct 2026 — principles only, see analysis.md"
+}

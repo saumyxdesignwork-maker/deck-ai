@@ -1,0 +1,5 @@
+[
+  { "id": "photo-grey", "file": "photo-grey.svg", "anchors": ["photo"], "roles": ["*"], "max_per_slide": 6 },
+  { "id": "asterisk", "file": "asterisk.svg", "anchors": ["frame"], "roles": ["text"], "variants": ["statement-center"], "max_per_slide": 1 },
+  { "id": "reg-marks", "file": "reg-marks.svg", "anchors": ["edge"], "roles": ["*"], "grounds": ["base", "inverse"], "max_per_slide": 1 }
+]

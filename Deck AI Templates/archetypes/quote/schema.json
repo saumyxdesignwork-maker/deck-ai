@@ -1,11 +1,50 @@
 {
   "type": "object",
-  "required": ["quote"],
+  "required": [
+    "quote"
+  ],
   "additionalProperties": false,
   "properties": {
-    "number": { "type": "string" },
-    "eyebrow": { "type": "string" },
-    "quote": { "type": "string" },
-    "attribution": { "type": "string" }
+    "number": {
+      "type": "string"
+    },
+    "eyebrow": {
+      "type": "string"
+    },
+    "quote": {
+      "type": "string"
+    },
+    "attribution": {
+      "type": "string"
+    },
+    "image": {
+      "type": "object",
+      "required": [
+        "src",
+        "alt"
+      ],
+      "properties": {
+        "src": {
+          "type": "string"
+        },
+        "alt": {
+          "type": "string"
+        },
+        "focal": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            }
+          }
+        },
+        "credit": {
+          "type": "string"
+        }
+      }
+    }
   }
 }

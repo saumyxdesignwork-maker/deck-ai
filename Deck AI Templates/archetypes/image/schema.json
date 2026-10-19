@@ -1,0 +1,53 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "eyebrow": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "caption": {
+      "type": "string"
+    },
+    "body": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "src",
+          "alt"
+        ],
+        "properties": {
+          "src": {
+            "type": "string"
+          },
+          "alt": {
+            "type": "string"
+          },
+          "focal": {
+            "type": "object",
+            "properties": {
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              }
+            }
+          },
+          "credit": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

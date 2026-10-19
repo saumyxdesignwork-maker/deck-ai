@@ -1,0 +1,7 @@
+.a-title.v-giant-word { display: grid; grid-template-rows: 44% auto minmax(0, 1fr) auto; padding: calc(var(--space-frame-y) * 0.6) var(--space-frame-x) var(--space-frame-y); row-gap: var(--space-gutter); }
+.a-title.v-giant-word .gw-band { position: relative; overflow: hidden; }
+.a-title.v-giant-word .gw-band :is(img, .ph) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.a-title.v-giant-word .gw-meta { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-gutter); max-width: 60%; }
+.a-title.v-giant-word .gw-word { display: flex; align-items: flex-end; overflow: hidden; }
+.a-title.v-giant-word .gw-title { display: block; max-width: 100%; overflow: hidden; line-height: 0.82; }
+.a-title.v-giant-word .gw-foot { display: flex; gap: calc(var(--space-gutter) * 4); }

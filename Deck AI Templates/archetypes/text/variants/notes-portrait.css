@@ -1,0 +1,9 @@
+.a-text.v-notes-portrait { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); grid-template-rows: minmax(0, 1fr); padding: calc(var(--space-frame-y) * 1.1) var(--space-frame-x) var(--space-frame-y) calc(var(--space-frame-x) * 0.4); column-gap: calc(var(--space-gutter) * 2.5); }
+.a-text.v-notes-portrait .np-photo { position: relative; overflow: hidden; }
+.a-text.v-notes-portrait .np-photo :is(img, .ph) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.a-text.v-notes-portrait .np-text { display: flex; flex-direction: column; justify-content: center; gap: var(--space-tight); overflow: hidden; }
+.a-text.v-notes-portrait .np-lead { margin-bottom: var(--space-section); }
+.a-text.v-notes-portrait .np-notes { display: grid; gap: var(--space-gutter); counter-reset: np; max-width: 34em; }
+.a-text.v-notes-portrait .np-note { display: grid; grid-template-columns: minmax(0, 1fr) 3em; gap: var(--space-gutter); padding-bottom: var(--space-gutter); border-bottom: var(--line-hair) solid var(--color-line); counter-increment: np; }
+.a-text.v-notes-portrait .np-note:last-child { border-bottom: 0; }
+.a-text.v-notes-portrait .np-num::before { content: counter(np, decimal-leading-zero) "/"; }

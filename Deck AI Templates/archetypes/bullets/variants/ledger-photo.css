@@ -1,0 +1,11 @@
+.a-bullets.v-ledger-photo { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); grid-template-rows: auto minmax(0, 1fr); padding: calc(var(--space-frame-y) * 1.1) var(--space-frame-x) var(--space-frame-y) calc(var(--space-frame-x) * 0.4); column-gap: calc(var(--space-gutter) * 2.5); row-gap: var(--space-gutter); }
+.a-bullets.v-ledger-photo .lp-word { grid-column: 1 / -1; overflow: hidden; padding-left: calc(var(--space-frame-x) * 0.6); }
+.a-bullets.v-ledger-photo .lp-title { display: block; max-width: 100%; overflow: hidden; line-height: 0.86; }
+.a-bullets.v-ledger-photo .lp-photo { position: relative; overflow: hidden; }
+.a-bullets.v-ledger-photo .lp-photo :is(img, .ph) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.a-bullets.v-ledger-photo .lp-right { display: flex; flex-direction: column; justify-content: space-between; gap: var(--space-gutter); overflow: hidden; }
+.a-bullets.v-ledger-photo .lp-intro { max-width: 30em; }
+.a-bullets.v-ledger-photo .lp-items { display: grid; gap: 0.5em; max-width: 30em; }
+.a-bullets.v-ledger-photo .lp-item { display: flex; justify-content: space-between; gap: var(--space-gutter); }
+.a-bullets.v-ledger-photo .lp-item.is-emphasis { margin-top: var(--space-section); }
+.a-bullets.v-ledger-photo .lp-item.is-emphasis .lp-price { font-size: var(--t-display-3-size); font-family: var(--font-display); font-weight: 600; letter-spacing: -0.02em; }

@@ -1,0 +1,10 @@
+<section class="slide a-closing v-giant-photo" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  <div class="gp-left" data-region="left">
+    {{#if content.body}}<p class="gp-body t-lead" data-slot="content.body" data-slot-type="text">{{content.body}}</p>{{/if}}
+    {{#if content.contact}}<p class="t-caption" data-slot="content.contact" data-slot-type="text">{{content.contact}}</p>{{/if}}
+    <h2 class="gp-title t-display-0" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-nowrap data-min-step="display-1">{{rich content.title}}</h2>
+  </div>
+  <figure class="gp-photo" data-slot="content.image" data-slot-type="image">{{#if content.image}}<img src="{{content.image.src}}" alt="{{content.image.alt}}" style="object-position: {{content.image.pos}}" />{{else}}<div class="ph" data-decor="photo"></div>{{/if}}</figure>
+  <div data-decor="edge"></div>
+</section>

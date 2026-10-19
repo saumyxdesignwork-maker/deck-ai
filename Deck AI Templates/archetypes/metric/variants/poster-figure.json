@@ -1,0 +1,56 @@
+{
+  "archetype": "metric",
+  "variant": "poster-figure",
+  "slots": {
+    "eyebrow": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 40
+    },
+    "title": {
+      "type": "text",
+      "optional": true,
+      "chars_ideal": 30,
+      "chars_max": 60
+    },
+    "body": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 200
+    },
+    "items": {
+      "type": "list",
+      "min": 1,
+      "max": 1,
+      "of": {
+        "value": {
+          "type": "text",
+          "chars_max": 6,
+          "nowrap": true
+        },
+        "label": {
+          "type": "text",
+          "chars_max": 60
+        },
+        "note": {
+          "type": "text",
+          "optional": true,
+          "chars_max": 80
+        }
+      }
+    },
+    "source": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 100
+    }
+  },
+  "decor_anchors": [
+    "frame",
+    "edge"
+  ],
+  "supports_aspects": [
+    "16:9",
+    "4:3"
+  ]
+}

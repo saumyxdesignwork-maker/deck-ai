@@ -1,0 +1,21 @@
+<section class="slide a-bullets v-ledger-photo" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if show_chrome}}
+  <header class="chrome chrome--top"><span class="t-caption" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <div class="lp-word"><h2 class="lp-title t-display-0" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-nowrap data-min-step="display-1">{{rich content.title}}</h2></div>
+  <figure class="lp-photo" data-slot="content.image" data-slot-type="image">{{#if content.image}}<img src="{{content.image.src}}" alt="{{content.image.alt}}" style="object-position: {{content.image.pos}}" />{{else}}<div class="ph" data-decor="photo"></div>{{/if}}</figure>
+  <div class="lp-right" data-region="right">
+    {{#if content.intro}}<p class="lp-intro t-caption" data-slot="content.intro" data-slot-type="text">{{content.intro}}</p>{{/if}}
+    <ol class="lp-items" data-slot="content.items" data-slot-type="list" data-min="3" data-max="8">
+      {{#each content.items}}
+      <li class="lp-item{{#if emphasis}} is-emphasis{{/if}}" data-slot-item="{{@index}}">
+        <span class="t-caption" data-slot="content.items[{{@index}}].title" data-slot-type="text">{{title}}</span>
+        {{#if tag}}<span class="lp-price t-caption" data-slot="content.items[{{@index}}].tag" data-slot-type="text" data-nowrap>{{tag}}</span>{{/if}}
+      </li>
+      {{/each}}
+    </ol>
+  </div>
+  <div data-decor="edge"></div>
+</section>

@@ -1,0 +1,5 @@
+.a-text.v-statement-center { display: grid; grid-template-rows: minmax(0, 1fr) auto; padding: calc(var(--space-frame-y) * 1.2) var(--space-frame-x) var(--space-frame-y); }
+.a-text.v-statement-center .stc-main { display: grid; place-items: center; text-align: center; overflow: hidden; padding: 0 12%; }
+.a-text.v-statement-center .stc-foot { display: flex; justify-content: space-between; align-items: end; gap: var(--space-gutter); }
+.a-text.v-statement-center .stc-mark { display: flex; gap: 1.2em; }
+.a-text.v-statement-center .stc-body { max-width: 26em; display: grid; gap: var(--space-tight); }

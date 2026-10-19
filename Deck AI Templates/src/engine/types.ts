@@ -115,11 +115,14 @@ export interface TypeStep {
   font?: "display" | "text" | "label";
   features?: string;
   fit_min?: string;
+  /** width axis in % for variable fonts (e.g. 75 = condensed) */
+  stretch?: number;
 }
 
 export interface Tokens {
   palettes: Record<string, Record<string, string | string[]>>;
-  font_pairs: Record<string, { display: string; text: string; label: string }>;
+  /** `accent` is an optional fourth family used by the rich `*muted*` marker (e.g. an italic serif) */
+  font_pairs: Record<string, { display: string; text: string; label: string; accent?: string }>;
   font_sources?: string[];
   type: Record<string, TypeStep>;
   space: Record<string, number>;

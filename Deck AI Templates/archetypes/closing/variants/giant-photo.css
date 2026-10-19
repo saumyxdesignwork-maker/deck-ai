@@ -1,0 +1,7 @@
+.a-closing.v-giant-photo { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); grid-template-rows: minmax(0, 1fr); }
+.a-closing.v-giant-photo .gp-left { display: flex; flex-direction: column; gap: var(--space-gutter); padding: calc(var(--space-frame-y) * 1.2) var(--space-gutter) var(--space-frame-y) calc(var(--space-frame-x) * 0.4); overflow: hidden; }
+.a-closing.v-giant-photo .gp-body { max-width: 16em; padding-left: calc(var(--space-frame-x) * 0.6); }
+.a-closing.v-giant-photo .gp-left > .t-caption { padding-left: calc(var(--space-frame-x) * 0.6); }
+.a-closing.v-giant-photo .gp-title { margin-top: auto; display: block; max-width: 100%; overflow: hidden; line-height: 0.86; }
+.a-closing.v-giant-photo .gp-photo { position: relative; overflow: hidden; }
+.a-closing.v-giant-photo .gp-photo :is(img, .ph) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }

@@ -1,0 +1,15 @@
+<section class="slide a-quote v-quote-photo" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if show_chrome}}
+  <header class="chrome chrome--top"><span class="t-caption" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <div class="qp-text" data-region="text">
+    <p class="qp-quote t-title" data-slot="content.quote" data-slot-type="text" data-fit="shrink" data-min-step="body-s">“{{content.quote}}”</p>
+    {{#if content.eyebrow}}<p class="qp-note t-caption" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+  </div>
+  <figure class="qp-photo" data-slot="content.image" data-slot-type="image">{{#if content.image}}<img src="{{content.image.src}}" alt="{{content.image.alt}}" style="object-position: {{content.image.pos}}" />{{else}}<div class="ph" data-decor="photo"></div>{{/if}}
+    {{#if content.attribution}}<figcaption class="qp-attr t-caption" data-slot="content.attribution" data-slot-type="text">{{content.attribution}}</figcaption>{{/if}}
+  </figure>
+  <div data-decor="edge"></div>
+</section>

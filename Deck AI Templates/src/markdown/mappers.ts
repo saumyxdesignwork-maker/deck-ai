@@ -4,7 +4,7 @@ type Content = Record<string, unknown>;
 interface Mapped { archetype: string; content: Content; warnings: string[] }
 
 const NUMERIC_LEAD = /^[+\-−~≈]?[₹$€£¥]?\s?[\d.,]+\s?(%|x|×|k|K|M|B|Cr|L|bn|mn)?\+?$/;
-const SECTION_TITLE = /^(\d{1,3})[\s.:—–-]+(.+)$/;
+const SECTION_TITLE = /^(\d{1,3}(?:\.\d{1,2})?)\.?[\s:—–-]+(.+)$/;
 const TEMPORAL_LEAD = /\b(weeks?|wk|days?|months?|quarters?|years?|phase|step|stage|q[1-4]|h[12]|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|(19|20)\d{2})\b/i;
 const RANGE = /\s+(?:→|->|–|—|to)\s+/;
 
@@ -15,7 +15,7 @@ export function mapToArchetype(ex: Extracted, pos: { index: number; total: numbe
   if (!mapper) return { archetype, content: generic(ex), warnings: [`no Markdown mapper for "${archetype}"; generic slots used`] };
   const warnings: string[] = [];
   const content = prune(mapper(ex, warnings));
-  if (ex.image && !content.image) warnings.push(`image "${ex.image.src}" ignored — ${archetype} slides take no image`);
+  if (ex.image && !content.image && !content.images) warnings.push(`image "${ex.image.src}" ignored — ${archetype} slides take no image`);
   return { archetype, content, warnings };
 }
 
@@ -34,6 +34,7 @@ const toNumber = (s: string) => {
 /** Content-shape classifier (deck-template-system.md §11.6). */
 export function classify(ex: Extracted, { index, total }: { index: number; total: number }): string {
   if (ex.table) return "table";
+  if (ex.images.length >= 2 && !ex.lists.length) return "image";
   if (ex.quote && !ex.title && !ex.lists.length) return "quote";
   const list = ex.lists[0];
   if (list && list.length >= 3 && list.every((i) => i.lead && TEMPORAL_LEAD.test(i.lead))) return "timeline";
@@ -50,7 +51,7 @@ const MAPPERS: Record<string, (ex: Extracted, warn: string[]) => Content> = {
     const lines = ex.subtitle ? [ex.subtitle, ...ex.lines] : ex.lines;
     const [subtitle, date, byline, ...rest] = lines;
     if (rest.length) warn.push(`${rest.length} extra line(s) ignored on title slide`);
-    return { eyebrow: ex.eyebrow, title: ex.title, subtitle, date, byline };
+    return { eyebrow: ex.eyebrow, title: ex.title, subtitle, date, byline, image: ex.image };
   },
 
   section: (ex) => {
@@ -59,13 +60,14 @@ const MAPPERS: Record<string, (ex: Extracted, warn: string[]) => Content> = {
       number: m?.[1] ?? ex.eyebrow,
       title: m?.[2] ?? ex.title,
       kicker: ex.subtitle ?? ex.lines[0],
+      image: ex.image,
     };
   },
 
   text: (ex, warn) => {
     if (ex.lists.length) warn.push("lists on a text slide were appended to the body");
     const listText = ex.lists.flat().map(itemText);
-    return { eyebrow: ex.eyebrow, title: ex.title, lead: ex.subtitle, body: [...ex.paragraphs, ...listText] };
+    return { eyebrow: ex.eyebrow, title: ex.title, lead: ex.subtitle, body: [...ex.paragraphs, ...listText], image: ex.image };
   },
 
   bullets: (ex, warn) => {
@@ -120,6 +122,7 @@ const MAPPERS: Record<string, (ex: Extracted, warn: string[]) => Content> = {
       start: range?.[0],
       end: range?.[1],
       intro: range ? ex.paragraphs[0] : ex.subtitle ?? ex.paragraphs[0],
+      image: ex.image,
       items: (ex.lists[0] ?? []).map((i) => {
         const [label, text] = splitOnce(i.rest, /\s+[—–]\s+|\s+-\s+/);
         return { date: i.lead, label, text, points: i.points, emphasis: i.flags.has("emphasis") || undefined };
@@ -152,6 +155,7 @@ const MAPPERS: Record<string, (ex: Extracted, warn: string[]) => Content> = {
       eyebrow: numeric ? undefined : ex.eyebrow,
       quote: ex.quote ?? ex.title ?? ex.paragraphs[0],
       attribution: ex.lines.find((l) => l !== ex.quote)?.replace(/^[—–-]\s*/, ""),
+      image: ex.image,
     };
   },
 
@@ -159,6 +163,15 @@ const MAPPERS: Record<string, (ex: Extracted, warn: string[]) => Content> = {
     title: ex.title,
     body: ex.subtitle ?? ex.lines[0],
     contact: ex.subtitle ? ex.lines[0] : ex.lines[1],
+    image: ex.image,
+  }),
+
+  image: (ex) => ({
+    eyebrow: ex.eyebrow,
+    title: ex.title,
+    caption: ex.subtitle,
+    body: ex.paragraphs.length ? ex.paragraphs : undefined,
+    images: ex.images.length ? ex.images : undefined,
   }),
 };
 

@@ -1,0 +1,7 @@
+.a-quote.v-quote-photo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
+.a-quote.v-quote-photo .qp-text { display: flex; flex-direction: column; gap: var(--space-section); padding: calc(var(--space-frame-y) * 1.2) calc(var(--space-gutter) * 2) var(--space-frame-y) var(--space-frame-x); overflow: hidden; }
+.a-quote.v-quote-photo .qp-quote { max-width: 24em; }
+.a-quote.v-quote-photo .qp-note { max-width: 22em; }
+.a-quote.v-quote-photo .qp-photo { position: relative; overflow: hidden; color: var(--color-ink-on-inverse); }
+.a-quote.v-quote-photo .qp-photo :is(img, .ph) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.a-quote.v-quote-photo .qp-attr { position: absolute; left: var(--space-gutter); right: var(--space-gutter); bottom: var(--space-gutter); padding-top: var(--space-tight); border-top: var(--line-hair) solid currentColor; }

@@ -1,0 +1,72 @@
+/* Editorial — skin. Paper, ink, one red. Swiss grotesk at extreme scale contrast; B&W photography as structure. */
+
+/* ---------- layers ---------- */
+.vl-editorial .slide > [data-decor="frame"] { position: absolute; z-index: 0; }
+.vl-editorial .slide > [data-decor="edge"] { position: absolute; inset: 0; z-index: 3; pointer-events: none; color: var(--slide-ink); }
+.vl-editorial .slide > [data-decor="corner-tl"] { display: none; }
+.vl-editorial .slide > :not([data-decor]):not(.chrome):not(.fb-photo) { position: relative; z-index: 1; }
+
+/* ---------- grounds ---------- */
+.vl-editorial .slide[data-ground="inverse"] { --color-emphasis: var(--color-emphasis-on-inverse); --color-line: var(--color-line-on-inverse); }
+.vl-editorial .slide[data-ground="accent"] { --color-emphasis: var(--color-ink-on-accent-0); --color-line: color-mix(in srgb, currentColor 30%, transparent); }
+
+/* ---------- photography: monochrome, structural ---------- */
+.vl-editorial img { filter: grayscale(1) contrast(1.06); }
+.vl-editorial .ph svg { width: 100%; height: 100%; display: block; }
+
+/* ---------- rich accents: *word* = italic serif, ==word== = hand-drawn red ring ---------- */
+.vl-editorial .slide em {
+  font-family: var(--font-accent);
+  font-style: italic;
+  font-weight: 400;
+  font-stretch: 100%;
+  text-transform: none;
+  letter-spacing: -0.01em;
+  opacity: 1;
+}
+.vl-editorial .slide mark { position: relative; color: inherit; background: none; }
+.vl-editorial .slide mark::after {
+  content: "";
+  position: absolute;
+  inset: -0.12em -0.28em -0.08em -0.22em;
+  border: 0.045em solid var(--color-emphasis);
+  border-radius: 50% 46% 52% 44% / 54% 48% 52% 46%;
+  transform: rotate(-5deg);
+  pointer-events: none;
+}
+
+/* ---------- chrome: meta row top-left, vertical page marker on the right edge ---------- */
+.vl-editorial .chrome { opacity: 1; }
+.vl-editorial .chrome--top { top: calc(var(--space-frame-y) * 0.45); left: var(--space-frame-x); }
+.vl-editorial .chrome--bottom {
+  top: var(--space-frame-y);
+  bottom: auto;
+  right: calc(var(--space-frame-x) * 0.3);
+  writing-mode: vertical-rl;
+  padding-top: var(--space-tight);
+  border-left: var(--line-hair) solid var(--color-line);
+}
+
+/* ---------- headings ---------- */
+.vl-editorial .slide .t-display-0 { font-stretch: 100%; }
+.vl-editorial .slide .t-label { opacity: 0.8; }
+.vl-editorial .a-section.v-spread :is(.sp-num, .sp-title) { font-size: calc(var(--t-display-2-size) * 1.45); line-height: 0.85; }
+
+/* statement slide: a small red asterisk above the centred statement */
+.vl-editorial .a-text.v-statement-center > [data-decor="frame"] { top: 20%; left: 50%; width: 46px; height: 46px; transform: translateX(-50%); }
+
+/* ---------- data & lists ---------- */
+.vl-editorial .a-metric .m-value, .vl-editorial .a-metric .hn-value, .vl-editorial .ht-value { font-weight: 700; letter-spacing: -0.04em; }
+.vl-editorial .a-table th { border-bottom-width: var(--line-hair); }
+.vl-editorial .a-table .is-highlight td { color: var(--color-emphasis); }
+.vl-editorial .a-bullets :is(.bl-index, .tc2-index) { color: var(--color-emphasis); }
+.vl-editorial .ch--bar .ch-bar, .vl-editorial .ch--hbar .ch-bar { background: currentColor; opacity: 0.85; border-radius: 0; }
+.vl-editorial .ch--bar .is-hl .ch-bar, .vl-editorial .ch--hbar .is-hl .ch-bar { background: var(--color-emphasis); }
+.vl-editorial .gt-bar { background: currentColor; opacity: 0.85; border-radius: 0; color: inherit; }
+.vl-editorial .gt-bar .gt-date { color: var(--slide-bg); }
+.vl-editorial .is-emphasis .gt-bar { background: var(--color-emphasis); opacity: 1; }
+
+/* quote-photo: testimonial set as bold caps */
+.vl-editorial .a-quote .qp-quote { font-size: calc(var(--t-title-size) * 1.6); line-height: 1.05; letter-spacing: -0.01em; }
+.vl-editorial .a-quote .qb-quote { font-weight: 300; text-transform: uppercase; }
+.vl-editorial .a-text.v-statement-center .stc-title { font-size: calc(var(--t-display-3-size) * 1.4); }

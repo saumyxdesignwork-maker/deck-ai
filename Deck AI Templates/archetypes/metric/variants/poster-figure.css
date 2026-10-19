@@ -1,0 +1,6 @@
+.a-metric.v-poster-figure { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; padding: calc(var(--space-frame-y) * 1.2) var(--space-frame-x) var(--space-frame-y); row-gap: var(--space-gutter); }
+.a-metric.v-poster-figure .pf-head { display: grid; gap: var(--space-tight); max-width: 46%; }
+.a-metric.v-poster-figure .pf-items { display: grid; align-items: end; overflow: hidden; }
+.a-metric.v-poster-figure .pf-item { display: grid; grid-template-columns: minmax(0, auto) minmax(0, 18em); align-items: end; column-gap: var(--space-gutter); }
+.a-metric.v-poster-figure .pf-value { display: block; min-width: 0; overflow: hidden; line-height: 0.82; font-size: calc(var(--t-display-0-size) * 1.5); color: var(--color-emphasis); }
+.a-metric.v-poster-figure .pf-label { display: grid; gap: 0.3em; padding-bottom: 1.2em; }

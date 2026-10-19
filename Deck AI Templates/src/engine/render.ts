@@ -72,6 +72,7 @@ function viewModel(content: Record<string, unknown>): Record<string, unknown> {
     });
   }
   if (content.image) out.image = safeImage(content.image);
+  if (Array.isArray(content.images)) out.images = content.images.map(safeImage).filter(Boolean);
   if (Array.isArray(content.items)) out.items = withSpans(out.items as unknown[]);
   return out;
 }

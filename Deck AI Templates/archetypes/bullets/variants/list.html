@@ -17,6 +17,7 @@
       <span class="bl-index t-label" aria-hidden="true"></span>
       <span class="bl-title t-title" data-slot="content.items[{{@index}}].title" data-slot-type="text" data-fit="shrink" data-min-step="body">{{title}}</span>
       {{#if text}}<span class="bl-text t-body-s" data-slot="content.items[{{@index}}].text" data-slot-type="text" data-fit="shrink" data-min-step="caption">{{text}}</span>{{/if}}
+      {{#if tag}}<span class="bl-tag t-label" data-slot="content.items[{{@index}}].tag" data-slot-type="text" data-nowrap>{{tag}}</span>{{/if}}
     </li>
     {{/each}}
   </ol>

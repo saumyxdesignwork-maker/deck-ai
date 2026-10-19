@@ -1,0 +1,16 @@
+<section class="slide a-title v-giant-word" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  <figure class="gw-band" data-slot="content.image" data-slot-type="image">{{#if content.image}}<img src="{{content.image.src}}" alt="{{content.image.alt}}" style="object-position: {{content.image.pos}}" />{{else}}<div class="ph" data-decor="photo"></div>{{/if}}</figure>
+  <div class="gw-meta">
+    {{#if content.subtitle}}<span class="t-caption" data-slot="content.subtitle" data-slot-type="text">{{content.subtitle}}</span>{{/if}}
+    {{#if content.byline}}<span class="t-caption" data-slot="content.byline" data-slot-type="text">{{content.byline}}</span>{{/if}}
+  </div>
+  <div class="gw-word" data-region="word">
+    <h1 class="gw-title t-display-0" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-nowrap data-min-step="display-1">{{rich content.title}}</h1>
+  </div>
+  <div class="gw-foot">
+    {{#if content.eyebrow}}<span class="t-caption" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</span>{{/if}}
+    {{#if content.date}}<span class="t-caption" data-slot="content.date" data-slot-type="text">{{content.date}}</span>{{/if}}
+  </div>
+  <div data-decor="edge"></div>
+</section>

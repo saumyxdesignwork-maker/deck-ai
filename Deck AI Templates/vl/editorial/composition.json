@@ -1,0 +1,86 @@
+{
+  "variant_allow": {
+    "title": [
+      "full-bleed-photo",
+      "giant-word"
+    ],
+    "section": [
+      "spread",
+      "numbered"
+    ],
+    "text": [
+      "statement-center",
+      "notes-portrait",
+      "lead-column"
+    ],
+    "bullets": [
+      "ledger-photo",
+      "two-column",
+      "list"
+    ],
+    "metric": [
+      "poster-figure",
+      "row",
+      "hero-tiles"
+    ],
+    "timeline": [
+      "schedule-photo",
+      "gantt",
+      "wave"
+    ],
+    "image": [
+      "strip",
+      "grid"
+    ],
+    "quote": [
+      "quote-photo",
+      "centered-badge"
+    ],
+    "table": [
+      "ruled"
+    ],
+    "chart": [
+      "takeaway"
+    ],
+    "comparison": [
+      "tiers"
+    ],
+    "closing": [
+      "giant-photo",
+      "thank-you"
+    ],
+    "freeform": [
+      "block"
+    ]
+  },
+  "variant_weights": {
+    "title.giant-word": 1.3,
+    "bullets.ledger-photo": 1.3,
+    "timeline.schedule-photo": 1.3,
+    "text.notes-portrait": 1.2,
+    "quote.quote-photo": 1.4
+  },
+  "grounds": {
+    "rotation": "role-based",
+    "by_role": {
+      "title": [
+        "base"
+      ],
+      "section": [
+        "accent:0"
+      ],
+      "image": [
+        "base",
+        "inverse"
+      ],
+      "closing": [
+        "inverse"
+      ]
+    },
+    "default": "base",
+    "max_consecutive_same": 4
+  },
+  "chrome": {
+    "show_on": "all-but-title"
+  }
+}

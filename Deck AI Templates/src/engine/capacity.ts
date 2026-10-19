@@ -33,6 +33,11 @@ export function checkCapacity(variant: Variant, content: Record<string, unknown>
       });
       return;
     }
+    if (spec.type === "image" && Array.isArray(value)) {
+      if (spec.min != null && value.length < spec.min) hard.push(`${path}: ${value.length} images < min ${spec.min}`);
+      if (spec.max != null && value.length > spec.max) hard.push(`${path}: ${value.length} images > max ${spec.max}`);
+      return;
+    }
     if (spec.type === "chart" || spec.type === "image") return;
     if (spec.type === "table" && typeof value === "object") {
       const t = value as { columns?: unknown[]; rows?: unknown[] };
@@ -63,7 +68,9 @@ export function checkCapacity(variant: Variant, content: Record<string, unknown>
   function unplaced(obj: Record<string, unknown>, slots: Record<string, SlotSpec>, path: string) {
     for (const [k, v] of Object.entries(obj)) {
       if (k in slots || typeof v === "boolean" || v == null || v === "" || (Array.isArray(v) && !v.length)) continue;
-      hard.push(`${path}.${k} has no place in this layout`);
+      // photos are supporting material: a layout without a photo slot may still take the slide, with a warning
+      if (k === "image" || k === "images") soft.push(`${path}.${k} is not shown in this layout`);
+      else hard.push(`${path}.${k} has no place in this layout`);
     }
   }
 

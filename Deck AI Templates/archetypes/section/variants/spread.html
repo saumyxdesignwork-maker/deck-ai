@@ -1,0 +1,10 @@
+<section class="slide a-section v-spread" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  <figure class="sp-photo" data-slot="content.image" data-slot-type="image">{{#if content.image}}<img src="{{content.image.src}}" alt="{{content.image.alt}}" style="object-position: {{content.image.pos}}" />{{else}}<div class="ph" data-decor="photo"></div>{{/if}}</figure>
+  {{#if content.kicker}}<p class="sp-kicker t-caption" data-slot="content.kicker" data-slot-type="text">{{content.kicker}}</p>{{/if}}
+  <div class="sp-row" data-region="row">
+    {{#if content.number}}<span class="sp-num t-display-2" data-slot="content.number" data-slot-type="text" data-nowrap>{{content.number}}</span>{{/if}}
+    <h2 class="sp-title t-display-2" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h2>
+  </div>
+  <div data-decor="edge"></div>
+</section>
