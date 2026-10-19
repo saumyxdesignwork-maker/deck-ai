@@ -71,6 +71,9 @@ function viewModel(content: Record<string, unknown>): Record<string, unknown> {
       return m ? { ...item, value_pct: Math.max(0, Math.min(100, Number(m[1]))) } : item;
     });
   }
+  if (Array.isArray(out.people)) {
+    out.people = (out.people as Record<string, unknown>[]).map((p) => (p && p.photo ? { ...p, photo: safeImage(p.photo) } : p));
+  }
   if (content.image) out.image = safeImage(content.image);
   if (Array.isArray(content.images)) out.images = content.images.map(safeImage).filter(Boolean);
   if (Array.isArray(content.items)) out.items = withSpans(out.items as unknown[]);

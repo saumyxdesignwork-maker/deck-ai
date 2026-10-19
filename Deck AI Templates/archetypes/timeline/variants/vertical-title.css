@@ -1,0 +1,10 @@
+/* title runs bottom-to-top in its own column */
+.a-timeline.v-vertical-title { display: grid; grid-template-columns: minmax(0, 5fr) auto minmax(0, 5fr); grid-template-rows: minmax(0, 1fr); column-gap: calc(var(--space-gutter) * 1.5); padding: var(--space-frame-y) var(--space-frame-x); }
+.a-timeline.v-vertical-title .vt-left { display: grid; align-content: start; gap: var(--space-gutter); max-width: 26em; }
+.a-timeline.v-vertical-title .vt-bar { height: 22px; width: 70%; }
+.a-timeline.v-vertical-title .vt-title-col { display: flex; align-items: flex-start; justify-content: center; }
+.a-timeline.v-vertical-title .vt-title { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
+.a-timeline.v-vertical-title .vt-items { display: grid; align-content: start; gap: var(--space-tight); overflow: hidden; }
+.a-timeline.v-vertical-title .vt-item { display: grid; gap: 0.15em; }
+.a-timeline.v-vertical-title .vt-label { font-weight: 500; }
+.a-timeline.v-vertical-title .vt-text { text-transform: none; letter-spacing: 0; opacity: 0.8; }

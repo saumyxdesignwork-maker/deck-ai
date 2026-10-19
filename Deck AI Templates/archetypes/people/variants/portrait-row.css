@@ -1,0 +1,11 @@
+.a-people.v-portrait-row { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); grid-template-rows: minmax(0, 1fr); column-gap: calc(var(--space-gutter) * 2); padding: calc(var(--space-frame-y) * 1.4) var(--space-frame-x) var(--space-frame-y); }
+.a-people.v-portrait-row .pr-left { display: flex; flex-direction: column; justify-content: space-between; overflow: visible; }
+.a-people.v-portrait-row .pr-titlerow { display: flex; align-items: flex-start; gap: var(--space-gutter); }
+.a-people.v-portrait-row .pr-arrow { flex: 1; height: 90px; margin-top: 0.4em; max-width: 340px; }
+.a-people.v-portrait-row .pr-copy { display: grid; gap: var(--space-gutter); max-width: 22em; }
+.a-people.v-portrait-row .pr-people { display: grid; grid-template-columns: repeat(var(--item-count), minmax(0, 1fr)); gap: var(--space-gutter); align-self: center; }
+.a-people.v-portrait-row .pr-person { display: grid; gap: 0.3em; align-content: start; }
+.a-people.v-portrait-row .pr-photo { aspect-ratio: 3 / 4; margin-bottom: var(--space-tight); }
+.a-people.v-portrait-row .pr-photo { position: relative; overflow: hidden; }
+.a-people.v-portrait-row .pr-photo :is(img, .ph) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.a-people.v-portrait-row .pr-bio { text-transform: none; letter-spacing: 0; opacity: 0.8; }

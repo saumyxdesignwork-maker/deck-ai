@@ -1,0 +1,64 @@
+{
+  "archetype": "people",
+  "variant": "portrait-row",
+  "slots": {
+    "eyebrow": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 40
+    },
+    "title": {
+      "type": "text",
+      "chars_ideal": 8,
+      "chars_max": 18,
+      "words_max": 3
+    },
+    "lead": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 60
+    },
+    "intro": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 200
+    },
+    "people": {
+      "type": "list",
+      "min": 2,
+      "max": 4,
+      "of": {
+        "name": {
+          "type": "text",
+          "chars_max": 24
+        },
+        "role": {
+          "type": "text",
+          "optional": true,
+          "chars_max": 28
+        },
+        "bio": {
+          "type": "text",
+          "optional": true,
+          "chars_max": 140
+        },
+        "photo": {
+          "type": "image",
+          "optional": true
+        }
+      }
+    }
+  },
+  "decor_anchors": [
+    "frame",
+    "title-mark",
+    "arrow",
+    "photo",
+    "edge"
+  ],
+  "supports_aspects": [
+    "16:9",
+    "4:3"
+  ],
+  "image_led": true
+}

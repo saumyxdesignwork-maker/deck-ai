@@ -1,0 +1,7 @@
+.a-text.v-heading-columns { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); grid-template-rows: auto minmax(0, 1fr); column-gap: calc(var(--space-gutter) * 1.5); row-gap: var(--space-section); padding: calc(var(--space-frame-y) * 1.2) var(--space-frame-x) var(--space-frame-y); }
+.a-text.v-heading-columns .hc-head { display: grid; gap: var(--space-gutter); align-content: start; }
+.a-text.v-heading-columns .hc-body { columns: 2; column-gap: calc(var(--space-gutter) * 1.5); align-self: start; padding-top: var(--space-tight); overflow: hidden; }
+.a-text.v-heading-columns .hc-body p { break-inside: avoid; margin-bottom: var(--space-tight); }
+.a-text.v-heading-columns .hc-photo { grid-column: 1 / span 1; grid-row: 2; width: 128%; }
+.a-text.v-heading-columns .hc-photo { position: relative; overflow: hidden; }
+.a-text.v-heading-columns .hc-photo :is(img, .ph) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }

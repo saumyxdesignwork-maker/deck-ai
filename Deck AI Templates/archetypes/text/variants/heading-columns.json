@@ -1,0 +1,41 @@
+{
+  "archetype": "text",
+  "variant": "heading-columns",
+  "slots": {
+    "eyebrow": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 40
+    },
+    "title": {
+      "type": "text",
+      "chars_ideal": 14,
+      "chars_max": 28,
+      "words_max": 4
+    },
+    "lead": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 120
+    },
+    "body": {
+      "type": "paragraphs",
+      "chars_max": 700
+    },
+    "image": {
+      "type": "image",
+      "optional": true
+    }
+  },
+  "decor_anchors": [
+    "frame",
+    "title-mark",
+    "photo",
+    "edge"
+  ],
+  "supports_aspects": [
+    "16:9",
+    "4:3"
+  ],
+  "image_led": true
+}

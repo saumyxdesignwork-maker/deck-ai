@@ -1,0 +1,45 @@
+/* Playful — skin. One blue pen on white: lowercase bold mono titles, hand-drawn marks, B&W photos. */
+
+/* ---------- layers ---------- */
+.vl-playful .slide > [data-decor="frame"],
+.vl-playful .slide > [data-decor="corner-tl"],
+.vl-playful .slide > [data-decor="edge"] { display: none; }
+.vl-playful img { filter: grayscale(1) contrast(1.08); }
+.vl-playful .ph svg { width: 100%; height: 100%; display: block; }
+
+/* ---------- hand-drawn title marks ---------- */
+.vl-playful .pl-tw { position: relative; display: inline-block; justify-self: start; align-self: flex-start; width: fit-content; max-width: 100%; }
+.vl-playful .pl-mark { position: absolute; pointer-events: none; z-index: 0; }
+.vl-playful .pl-mark svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.vl-playful .pl-title { position: relative; z-index: 1; }
+/* loop circles the whole title */
+.vl-playful .pl-mark[data-ornament="loop"] { inset: -26% -4% -30% -5%; }
+/* underlines hug the baseline of the last line */
+.vl-playful .pl-mark:is([data-ornament="squiggle"], [data-ornament="double-line"]) { left: -1%; right: -2%; bottom: -16%; height: 22%; min-height: 14px; }
+/* rays burst around the word */
+.vl-playful .pl-mark[data-ornament="rays"] { inset: -42% -14% -36% -12%; }
+.vl-playful [data-decor="arrow"] svg,
+.vl-playful [data-decor="stroke"] svg { width: 100%; height: 100%; display: block; overflow: visible; }
+
+/* ---------- chrome: tiny mono meta, vertical page marker ---------- */
+.vl-playful .chrome { opacity: 1; }
+.vl-playful .chrome--top { top: calc(var(--space-frame-y) * 0.5); left: var(--space-frame-x); }
+.vl-playful .chrome--bottom { top: 50%; bottom: auto; right: calc(var(--space-frame-x) * 0.35); writing-mode: vertical-rl; }
+
+/* ---------- type ---------- */
+.vl-playful .slide em { opacity: 1; font-weight: 400; font-style: normal; }
+.vl-playful .slide mark { position: relative; color: inherit; background: none; }
+.vl-playful .slide mark::after { content: ""; position: absolute; left: -0.1em; right: -0.1em; bottom: -0.12em; height: 0.12em; background: currentColor; border-radius: 999px; transform: rotate(-1.5deg); }
+.vl-playful .lt-year { font-weight: 400; letter-spacing: 0.02em; }
+.vl-playful .a-section .t-display-1 { font-size: var(--t-display-0-size); }
+.vl-playful .slide[data-ground="accent"] { --color-emphasis: var(--color-ink-on-accent-0); --color-line: color-mix(in srgb, currentColor 35%, transparent); }
+
+/* ---------- generic layouts in one pen ---------- */
+.vl-playful .a-bullets :is(.bl-index, .tc2-index) { color: var(--color-emphasis); }
+.vl-playful .a-table th { border-bottom-width: var(--line-rule); }
+.vl-playful .ch--bar .ch-bar, .vl-playful .ch--hbar .ch-bar { background: var(--color-emphasis); opacity: 0.35; border-radius: 0; }
+.vl-playful .ch--bar .is-hl .ch-bar, .vl-playful .ch--hbar .is-hl .ch-bar { opacity: 1; }
+.vl-playful .gt-bar { background: color-mix(in srgb, var(--color-emphasis) 30%, transparent); border-radius: 0; }
+.vl-playful .is-emphasis .gt-bar { background: var(--color-emphasis); color: var(--color-ink-on-accent-0); }
+.vl-playful .a-comparison .ti-col { border-color: var(--color-line); }
+.vl-playful .a-comparison .is-emphasis { background: var(--color-emphasis); color: var(--color-ground-base); }

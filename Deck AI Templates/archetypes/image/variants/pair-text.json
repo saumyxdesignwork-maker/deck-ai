@@ -1,0 +1,44 @@
+{
+  "archetype": "image",
+  "variant": "pair-text",
+  "slots": {
+    "eyebrow": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 60
+    },
+    "title": {
+      "type": "text",
+      "chars_ideal": 10,
+      "chars_max": 18,
+      "words_max": 3
+    },
+    "caption": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 60
+    },
+    "body": {
+      "type": "paragraphs",
+      "optional": true,
+      "chars_max": 220
+    },
+    "images": {
+      "type": "image",
+      "optional": true,
+      "min": 2,
+      "max": 2
+    }
+  },
+  "decor_anchors": [
+    "frame",
+    "title-mark",
+    "photo",
+    "edge"
+  ],
+  "supports_aspects": [
+    "16:9",
+    "4:3"
+  ],
+  "image_led": true
+}

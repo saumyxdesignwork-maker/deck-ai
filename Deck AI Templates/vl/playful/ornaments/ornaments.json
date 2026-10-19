@@ -1,0 +1,10 @@
+[
+  { "id": "loop", "file": "loop.svg", "anchors": ["title-mark"], "roles": ["*"], "variants": ["loop-title"], "max_per_slide": 1 },
+  { "id": "squiggle", "file": "squiggle.svg", "anchors": ["title-mark"], "roles": ["*"], "exclude_variants": ["loop-title"], "max_per_slide": 1 },
+  { "id": "double-line", "file": "double-line.svg", "anchors": ["title-mark"], "roles": ["*"], "exclude_variants": ["loop-title"], "max_per_slide": 1 },
+  { "id": "rays", "file": "rays.svg", "anchors": ["title-mark"], "roles": ["*"], "variants": ["pair-text"], "max_per_slide": 1 },
+  { "id": "arrow-right", "file": "arrow-right.svg", "anchors": ["arrow"], "roles": ["*"], "exclude_variants": ["photos-arrow"], "max_per_slide": 1 },
+  { "id": "arrow-left", "file": "arrow-left.svg", "anchors": ["arrow"], "roles": ["*"], "variants": ["photos-arrow"], "max_per_slide": 1 },
+  { "id": "marker", "file": "marker.svg", "anchors": ["stroke"], "roles": ["*"], "max_per_slide": 1 },
+  { "id": "photo-grey", "file": "photo-grey.svg", "anchors": ["photo"], "roles": ["*"], "max_per_slide": 6 }
+]

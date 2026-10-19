@@ -1,0 +1,60 @@
+{
+  "archetype": "timeline",
+  "variant": "stages-photo",
+  "slots": {
+    "eyebrow": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 40
+    },
+    "title": {
+      "type": "text",
+      "optional": true,
+      "chars_ideal": 14,
+      "chars_max": 28,
+      "words_max": 3
+    },
+    "intro": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 120
+    },
+    "image": {
+      "type": "image",
+      "optional": true
+    },
+    "items": {
+      "type": "list",
+      "min": 2,
+      "max": 4,
+      "of": {
+        "date": {
+          "type": "text",
+          "optional": true,
+          "chars_max": 16
+        },
+        "label": {
+          "type": "text",
+          "chars_max": 40
+        },
+        "text": {
+          "type": "text",
+          "optional": true,
+          "chars_max": 200
+        }
+      }
+    }
+  },
+  "decor_anchors": [
+    "frame",
+    "title-mark",
+    "arrow",
+    "photo",
+    "edge"
+  ],
+  "supports_aspects": [
+    "16:9",
+    "4:3"
+  ],
+  "image_led": true
+}

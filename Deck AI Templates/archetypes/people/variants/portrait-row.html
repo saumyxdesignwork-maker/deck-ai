@@ -1,0 +1,25 @@
+<section class="slide a-people v-portrait-row" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if show_chrome}}
+  <header class="chrome chrome--top"><span class="t-caption" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <div class="pr-left" data-region="left">
+    <div class="pr-titlerow"><div class="pl-tw"><h2 class="pl-title t-display-2" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h2><div class="pl-mark" data-decor="title-mark"></div></div><div class="pr-arrow" data-decor="arrow"></div></div>
+    <div class="pr-copy">
+      {{#if content.lead}}<p class="t-title" data-slot="content.lead" data-slot-type="text">{{content.lead}}</p>{{/if}}
+      {{#if content.intro}}<p class="t-lead" data-slot="content.intro" data-slot-type="text" data-fit="shrink" data-min-step="body">{{content.intro}}</p>{{/if}}
+    </div>
+  </div>
+  <ol class="pr-people" data-slot="content.people" data-slot-type="list" data-min="2" data-max="4" style="--item-count: {{content.people.length}}">
+    {{#each content.people}}
+    <li class="pr-person" data-slot-item="{{@index}}">
+      <figure class="pr-photo" data-slot="content.people[{{@index}}].photo" data-slot-type="image">{{#if photo}}<img src="{{photo.src}}" alt="{{photo.alt}}" />{{else}}<div class="ph" data-decor="photo"></div>{{/if}}</figure>
+      <span class="t-title" data-slot="content.people[{{@index}}].name" data-slot-type="text">{{name}}</span>
+      {{#if role}}<span class="t-caption" data-slot="content.people[{{@index}}].role" data-slot-type="text">{{role}}</span>{{/if}}
+      {{#if bio}}<span class="pr-bio t-caption" data-slot="content.people[{{@index}}].bio" data-slot-type="text">{{bio}}</span>{{/if}}
+    </li>
+    {{/each}}
+  </ol>
+  <div data-decor="edge"></div>
+</section>

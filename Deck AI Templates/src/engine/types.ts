@@ -111,7 +111,7 @@ export interface TypeStep {
   weight?: number;
   leading?: number;
   tracking?: number;
-  case?: "none" | "upper" | "small-caps";
+  case?: "none" | "upper" | "lower" | "small-caps";
   font?: "display" | "text" | "label";
   features?: string;
   fit_min?: string;

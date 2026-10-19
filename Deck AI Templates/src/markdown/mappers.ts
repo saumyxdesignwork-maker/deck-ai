@@ -166,6 +166,17 @@ const MAPPERS: Record<string, (ex: Extracted, warn: string[]) => Content> = {
     image: ex.image,
   }),
 
+  people: (ex) => ({
+    eyebrow: ex.eyebrow,
+    title: ex.title,
+    lead: ex.subtitle,
+    intro: ex.paragraphs[0],
+    people: (ex.lists[0] ?? []).map((i) => {
+      const [role, bio] = splitOnce(i.rest, /\s+[—–]\s+|\s+-\s+/);
+      return i.lead ? { name: i.lead, role: role || undefined, bio } : { name: role };
+    }),
+  }),
+
   image: (ex) => ({
     eyebrow: ex.eyebrow,
     title: ex.title,

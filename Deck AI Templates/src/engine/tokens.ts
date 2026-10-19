@@ -47,6 +47,7 @@ function typeDecl(step: string, s: TypeStep): string {
   ];
   if (s.stretch) d.push(`font-stretch: ${s.stretch}%;`);
   if (s.case === "upper") d.push("text-transform: uppercase;");
+  if (s.case === "lower") d.push("text-transform: lowercase;");
   if (s.case === "small-caps") d.push("font-variant-caps: all-small-caps;");
   if (s.features) d.push(`font-feature-settings: ${s.features.split(/,\s*/).map((f) => `"${f}"`).join(", ")};`);
   return d.join(" ");

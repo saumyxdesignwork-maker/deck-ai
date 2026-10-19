@@ -1,0 +1,14 @@
+<section class="slide a-title v-loop-title" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  <div class="lt-head" data-region="head">
+    {{#if content.eyebrow}}<p class="lt-year t-display-3" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    <div class="pl-tw"><h1 class="pl-title t-display-1" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h1><div class="pl-mark" data-decor="title-mark"></div></div>
+  </div>
+  {{#if content.subtitle}}<p class="lt-sub t-title" data-slot="content.subtitle" data-slot-type="text">{{content.subtitle}}</p>{{/if}}
+  <figure class="lt-photo" data-slot="content.image" data-slot-type="image">{{#if content.image}}<img src="{{content.image.src}}" alt="{{content.image.alt}}" style="object-position: {{content.image.pos}}" />{{else}}<div class="ph" data-decor="photo"></div>{{/if}}</figure>
+  <div class="lt-note">
+    {{#if content.byline}}<p class="t-caption" data-slot="content.byline" data-slot-type="text">{{content.byline}}</p>{{/if}}
+    {{#if content.date}}<p class="lt-date t-caption" data-slot="content.date" data-slot-type="text">{{content.date}}</p>{{/if}}
+  </div>
+  <div data-decor="edge"></div>
+</section>

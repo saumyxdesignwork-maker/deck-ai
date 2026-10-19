@@ -13,6 +13,7 @@ export function planDeck(deck: Deck, vl: VisualLanguage): PlannedSlide[] {
     const { fitting, rejected } = rankVariants(deck, vl, slide.archetype, slide.content, slide.id, prev, prev2);
     const pinned = slide.variant ? getVariant(slide.archetype, slide.variant) : undefined;
     const notes: string[] = [];
+    if (slide.variant && !pinned) notes.push(`pinned layout "${slide.variant}" is not a ${slide.archetype} layout — chosen automatically instead`);
     let variant: Variant;
     if (pinned) {
       variant = pinned;

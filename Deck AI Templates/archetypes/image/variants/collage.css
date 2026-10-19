@@ -1,0 +1,6 @@
+.a-image.v-collage { display: grid; grid-template-rows: minmax(0, 1fr) auto; row-gap: var(--space-tight); padding: var(--space-frame-y) var(--space-frame-x); }
+.a-image.v-collage .co-grid { display: grid; grid-template-columns: 1.3fr 1fr; grid-template-rows: 1fr 1fr; gap: var(--space-tight); margin-right: 6%; }
+.a-image.v-collage .co-tile:first-child { grid-row: 1 / span 2; }
+.a-image.v-collage .co-tile { position: relative; overflow: hidden; }
+.a-image.v-collage .co-tile :is(img, .ph) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.a-image.v-collage .co-caption { justify-self: end; }

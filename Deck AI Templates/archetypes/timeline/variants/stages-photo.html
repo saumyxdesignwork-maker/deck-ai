@@ -1,0 +1,22 @@
+<section class="slide a-timeline v-stages-photo" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if show_chrome}}
+  <header class="chrome chrome--top"><span class="t-caption" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <div class="sg-head">
+    <div class="pr-titlerow">{{#if content.title}}<div class="pl-tw"><h2 class="pl-title t-display-2" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h2><div class="pl-mark" data-decor="title-mark"></div></div>{{/if}}<div class="sg-arrow" data-decor="arrow"></div></div>
+    {{#if content.intro}}<p class="t-lead" data-slot="content.intro" data-slot-type="text" data-fit="shrink" data-min-step="body">{{content.intro}}</p>{{/if}}
+  </div>
+  <ol class="sg-items" data-region="items" data-slot="content.items" data-slot-type="list" data-min="2" data-max="4">
+    {{#each content.items}}
+    <li class="sg-item" data-slot-item="{{@index}}">
+      {{#if date}}<span class="t-title" data-slot="content.items[{{@index}}].date" data-slot-type="text">{{date}}</span>{{/if}}
+      <span class="t-body-s sg-label" data-slot="content.items[{{@index}}].label" data-slot-type="text">{{label}}</span>
+      {{#if text}}<span class="t-body-s" data-slot="content.items[{{@index}}].text" data-slot-type="text" data-fit="shrink" data-min-step="caption">{{text}}</span>{{/if}}
+    </li>
+    {{/each}}
+  </ol>
+  <figure class="sg-photo" data-slot="content.image" data-slot-type="image">{{#if content.image}}<img src="{{content.image.src}}" alt="{{content.image.alt}}" style="object-position: {{content.image.pos}}" />{{else}}<div class="ph" data-decor="photo"></div>{{/if}}</figure>
+  <div data-decor="edge"></div>
+</section>

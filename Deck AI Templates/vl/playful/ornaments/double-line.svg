@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 30" preserveAspectRatio="none" fill="none" stroke-linecap="round" stroke-linejoin="round" style="stroke: var(--color-emphasis)">
+  <defs><filter id="r" x="-10%" y="-30%" width="120%" height="160%"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="4"/><feDisplacementMap in="SourceGraphic" scale="2"/></filter></defs>
+  <g filter="url(#r)">
+    <path d="M2 10 C 80 6, 200 8, 298 4" stroke-width="3.4" vector-effect="non-scaling-stroke"/>
+    <path d="M14 22 C 90 18, 170 22, 236 18" stroke-width="2.4" vector-effect="non-scaling-stroke"/></g>
+</svg>

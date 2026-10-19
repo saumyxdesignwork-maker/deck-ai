@@ -1,0 +1,10 @@
+<section class="slide a-closing v-loop-title" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  <div class="lt-head" data-region="head">
+    <div class="pl-tw"><h2 class="pl-title t-display-1" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h2><div class="pl-mark" data-decor="title-mark"></div></div>
+  </div>
+  {{#if content.contact}}<p class="lt-sub t-title" data-slot="content.contact" data-slot-type="text">{{content.contact}}</p>{{/if}}
+  <figure class="lt-photo" data-slot="content.image" data-slot-type="image">{{#if content.image}}<img src="{{content.image.src}}" alt="{{content.image.alt}}" style="object-position: {{content.image.pos}}" />{{else}}<div class="ph" data-decor="photo"></div>{{/if}}</figure>
+  <div class="lt-note">{{#if content.body}}<p class="t-caption" data-slot="content.body" data-slot-type="text">{{content.body}}</p>{{/if}}</div>
+  <div data-decor="edge"></div>
+</section>

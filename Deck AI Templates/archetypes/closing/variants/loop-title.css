@@ -1,0 +1,7 @@
+.a-closing.v-loop-title { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 3fr) minmax(0, 2fr); grid-template-rows: auto minmax(0, 1fr); column-gap: var(--space-gutter); row-gap: var(--space-gutter); padding: calc(var(--space-frame-y) * 2) var(--space-frame-x) var(--space-frame-y) calc(var(--space-frame-x) * 1.6); }
+.a-closing.v-loop-title .lt-head { grid-column: 1 / 3; display: grid; }
+.a-closing.v-loop-title .lt-sub { grid-column: 3; align-self: end; }
+.a-closing.v-loop-title .lt-photo { grid-column: 1; grid-row: 2; aspect-ratio: 4 / 3; align-self: start; max-height: 100%; }
+.a-closing.v-loop-title .lt-photo { position: relative; overflow: hidden; }
+.a-closing.v-loop-title .lt-photo :is(img, .ph) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.a-closing.v-loop-title .lt-note { grid-column: 2; grid-row: 2; max-width: 22em; }

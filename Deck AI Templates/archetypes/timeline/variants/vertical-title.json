@@ -1,0 +1,52 @@
+{
+  "archetype": "timeline",
+  "variant": "vertical-title",
+  "slots": {
+    "eyebrow": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 40
+    },
+    "title": {
+      "type": "text",
+      "chars_ideal": 8,
+      "chars_max": 16,
+      "words_max": 2
+    },
+    "intro": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 260
+    },
+    "items": {
+      "type": "list",
+      "min": 3,
+      "max": 8,
+      "of": {
+        "date": {
+          "type": "text",
+          "optional": true,
+          "chars_max": 16
+        },
+        "label": {
+          "type": "text",
+          "chars_max": 40
+        },
+        "text": {
+          "type": "text",
+          "optional": true,
+          "chars_max": 110
+        }
+      }
+    }
+  },
+  "decor_anchors": [
+    "frame",
+    "stroke",
+    "edge"
+  ],
+  "supports_aspects": [
+    "16:9",
+    "4:3"
+  ]
+}

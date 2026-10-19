@@ -1,0 +1,11 @@
+<section class="slide a-image v-collage" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if show_chrome}}
+  <header class="chrome chrome--top"><span class="t-caption" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <div class="co-grid" data-slot="content.images" data-slot-type="images">{{#if content.images}}{{#each content.images}}<figure class="co-tile"><img src="{{src}}" alt="{{alt}}" style="object-position: {{pos}}" /></figure>{{/each}}{{else}}<figure class="co-tile"><div class="ph" data-decor="photo"></div></figure><figure class="co-tile"><div class="ph" data-decor="photo"></div></figure><figure class="co-tile"><div class="ph" data-decor="photo"></div></figure>{{/if}}</div>
+  {{#if content.caption}}<p class="co-caption t-caption" data-slot="content.caption" data-slot-type="text">{{content.caption}}</p>{{/if}}
+  {{#if content.title}}<p class="co-title t-title" data-slot="content.title" data-slot-type="rich">{{rich content.title}}</p>{{/if}}
+  <div data-decor="edge"></div>
+</section>

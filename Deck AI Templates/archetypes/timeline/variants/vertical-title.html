@@ -1,0 +1,22 @@
+<section class="slide a-timeline v-vertical-title" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if show_chrome}}
+  <header class="chrome chrome--top"><span class="t-caption" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <div class="vt-left">
+    <div class="vt-bar" data-decor="stroke"></div>
+    {{#if content.intro}}<p class="t-title" data-slot="content.intro" data-slot-type="text">{{content.intro}}</p>{{/if}}
+  </div>
+  <div class="vt-title-col"><h2 class="vt-title t-display-2" data-slot="content.title" data-slot-type="rich" data-bleed>{{rich content.title}}</h2></div>
+  <ol class="vt-items" data-region="items" data-slot="content.items" data-slot-type="list" data-min="3" data-max="8">
+    {{#each content.items}}
+    <li class="vt-item" data-slot-item="{{@index}}">
+      {{#if date}}<span class="t-title" data-slot="content.items[{{@index}}].date" data-slot-type="text">{{date}}</span>{{/if}}
+      <span class="t-caption vt-label" data-slot="content.items[{{@index}}].label" data-slot-type="text">{{label}}</span>
+      {{#if text}}<span class="t-caption vt-text" data-slot="content.items[{{@index}}].text" data-slot-type="text">{{text}}</span>{{/if}}
+    </li>
+    {{/each}}
+  </ol>
+  <div data-decor="edge"></div>
+</section>

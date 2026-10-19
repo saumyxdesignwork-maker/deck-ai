@@ -1,0 +1,13 @@
+{
+  "id": "playful",
+  "version": "0.1.0",
+  "name": "Playful",
+  "tags": ["playful", "mono", "hand-drawn", "blue", "creative", "minimal"],
+  "best_for": ["creative proposal", "agency pitch", "workshop", "culture project"],
+  "palettes": ["default", "red-pen"],
+  "fonts": [
+    { "family": "Space Mono", "licence": "OFL-1.1", "package": "@fontsource/space-mono" },
+    { "family": "IBM Plex Mono", "licence": "OFL-1.1", "package": "@fontsource/ibm-plex-mono" }
+  ],
+  "references": "1 user-supplied 12-slide board, 19 Oct 2026 — principles only, see analysis.md"
+}
