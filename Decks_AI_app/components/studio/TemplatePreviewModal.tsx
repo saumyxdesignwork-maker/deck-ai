@@ -8,6 +8,7 @@ import { DeckTemplateProvider, DeckThemeScope } from '@/components/deck/DeckThem
 import { resolveCoverVars } from '@/lib/deckTemplates/toCssVars'
 import { renderBlockPreview } from '@/components/editor/PresentationMode'
 import { MOCK_DECK } from '@/lib/fixtures'
+import { EngineDeck } from '@/components/deck/EngineDeck'
 import { motionPresets } from '@/lib/motion'
 
 // Short, descriptive copy per template — not product claims, just what each
@@ -139,8 +140,16 @@ export function TemplatePreviewModal({ initialTemplateId, mode, onAdd, onClose }
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--surface-muted)' }}>
             <div style={{ flex: 1, overflow: 'auto', padding: 24, display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
               <DeckTemplateProvider templateId={activeId}>
-                <CoverPreview template={template} />
-                <ContentPreview template={template} section={previewSection} />
+                {template.engine ? (
+                  <div style={{ width: '100%', maxWidth: 640, flexShrink: 0 }}>
+                    <EngineDeck deck={MOCK_DECK} vl={template.engine.vl} only={[0, 1, 2, 3]} gap={16} />
+                  </div>
+                ) : (
+                  <>
+                    <CoverPreview template={template} />
+                    <ContentPreview template={template} section={previewSection} />
+                  </>
+                )}
               </DeckTemplateProvider>
             </div>
 
@@ -191,7 +200,7 @@ export function TemplatePreviewModal({ initialTemplateId, mode, onAdd, onClose }
               Best for
             </div>
             <ul style={{ margin: '0 0 18px', padding: '0 0 0 18px', fontSize: 12.5, color: 'var(--text-muted)', lineHeight: 1.7, fontFamily: 'var(--font-body)' }}>
-              {(BEST_FOR[template.id] ?? []).map((line, i) => (
+              {(BEST_FOR[template.id] ?? template.engine?.bestFor ?? []).map((line, i) => (
                 <li key={i}>{line}</li>
               ))}
             </ul>
@@ -262,6 +271,11 @@ function RailThumb({ template, selected, onSelect }: { template: DeckTemplate; s
           display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-start', position: 'relative',
         }}
       >
+        {template.engine && (
+          <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+            <EngineDeck deck={MOCK_DECK} vl={template.engine.vl} only={[0]} />
+          </div>
+        )}
         {selected && (
           <span
             aria-hidden

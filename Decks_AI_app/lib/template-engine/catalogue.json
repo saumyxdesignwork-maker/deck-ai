@@ -1,0 +1,363 @@
+[
+  {
+    "id": "blues",
+    "name": "Blues",
+    "category": "corporate",
+    "blurb": "Midnight navy grounds lit by electric cobalt and violet light, through vertical streaks, horizon glows and diagonal beams, with periwinkle chapter slides and an ice-white closing.",
+    "bestFor": [
+      "saas product",
+      "fintech",
+      "investor update",
+      "tech launch"
+    ],
+    "palette": {
+      "ground.base": "#F4F6FF",
+      "ground.inverse": "#070A1F",
+      "ground.accent": [
+        "#2236D8",
+        "#5457EE"
+      ],
+      "ink.primary": "#0A0F2E",
+      "ink.secondary": "#3A4170",
+      "ink.muted": "#5A6190",
+      "ink.on-inverse": "#F2F4FF",
+      "ink.muted-on-inverse": "#9AA2D8",
+      "ink.on-accent": [
+        "#FFFFFF",
+        "#FFFFFF"
+      ],
+      "ink.on-highlight": "#0A0F2E",
+      "line": "#FFFFFF24",
+      "line.on-base": "#0A0F2E1F",
+      "emphasis": "#8C9BFF",
+      "emphasis.on-base": "#2236D8",
+      "signal": "#8C9BFF",
+      "glow.a": "#3550FF",
+      "glow.b": "#8A5CFF",
+      "glow.c": "#C3CCFF",
+      "surface.card": "#FFFFFF12",
+      "surface.highlight": "#FFFFFF",
+      "chart.series": [
+        "#8C9BFF",
+        "#5457EE",
+        "#3A4170",
+        "#F2F4FF"
+      ]
+    },
+    "fonts": {
+      "display": "Geist Sans",
+      "text": "Geist Sans",
+      "label": "Geist Mono"
+    },
+    "defaultGround": "inverse"
+  },
+  {
+    "id": "cherry",
+    "name": "Cherry",
+    "category": "creative",
+    "blurb": "Warm black and blush cream trade places slide by slide, sometimes on the same slide as split halves, with one cherry-red ground saved for chapter breaks.",
+    "bestFor": [
+      "proposal",
+      "pitch",
+      "agency credentials",
+      "strategy"
+    ],
+    "palette": {
+      "ground.base": "#F6E7DE",
+      "ground.inverse": "#0C0807",
+      "ground.accent": [
+        "#D02A15"
+      ],
+      "ink.primary": "#120B09",
+      "ink.secondary": "#5E4740",
+      "ink.muted": "#7A625A",
+      "ink.on-inverse": "#F6E7DE",
+      "ink.muted-on-inverse": "#A68E86",
+      "ink.on-accent": [
+        "#FFF6F0"
+      ],
+      "ink.on-emphasis": "#FFFFFF",
+      "line": "#F6E7DE26",
+      "line.on-base": "#120B0926",
+      "emphasis": "#FF3D1F",
+      "emphasis.on-base": "#B8230F",
+      "signal": "#FF3D1F",
+      "glow.a": "#FF2A6D",
+      "glow.b": "#FF6A1A",
+      "surface.card": "#FFFFFF08",
+      "chart.series": [
+        "#FF3D1F",
+        "#FF8A6B",
+        "#7A3A2C",
+        "#F6E7DE"
+      ]
+    },
+    "fonts": {
+      "display": "Instrument Serif",
+      "text": "Instrument Sans",
+      "label": "Instrument Sans"
+    },
+    "defaultGround": "inverse"
+  },
+  {
+    "id": "data-first",
+    "name": "Data First",
+    "category": "corporate",
+    "blurb": "A near-black page on every slide, quiet and precise.",
+    "bestFor": [
+      "research readout",
+      "market sizing",
+      "methodology",
+      "process",
+      "investor update"
+    ],
+    "palette": {
+      "ground.base": "#F4F3EF",
+      "ground.inverse": "#0A0A0A",
+      "ink.primary": "#111111",
+      "ink.secondary": "#5C5C5A",
+      "ink.muted": "#6B6B68",
+      "ink.on-inverse": "#F2F2F0",
+      "ink.muted-on-inverse": "#7E7E7B",
+      "line": "#FFFFFF2B",
+      "line.strong": "#FFFFFF70",
+      "emphasis": "#7CF2B0",
+      "signal": "#7CF2B0",
+      "glow": "#2F8F4E",
+      "pictogram": "#BBD7FF",
+      "surface.card": "#FFFFFF0A",
+      "chart.series": [
+        "#F2F2F0",
+        "#8A8A88",
+        "#4A4A48",
+        "#7CF2B0"
+      ]
+    },
+    "fonts": {
+      "display": "Inter Tight",
+      "text": "Inter Tight",
+      "label": "Inter Tight"
+    },
+    "defaultGround": "inverse"
+  },
+  {
+    "id": "editorial",
+    "name": "Editorial",
+    "category": "creative",
+    "blurb": "Warm paper pages with ink-black interludes and one signal-red chapter panel.",
+    "bestFor": [
+      "brand proposal",
+      "creative credentials",
+      "fashion",
+      "architecture",
+      "campaign"
+    ],
+    "palette": {
+      "ground.base": "#EDEBE6",
+      "ground.inverse": "#141414",
+      "ground.accent": [
+        "#F0102A"
+      ],
+      "ink.primary": "#121212",
+      "ink.secondary": "#4A4A47",
+      "ink.muted": "#6F6E6A",
+      "ink.on-inverse": "#EDEBE6",
+      "ink.muted-on-inverse": "#9B9A95",
+      "ink.on-accent": [
+        "#121212"
+      ],
+      "line": "#1212121F",
+      "line.on-inverse": "#EDEBE629",
+      "emphasis": "#CF0018",
+      "emphasis.on-inverse": "#FF2D3F",
+      "signal": "#CF0018",
+      "photo.light": "#C9C6BF",
+      "photo.dark": "#7C7A74",
+      "surface.card": "#FFFFFF66",
+      "chart.series": [
+        "#121212",
+        "#6F6E6A",
+        "#B9B6AF",
+        "#CF0018"
+      ]
+    },
+    "fonts": {
+      "display": "Archivo Variable",
+      "text": "Archivo Variable",
+      "label": "IBM Plex Mono",
+      "accent": "Instrument Serif"
+    },
+    "defaultGround": "base"
+  },
+  {
+    "id": "gradient-burn",
+    "name": "Gradient Burn",
+    "category": "creative",
+    "blurb": "Ember-black grounds that glow from the edges, broken by dusk washes and the occasional pale breath slide.",
+    "bestFor": [
+      "keynote",
+      "vision narrative",
+      "product launch",
+      "research reveal"
+    ],
+    "palette": {
+      "ground.base": "#EDEAE4",
+      "ground.inverse": "#0B090C",
+      "ground.accent": [
+        "#3E3142",
+        "#3A4558",
+        "#C9461F"
+      ],
+      "ink.primary": "#1C1724",
+      "ink.secondary": "#4B4458",
+      "ink.muted": "#6E6779",
+      "ink.on-inverse": "#F6F1EC",
+      "ink.on-accent": [
+        "#F6F1EC",
+        "#F6F1EC",
+        "#FFFFFF"
+      ],
+      "ink.accent-on-base": "#5B54C4",
+      "line": "#F6F1EC2E",
+      "line.on-base": "#1C172429",
+      "emphasis": "#FF5A1F",
+      "emphasis.on-base": "#C23A10",
+      "signal": "#FF5A1F",
+      "surface.card": "#F6F1EC0D",
+      "field.heat": [
+        "#FF4A1C",
+        "#FF8A2B",
+        "#F0386B"
+      ],
+      "field.cool": [
+        "#6A3DF0",
+        "#2C56F5",
+        "#9C94F2"
+      ],
+      "field.pale": [
+        "#F6A26B",
+        "#F2B8CB",
+        "#B9B6EE"
+      ],
+      "chart.series": [
+        "#F6F1EC",
+        "#9C94F2",
+        "#6E6779",
+        "#FF5A1F"
+      ]
+    },
+    "fonts": {
+      "display": "Saira Semi Condensed",
+      "text": "Manrope",
+      "label": "Saira Semi Condensed"
+    },
+    "defaultGround": "inverse"
+  },
+  {
+    "id": "illustration",
+    "name": "Illustration",
+    "category": "creative",
+    "blurb": "Warm cream pages interleaved with flat chapter colours: sky, burnt orange, peach, mustard.",
+    "bestFor": [
+      "report",
+      "research findings",
+      "education",
+      "people and culture"
+    ],
+    "palette": {
+      "ground.base": "#EFE9E3",
+      "ground.inverse": "#141414",
+      "ground.accent": [
+        "#7CC6EE",
+        "#D8601C",
+        "#FDE6C6",
+        "#F2BD43",
+        "#FFFFFF"
+      ],
+      "ink.primary": "#111111",
+      "ink.secondary": "#3A3632",
+      "ink.muted": "#5E5852",
+      "ink.on-inverse": "#EFE9E3",
+      "ink.on-accent": [
+        "#111111",
+        "#111111",
+        "#111111",
+        "#111111",
+        "#111111"
+      ],
+      "line": "#1111112E",
+      "emphasis": "#B8460F",
+      "signal": "#B8460F",
+      "illo.skin": [
+        "#F2A99B",
+        "#C98A5E",
+        "#8A5A3C"
+      ],
+      "illo.cloth": [
+        "#7CC6EE",
+        "#E8503A",
+        "#2DA36B",
+        "#F2BD43",
+        "#3B5BDB"
+      ],
+      "illo.paper": "#FFFFFF",
+      "surface.card": "#FFFFFF80",
+      "chart.series": [
+        "#111111",
+        "#D8601C",
+        "#7CC6EE",
+        "#F2BD43"
+      ]
+    },
+    "fonts": {
+      "display": "Archivo Variable",
+      "text": "Newsreader Variable",
+      "label": "Archivo Variable"
+    },
+    "defaultGround": "base"
+  },
+  {
+    "id": "playful",
+    "name": "Playful",
+    "category": "creative",
+    "blurb": "White pages written entirely in one electric-blue pen.",
+    "bestFor": [
+      "creative proposal",
+      "agency pitch",
+      "workshop",
+      "culture project"
+    ],
+    "palette": {
+      "ground.base": "#FFFFFF",
+      "ground.inverse": "#14146B",
+      "ground.accent": [
+        "#2626D9"
+      ],
+      "ink.primary": "#2626D9",
+      "ink.secondary": "#2626D9",
+      "ink.muted": "#5C5CE3",
+      "ink.on-inverse": "#FFFFFF",
+      "ink.on-accent": [
+        "#FFFFFF"
+      ],
+      "line": "#2626D94D",
+      "emphasis": "#2626D9",
+      "signal": "#2626D9",
+      "photo.light": "#D6D6D6",
+      "photo.dark": "#8C8C8C",
+      "surface.card": "#2626D90A",
+      "chart.series": [
+        "#2626D9",
+        "#7C7CEB",
+        "#B9B9F4",
+        "#14146B"
+      ]
+    },
+    "fonts": {
+      "display": "Space Mono",
+      "text": "Space Mono",
+      "label": "IBM Plex Mono"
+    },
+    "defaultGround": "base"
+  }
+]

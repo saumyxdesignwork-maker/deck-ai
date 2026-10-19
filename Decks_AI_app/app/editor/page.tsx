@@ -6,6 +6,8 @@ import { EditorTopBar } from '@/components/editor/EditorTopBar'
 import { SectionNavigator } from '@/components/editor/SectionNavigator'
 import { CoverBlock } from '@/components/editor/blocks/CoverBlock'
 import { ContentSection } from '@/components/editor/blocks/ContentSection'
+import { EngineDeck } from '@/components/deck/EngineDeck'
+import { getTemplate } from '@/lib/deckTemplates'
 import { InsertPanel } from '@/components/editor/InsertPanel'
 import { PresentationMode } from '@/components/editor/PresentationMode'
 import { ControlsPanel } from '@/components/controls/ControlsPanel'
@@ -30,6 +32,7 @@ export default function EditorPage() {
   // template here without needing the generator wired up yet. Remove once
   // the real picker/switcher exist.
   const [templateOverride, setTemplateOverride] = useState<string | undefined>(undefined)
+  const engineVl = getTemplate(templateOverride).engine?.vl
   useEffect(() => {
     setTemplateOverride(new URLSearchParams(window.location.search).get('template') ?? undefined)
   }, [])
@@ -137,6 +140,9 @@ export default function EditorPage() {
             boxSizing: 'border-box',
           }}
         >
+          {engineVl ? (
+            <EngineDeck deck={{ ...MOCK_DECK, title: deckTitle, sections }} vl={engineVl} />
+          ) : (
           <DeckTemplateProvider templateId={templateOverride}>
             {/* Cover block */}
             <CoverBlock
@@ -159,6 +165,7 @@ export default function EditorPage() {
               />
             ))}
           </DeckTemplateProvider>
+          )}
 
           <div style={{ height: 60 }} />
         </div>

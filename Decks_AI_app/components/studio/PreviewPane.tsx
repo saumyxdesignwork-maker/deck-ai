@@ -28,6 +28,8 @@ import { deriveEditRun } from '@/lib/editStages'
 import { motionPresets } from '@/lib/motion'
 import { ChangeHighlight, COVER_SUBTITLE_ID, COVER_TITLE_ID } from '@/lib/deckDiff'
 import { DeckTemplateProvider } from '@/components/deck/DeckThemeScope'
+import { EngineDeck } from '@/components/deck/EngineDeck'
+import { getTemplate } from '@/lib/deckTemplates'
 
 const MIN_INSERT_WIDTH = 220
 const MAX_INSERT_WIDTH = 480
@@ -136,6 +138,10 @@ export function PreviewPane({
   // choice — so "Choose your look" reflects the real current pick instead of
   // always showing the default template.
   const effectiveTemplateId = deck?.templateId ?? selectedTemplateId
+  // Engine visual languages draw whole slides from the deck's content (no
+  // per-block editing yet); edits arrive through chat/agent and re-render.
+  const engineVl = getTemplate(effectiveTemplateId).engine?.vl
+  const engineDeckData = useMemo<DeckData>(() => ({ ...MOCK_DECK, ...deck, sections: deck?.sections ?? [] }), [deck])
 
   // Undo/redo — only meaningful once the deck is editable, and never while
   // the user is typing in a field (native Cmd+Z there must stay untouched).
@@ -614,6 +620,16 @@ export function PreviewPane({
               ) : (
                 <DeckSkeleton aspectRatio={deck?.aspectRatio} />
               )
+            ) : engineVl && (isDone || activeIndex !== null) ? (
+              <EngineDeck
+                deck={engineDeckData}
+                vl={engineVl}
+                only={isDone ? undefined : [activeIndex!]}
+                slideRef={(i, el) => { slideRefs.current[i] = el }}
+                activeIndex={activeIndex}
+                onSelect={isDone ? setActiveIndex : undefined}
+                showFrame={isDone}
+              />
             ) : isDone ? (
               // Deck is fully assembled — render every slide stacked, like the standalone editor.
               <>

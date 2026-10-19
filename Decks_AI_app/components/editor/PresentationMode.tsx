@@ -8,6 +8,7 @@ import { DeckSection, Block, AspectRatio, aspectRatioCss, LayoutType } from '@/l
 import { DeckThemeScope, useDeckTemplate } from '@/components/deck/DeckThemeScope'
 import { resolveCoverVars } from '@/lib/deckTemplates/toCssVars'
 import type { DeckTemplate } from '@/lib/deckTemplates'
+import { EngineDeck } from '@/components/deck/EngineDeck'
 
 interface Slide {
   id: string
@@ -352,7 +353,15 @@ export function PresentationMode({ deckTitle, subtitle, author, coverColor, sect
             justifyContent: 'center',
           }}
         >
-          {slide.type === 'cover' ? (
+          {template.engine ? (
+            <div style={{ boxShadow: '0 40px 100px rgba(0,0,0,0.5)' }}>
+              <EngineDeck
+                deck={{ title: deckTitle, subtitle, author, coverColor, sections, aspectRatio }}
+                vl={template.engine.vl}
+                only={[current]}
+              />
+            </div>
+          ) : slide.type === 'cover' ? (
             /* Cover slide — same background/foreground rules as CoverBlock
                (deck-color vs. the template's own fixed cover), not a
                hardcoded dark treatment, so it matches the editor exactly. */

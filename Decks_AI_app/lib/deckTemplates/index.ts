@@ -4,16 +4,20 @@ import { slate } from './templates/slate'
 import { riso } from './templates/riso'
 import { noir } from './templates/noir'
 import { bloom } from './templates/bloom'
+import { VISUAL_LANGUAGE_TEMPLATES } from './templates/visualLanguages'
 import type { DeckTemplate } from './types'
 
 export type { DeckTemplate, TemplateCategory, SlideSurface } from './types'
+export { isEngineTemplateId } from './templates/visualLanguages'
 
 export const DEFAULT_TEMPLATE_ID = meridian.id
 
 // All 6 templates (3 corporate, 3 creative) — added here as pure data on
 // top of the schema Riso proved out. Nothing else in the app needs to
 // change to add a 7th: write a templates/<id>.ts file and list it here.
-export const TEMPLATES: DeckTemplate[] = [meridian, ledger, slate, riso, noir, bloom]
+// The engine-drawn visual languages (Gradient Burn, Data First, …) follow the
+// six block-rendered templates.
+export const TEMPLATES: DeckTemplate[] = [meridian, ledger, slate, riso, noir, bloom, ...VISUAL_LANGUAGE_TEMPLATES]
 
 export const TEMPLATE_IDS = TEMPLATES.map(t => t.id)
 

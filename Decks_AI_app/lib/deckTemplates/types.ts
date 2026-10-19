@@ -104,4 +104,7 @@ export interface DeckTemplate {
   data: { style: 'plain' | 'boxed' | 'big-number'; valueColor: string }
   image: DeckTemplateImage
   layouts?: Partial<Record<LayoutType, DeckTemplateLayoutOverride>>
+  /** Set for visual languages drawn by the template engine (lib/template-engine)
+   * instead of the block renderer — `vl` is the engine's visual-language id. */
+  engine?: { vl: string; bestFor: string[] }
 }
