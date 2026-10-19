@@ -1,0 +1,11 @@
+{
+  "type": "object",
+  "required": ["quote"],
+  "additionalProperties": false,
+  "properties": {
+    "number": { "type": "string" },
+    "eyebrow": { "type": "string" },
+    "quote": { "type": "string" },
+    "attribution": { "type": "string" }
+  }
+}

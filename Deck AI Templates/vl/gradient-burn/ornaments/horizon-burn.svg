@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1080" gradientUnits="userSpaceOnUse">
+      <stop offset="0" style="stop-color: var(--r-field-cool-0)" stop-opacity="0"/>
+      <stop offset="0.55" style="stop-color: var(--r-field-cool-0)" stop-opacity="0.28"/>
+      <stop offset="0.8" style="stop-color: var(--r-field-heat-0)" stop-opacity="0.9"/>
+      <stop offset="0.835" style="stop-color: var(--r-field-heat-1)" stop-opacity="1"/>
+      <stop offset="0.91" style="stop-color: var(--r-field-heat-0)" stop-opacity="0.45"/>
+      <stop offset="1" style="stop-color: var(--r-field-heat-2)" stop-opacity="0.12"/>
+    </linearGradient>
+    <radialGradient id="flare" cx="960" cy="902" r="1000" gradientUnits="userSpaceOnUse" gradientTransform="translate(0 902) scale(1 0.24) translate(0 -902)">
+      <stop offset="0" style="stop-color: var(--r-field-heat-1)" stop-opacity="0.9"/>
+      <stop offset="1" style="stop-color: var(--r-field-heat-0)" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="soft" x="-5%" y="-50%" width="110%" height="200%"><feGaussianBlur stdDeviation="5"/></filter>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#sky)"/>
+  <rect width="1920" height="1080" fill="url(#flare)"/>
+  <rect x="-40" y="898" width="2000" height="7" style="fill: var(--r-field-heat-1)" opacity="0.9" filter="url(#soft)"/>
+</svg>

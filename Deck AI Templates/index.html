@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Deck Template Engine</title>
+    <link rel="stylesheet" href="/src/preview/preview.css" />
+  </head>
+  <body>
+    <header class="bar">
+      <strong class="bar__name">Deck Template Engine</strong>
+      <label>Deck <select id="fixture"></select></label>
+      <label>Aspect
+        <select id="aspect">
+          <option>16:9</option><option>4:3</option><option>1:1</option><option>4:5</option><option>A4</option>
+        </select>
+      </label>
+      <label>Language <select id="vl"></select></label>
+      <label><input type="checkbox" id="edit" checked /> Edit text</label>
+      <button id="undo" type="button">Undo</button>
+      <button id="redo" type="button">Redo</button>
+      <span class="bar__spacer"></span>
+      <button id="toggle-md" type="button" aria-pressed="true">Markdown</button>
+      <button id="toggle-json" type="button" aria-pressed="false">deck.json</button>
+      <span id="status" class="bar__status"></span>
+    </header>
+    <main class="layout">
+      <section class="pane pane--md" id="pane-md">
+        <textarea id="md" spellcheck="false" aria-label="Deck Markdown"></textarea>
+      </section>
+      <section class="pane pane--json" id="pane-json" hidden>
+        <pre id="json"></pre>
+      </section>
+      <section class="stage">
+        <ol id="issues" class="issues"></ol>
+        <div id="deck" class="deck"></div>
+      </section>
+    </main>
+    <style id="deck-css"></style>
+    <script type="module" src="/src/preview/main.ts"></script>
+  </body>
+</html>

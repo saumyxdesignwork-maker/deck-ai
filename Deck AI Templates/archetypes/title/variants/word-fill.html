@@ -1,0 +1,10 @@
+<section class="slide a-title v-word-fill" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  <div class="wf-main" data-region="main">
+    {{#if content.eyebrow}}<p class="wf-eyebrow t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    <h1 class="wf-word t-display-0" data-slot="content.title" data-slot-type="text" data-fit="shrink" data-nowrap data-min-step="display-2">{{content.title}}</h1>
+    {{#if content.subtitle}}<p class="wf-subtitle t-label" data-slot="content.subtitle" data-slot-type="text">{{content.subtitle}}</p>{{/if}}
+  </div>
+  {{#if content.date}}<p class="wf-date t-caption" data-slot="content.date" data-slot-type="text">{{content.date}}</p>{{/if}}
+  <div data-decor="edge"></div>
+</section>

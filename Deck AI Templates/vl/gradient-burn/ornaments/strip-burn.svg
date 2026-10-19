@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 240" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="band" x1="0" y1="0" x2="1920" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" style="stop-color: var(--r-field-pale-0)"/>
+      <stop offset="0.35" style="stop-color: var(--r-field-heat-1)"/>
+      <stop offset="0.62" style="stop-color: var(--r-field-heat-0)"/>
+      <stop offset="0.85" style="stop-color: var(--r-field-pale-1)"/>
+      <stop offset="1" style="stop-color: var(--r-field-pale-2)"/>
+    </linearGradient>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="240" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="0.45" stop-color="#fff" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="1"/>
+    </linearGradient>
+    <mask id="m" maskUnits="userSpaceOnUse" x="0" y="0" width="1920" height="240">
+      <rect width="1920" height="240" fill="url(#fade)"/>
+    </mask>
+  </defs>
+  <rect width="1920" height="240" fill="url(#band)" mask="url(#m)"/>
+</svg>

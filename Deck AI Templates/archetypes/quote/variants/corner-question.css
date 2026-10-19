@@ -1,0 +1,10 @@
+.a-quote.v-corner-question {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) 22%;
+  padding: var(--space-frame-y) var(--space-frame-x) 0;
+}
+.a-quote.v-corner-question .cq-main { display: grid; align-content: start; gap: var(--space-gutter); max-width: 62%; overflow: hidden; }
+.a-quote.v-corner-question .cq-strip { margin: 0 calc(var(--space-frame-x) * -1); }
+@container slide (aspect-ratio < 1) {
+  .a-quote.v-corner-question .cq-main { max-width: 100%; }
+}

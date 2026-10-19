@@ -22,6 +22,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["--prefix", "Decks_AI_Service", "run", "dev"],
       "port": 8787
+    },
+    {
+      "name": "Templates Engine",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "Deck AI Templates", "run", "dev"],
+      "port": 5181
     }
   ]
 }

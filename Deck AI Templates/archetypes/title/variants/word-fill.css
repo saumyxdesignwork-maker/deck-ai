@@ -1,0 +1,18 @@
+.a-title.v-word-fill {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  justify-items: center;
+  padding: var(--space-frame-y) var(--space-frame-x);
+  text-align: center;
+}
+.a-title.v-word-fill .wf-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-gutter);
+  width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+}
+.a-title.v-word-fill .wf-word { display: block; max-width: 100%; overflow: hidden; }

@@ -1,0 +1,12 @@
+{
+  "archetype": "text",
+  "variant": "lead-column",
+  "slots": {
+    "eyebrow": { "type": "text", "optional": true, "chars_max": 48 },
+    "title": { "type": "text", "chars_ideal": 40, "chars_max": 90 },
+    "lead": { "type": "text", "optional": true, "chars_max": 200 },
+    "body": { "type": "paragraphs", "chars_max": 900 }
+  },
+  "decor_anchors": ["frame", "corner-tl", "edge"],
+  "supports_aspects": ["16:9", "4:3", "1:1", "4:5", "A4"]
+}

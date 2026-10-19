@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="wash" x1="0" y1="1080" x2="1920" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" style="stop-color: var(--r-field-heat-0)" stop-opacity="0.35"/>
+      <stop offset="0.45" style="stop-color: var(--slide-bg)" stop-opacity="0"/>
+      <stop offset="1" style="stop-color: var(--r-field-pale-2)" stop-opacity="0.75"/>
+    </linearGradient>
+    <radialGradient id="bloom" cx="1700" cy="120" r="900" gradientUnits="userSpaceOnUse">
+      <stop offset="0" style="stop-color: var(--r-field-pale-2)" stop-opacity="0.55"/>
+      <stop offset="1" style="stop-color: var(--r-field-cool-2)" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#wash)"/>
+  <rect width="1920" height="1080" fill="url(#bloom)"/>
+</svg>

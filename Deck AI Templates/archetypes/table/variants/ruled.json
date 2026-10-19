@@ -1,0 +1,12 @@
+{
+  "archetype": "table",
+  "variant": "ruled",
+  "slots": {
+    "eyebrow": { "type": "text", "optional": true, "chars_max": 48 },
+    "title": { "type": "text", "optional": true, "chars_max": 80 },
+    "table": { "type": "table", "cols_max": 6, "rows_max": 8 },
+    "note": { "type": "text", "optional": true, "chars_max": 140 }
+  },
+  "decor_anchors": ["frame", "corner-tl", "edge"],
+  "supports_aspects": ["16:9", "4:3", "1:1", "4:5", "A4"]
+}

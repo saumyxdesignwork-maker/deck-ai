@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <radialGradient id="air" cx="960" cy="1760" r="1320" gradientUnits="userSpaceOnUse">
+      <stop offset="0.74" style="stop-color: var(--r-field-cool-1)" stop-opacity="0"/>
+      <stop offset="0.8" style="stop-color: var(--r-field-heat-1)" stop-opacity="0.95"/>
+      <stop offset="0.84" style="stop-color: var(--r-field-heat-0)" stop-opacity="0.7"/>
+      <stop offset="0.92" style="stop-color: var(--r-field-cool-0)" stop-opacity="0.3"/>
+      <stop offset="1" style="stop-color: var(--r-field-cool-0)" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="globe" cx="960" cy="1460" r="1100" gradientUnits="userSpaceOnUse">
+      <stop offset="0.35" style="stop-color: var(--slide-bg)" stop-opacity="1"/>
+      <stop offset="0.75" style="stop-color: var(--r-field-cool-1)" stop-opacity="0.55"/>
+      <stop offset="0.95" style="stop-color: var(--r-field-cool-2)" stop-opacity="0.85"/>
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#air)"/>
+  <circle cx="960" cy="1760" r="1040" fill="url(#globe)"/>
+</svg>

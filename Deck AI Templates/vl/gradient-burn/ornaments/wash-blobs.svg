@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <radialGradient id="a" cx="180" cy="120" r="760" gradientUnits="userSpaceOnUse">
+      <stop offset="0" style="stop-color: var(--r-field-pale-0)" stop-opacity="0.95"/>
+      <stop offset="1" style="stop-color: var(--r-field-pale-0)" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="b" cx="1820" cy="420" r="720" gradientUnits="userSpaceOnUse">
+      <stop offset="0" style="stop-color: var(--r-field-heat-2)" stop-opacity="0.9"/>
+      <stop offset="1" style="stop-color: var(--r-field-heat-2)" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="c" cx="700" cy="1180" r="820" gradientUnits="userSpaceOnUse">
+      <stop offset="0" style="stop-color: var(--r-field-pale-2)" stop-opacity="0.9"/>
+      <stop offset="1" style="stop-color: var(--r-field-pale-2)" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="d" cx="1350" cy="1080" r="560" gradientUnits="userSpaceOnUse">
+      <stop offset="0" style="stop-color: var(--r-field-heat-1)" stop-opacity="0.85"/>
+      <stop offset="1" style="stop-color: var(--r-field-heat-1)" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#a)"/>
+  <rect width="1920" height="1080" fill="url(#b)"/>
+  <rect width="1920" height="1080" fill="url(#c)"/>
+  <rect width="1920" height="1080" fill="url(#d)"/>
+</svg>

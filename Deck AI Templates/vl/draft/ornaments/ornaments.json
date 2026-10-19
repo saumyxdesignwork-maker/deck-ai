@@ -1,0 +1,9 @@
+[
+  {
+    "id": "corner-tick",
+    "file": "corner-tick.svg",
+    "anchors": ["corner-tl"],
+    "roles": ["*"],
+    "max_per_slide": 1
+  }
+]

@@ -1,0 +1,28 @@
+<section class="slide a-table v-ruled" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  <div data-decor="corner-tl"></div>
+  {{#if show_chrome}}
+  <header class="chrome chrome--top"><span class="t-label" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
+  <footer class="chrome chrome--bottom"><span class="t-label">{{page}}</span></footer>
+  {{/if}}
+  <div class="tr-head">
+    {{#if content.eyebrow}}<p class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    {{#if content.title}}<h2 class="t-display-2" data-slot="content.title" data-slot-type="text" data-fit="shrink" data-min-step="display-3">{{content.title}}</h2>{{/if}}
+  </div>
+  <div class="tr-wrap" data-region="table">
+    <table class="tr-table" data-slot="content.table" data-slot-type="table">
+      <thead>
+        <tr>{{#each content.table.columns}}<th class="t-label" data-slot="content.table.columns[{{@index}}]" data-slot-type="text">{{this}}</th>{{/each}}</tr>
+      </thead>
+      <tbody>
+        {{#each content.table.rows}}
+        <tr{{#eq @index content.table.highlight_row}} class="is-highlight"{{/eq}}>
+          {{#each this}}<td class="t-body" data-slot="content.table.rows[{{@../index}}][{{@index}}]" data-slot-type="text" data-fit="shrink" data-min-step="body-s">{{this}}</td>{{/each}}
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+  {{#if content.note}}<p class="t-caption" data-slot="content.note" data-slot-type="text">{{content.note}}</p>{{/if}}
+  <div data-decor="edge"></div>
+</section>

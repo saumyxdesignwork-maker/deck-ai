@@ -1,0 +1,25 @@
+.a-quote.v-centered-badge {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  justify-items: center;
+  padding: var(--space-frame-y) var(--space-frame-x);
+  text-align: center;
+  gap: var(--space-gutter);
+}
+.a-quote.v-centered-badge .qb-top { display: grid; justify-items: center; gap: var(--space-tight); min-height: 1em; }
+/* content-sized pill: never a fixed circle, so "+2wk"-style values cannot wrap */
+.a-quote.v-centered-badge .qb-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.6em;
+  height: 2.6em;
+  padding: 0 0.9em;
+  border-radius: var(--radius-pill);
+  border: var(--line-rule) solid currentColor;
+  white-space: nowrap;
+}
+.a-quote.v-centered-badge .qb-main { display: grid; place-items: center; max-width: 64%; max-height: 100%; overflow: hidden; }
+@container slide (aspect-ratio < 1) {
+  .a-quote.v-centered-badge .qb-main { max-width: 100%; }
+}

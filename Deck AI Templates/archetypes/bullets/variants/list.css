@@ -1,0 +1,27 @@
+.a-bullets.v-list {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+  grid-template-rows: minmax(0, 1fr);
+  padding: calc(var(--space-frame-y) * 1.5) var(--space-frame-x) var(--space-frame-y);
+  column-gap: calc(var(--space-gutter) * 2);
+  align-items: start;
+}
+.a-bullets.v-list .bl-head { display: grid; gap: var(--space-gutter); }
+.a-bullets.v-list .bl-items { display: grid; align-content: start; max-height: 100%; overflow: hidden; counter-reset: bl; }
+.a-bullets.v-list .bl-item {
+  display: grid;
+  grid-template-columns: 3em minmax(0, 1fr);
+  column-gap: var(--space-gutter);
+  row-gap: calc(var(--space-tight) / 2);
+  padding: var(--space-tight) 0;
+  border-top: var(--line-hair) solid var(--color-line);
+  counter-increment: bl;
+}
+.a-bullets.v-list .bl-index { grid-row: span 2; padding-top: 0.4em; }
+.a-bullets.v-list .bl-index::before { content: counter(bl, decimal-leading-zero); }
+.a-bullets.v-list .bl-text { grid-column: 2; }
+.a-bullets.v-list [data-count="7"] .bl-item,
+.a-bullets.v-list [data-count="8"] .bl-item { padding: calc(var(--space-tight) / 2) 0; }
+@container slide (aspect-ratio < 1) {
+  .a-bullets.v-list { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); row-gap: var(--space-section); }
+}

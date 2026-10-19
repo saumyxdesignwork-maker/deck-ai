@@ -1,0 +1,21 @@
+.a-title.v-centered {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  justify-items: center;
+  padding: var(--space-frame-y) var(--space-frame-x);
+  text-align: center;
+}
+.a-title.v-centered .tc-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-tight);
+  max-width: 72%;
+  max-height: 100%;
+  overflow: hidden;
+}
+.a-title.v-centered .tc-subtitle { margin-top: calc(var(--space-tight) * 0.5); }
+@container slide (aspect-ratio < 1) {
+  .a-title.v-centered .tc-main { max-width: 100%; }
+}

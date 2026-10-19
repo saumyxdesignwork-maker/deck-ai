@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <radialGradient id="halo" cx="960" cy="1240" r="1150" gradientUnits="userSpaceOnUse">
+      <stop offset="0.25" style="stop-color: var(--r-field-cool-0)" stop-opacity="0.7"/>
+      <stop offset="0.6" style="stop-color: var(--r-field-cool-1)" stop-opacity="0.22"/>
+      <stop offset="1" style="stop-color: var(--r-field-cool-1)" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="core" cx="960" cy="1300" r="720" gradientUnits="userSpaceOnUse">
+      <stop offset="0" style="stop-color: var(--r-field-heat-1)" stop-opacity="1"/>
+      <stop offset="0.4" style="stop-color: var(--r-field-heat-0)" stop-opacity="0.95"/>
+      <stop offset="0.75" style="stop-color: var(--r-field-heat-2)" stop-opacity="0.35"/>
+      <stop offset="1" style="stop-color: var(--r-field-heat-2)" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#halo)"/>
+  <rect width="1920" height="1080" fill="url(#core)"/>
+</svg>

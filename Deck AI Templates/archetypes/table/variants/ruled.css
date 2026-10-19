@@ -1,0 +1,15 @@
+.a-table.v-ruled {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  padding: calc(var(--space-frame-y) * 1.5) var(--space-frame-x) var(--space-frame-y);
+  gap: var(--space-section);
+}
+.a-table.v-ruled .tr-head { display: grid; gap: var(--space-tight); max-width: 70%; }
+.a-table.v-ruled .tr-wrap { overflow: hidden; }
+.a-table.v-ruled .tr-table { width: 100%; border-collapse: collapse; }
+.a-table.v-ruled th,
+.a-table.v-ruled td { text-align: left; vertical-align: top; padding: var(--space-tight) var(--space-gutter) var(--space-tight) 0; }
+.a-table.v-ruled th { border-bottom: var(--line-rule) solid currentColor; }
+.a-table.v-ruled td { border-bottom: var(--line-hair) solid var(--color-line); }
+.a-table.v-ruled .is-highlight td { color: var(--color-emphasis); }
+.a-table.v-ruled .is-highlight td:first-child { box-shadow: inset var(--line-rule) 0 0 var(--color-emphasis); padding-left: var(--space-tight); }

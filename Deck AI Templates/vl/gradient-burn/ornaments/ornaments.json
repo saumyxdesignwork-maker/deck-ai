@@ -1,0 +1,14 @@
+[
+  { "id": "heat-dots", "file": "heat-dots.svg", "anchors": ["frame"], "roles": ["title"], "grounds": ["inverse"], "max_per_slide": 1 },
+  { "id": "orb-rise", "file": "orb-rise.svg", "anchors": ["frame"], "roles": ["title", "section", "quote", "closing", "metric"], "grounds": ["inverse"], "max_per_slide": 1 },
+  { "id": "horizon-burn", "file": "horizon-burn.svg", "anchors": ["frame"], "roles": ["title", "section", "closing"], "grounds": ["inverse"], "max_per_slide": 1 },
+  { "id": "planet-rim", "file": "planet-rim.svg", "anchors": ["frame"], "roles": ["section", "closing"], "grounds": ["inverse"], "max_per_slide": 1 },
+  { "id": "spectral-arc", "file": "spectral-arc.svg", "anchors": ["frame"], "roles": ["section", "title"], "grounds": ["inverse"], "max_per_slide": 1 },
+  { "id": "ember-line", "file": "ember-line.svg", "anchors": ["frame"], "roles": ["section", "metric"], "grounds": ["inverse"], "max_per_slide": 1 },
+  { "id": "edge-flare", "file": "edge-flare.svg", "anchors": ["frame"], "roles": ["section", "text", "bullets", "freeform", "metric"], "grounds": ["inverse"], "max_per_slide": 1 },
+  { "id": "twin-orbs", "file": "twin-orbs.svg", "anchors": ["frame"], "roles": ["text", "bullets", "table", "metric", "freeform"], "grounds": ["inverse"], "max_per_slide": 1 },
+  { "id": "wash-diagonal", "file": "wash-diagonal.svg", "anchors": ["frame"], "roles": ["*"], "grounds": ["accent"], "max_per_slide": 1 },
+  { "id": "wash-blobs", "file": "wash-blobs.svg", "anchors": ["frame"], "roles": ["quote", "section"], "grounds": ["accent"], "max_per_slide": 1 },
+  { "id": "pale-orb", "file": "pale-orb.svg", "anchors": ["frame"], "roles": ["*"], "grounds": ["base"], "max_per_slide": 1 },
+  { "id": "strip-burn", "file": "strip-burn.svg", "anchors": ["strip"], "roles": ["*"], "max_per_slide": 1 }
+]

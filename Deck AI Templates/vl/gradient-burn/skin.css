@@ -1,0 +1,78 @@
+/* Gradient Burn — skin. Token-driven; layout comes from archetype variants. */
+
+/* ---------- field layer, content above it, grain on top ---------- */
+.vl-gradient-burn .slide { isolation: isolate; }
+.vl-gradient-burn .slide > [data-decor="frame"] { position: absolute; inset: 0; z-index: 0; }
+.vl-gradient-burn .slide > :not([data-decor]):not(.chrome) { position: relative; z-index: 1; }
+.vl-gradient-burn .slide > [data-decor="edge"] { display: none; }
+.vl-gradient-burn .slide::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: var(--fx-grain);
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 1.4 -0.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 220px 220px;
+}
+/* calmer fields where people need to read */
+.vl-gradient-burn :is(.a-table, .a-bullets, .a-metric.v-row, .a-text.v-lead-column) > [data-decor="frame"] { opacity: var(--fx-field-dim); }
+
+/* ---------- grounds ---------- */
+.vl-gradient-burn .slide[data-ground="base"] {
+  --color-emphasis: var(--color-emphasis-on-base);
+  --color-line: var(--color-line-on-base);
+}
+.vl-gradient-burn .slide:not([data-ground="base"]) :is(.t-display-0, .t-display-1, .t-display-2, .t-display-3, .t-numeral):not(.wf-word) {
+  text-shadow: 0 0 48px color-mix(in srgb, var(--color-ground-inverse) 45%, transparent);
+}
+
+/* ---------- small type ---------- */
+.vl-gradient-burn .slide .t-label { opacity: 0.85; }
+.vl-gradient-burn .chrome { opacity: 0.55; }
+.vl-gradient-burn .slide[data-ground="base"] .t-label { color: var(--color-ink-secondary); opacity: 1; }
+
+/* ---------- signature: gradient-filled giant word ---------- */
+.vl-gradient-burn .v-word-fill .wf-word {
+  background-image: linear-gradient(100deg,
+    var(--r-field-cool-0) 0%, var(--r-field-heat-2) 32%, var(--r-field-heat-0) 55%, var(--r-field-heat-1) 72%, var(--r-field-cool-2) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  padding: 0.04em 0.02em;
+}
+
+/* ---------- closing: centred stack like every other "moment" slide ---------- */
+.vl-gradient-burn .a-closing.v-thank-you { justify-items: center; text-align: center; }
+.vl-gradient-burn .a-closing.v-thank-you .ty-main { align-items: center; justify-content: center; }
+
+/* ---------- statements ---------- */
+.vl-gradient-burn .a-quote .qb-quote {
+  font-family: var(--font-text);
+  font-weight: 800;
+  text-transform: none;
+  letter-spacing: -0.015em;
+  line-height: 1.12;
+}
+.vl-gradient-burn .a-quote .qb-badge { border-width: var(--line-rule); font-size: var(--t-caption-size); }
+.vl-gradient-burn .a-quote .cq-quote {
+  font-family: var(--font-text);
+  font-weight: 800;
+  text-transform: none;
+  letter-spacing: -0.025em;
+  line-height: 1.04;
+  color: var(--color-ink-accent-on-base);
+}
+
+/* ---------- data ---------- */
+.vl-gradient-burn .a-metric .t-numeral,
+.vl-gradient-burn .a-metric .hn-value { font-weight: 500; }
+.vl-gradient-burn .a-metric.v-row .m-item { border-top-width: var(--line-hair); }
+.vl-gradient-burn .a-metric.v-row .is-emphasis { border-top-width: var(--line-rule); }
+.vl-gradient-burn .a-table th { border-bottom-width: var(--line-hair); color: inherit; }
+.vl-gradient-burn .a-table .is-highlight td { color: var(--color-emphasis); }
+
+/* ---------- lists ---------- */
+.vl-gradient-burn .a-bullets .bl-item { border-top-color: var(--color-line); }
+.vl-gradient-burn .a-bullets :is(.bl-index, .tc2-index) { color: var(--color-emphasis); opacity: 1; }

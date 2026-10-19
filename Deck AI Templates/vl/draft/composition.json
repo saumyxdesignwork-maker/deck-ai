@@ -1,0 +1,20 @@
+{
+  "variant_allow": {
+    "title": ["stacked-word", "type-only"],
+    "section": ["numbered"],
+    "text": ["lead-column"],
+    "bullets": ["list", "cards-grid"],
+    "metric": ["row", "hero-number"],
+    "table": ["ruled"],
+    "closing": ["thank-you"],
+    "freeform": ["block"]
+  },
+  "variant_weights": { "title.stacked-word": 1.5 },
+  "grounds": {
+    "rotation": "role-based",
+    "by_role": { "title": ["inverse"], "section": ["accent:0"], "closing": ["inverse"] },
+    "default": "base",
+    "max_consecutive_same": 4
+  },
+  "chrome": { "show_on": "all-but-title" }
+}

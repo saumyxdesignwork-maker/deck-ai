@@ -1,0 +1,16 @@
+<section class="slide a-section v-numbered" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  <div data-decor="corner-tl"></div>
+  {{#if show_chrome}}
+  <header class="chrome chrome--top"><span class="t-label" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
+  <footer class="chrome chrome--bottom"><span class="t-label">{{page}}</span></footer>
+  {{/if}}
+  <div class="sn-main" data-region="main">
+    {{#if content.number}}<span class="sn-number t-numeral" data-slot="content.number" data-slot-type="text" data-nowrap data-fit="shrink">{{content.number}}</span>{{/if}}
+    <div class="sn-text">
+      <h2 class="sn-title t-display-1" data-slot="content.title" data-slot-type="text" data-fit="shrink" data-min-step="display-3">{{content.title}}</h2>
+      {{#if content.kicker}}<p class="t-lead" data-slot="content.kicker" data-slot-type="text">{{content.kicker}}</p>{{/if}}
+    </div>
+  </div>
+  <div data-decor="edge"></div>
+</section>

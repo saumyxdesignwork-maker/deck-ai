@@ -1,0 +1,17 @@
+<section class="slide a-text v-lead-column" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  <div data-decor="corner-tl"></div>
+  {{#if show_chrome}}
+  <header class="chrome chrome--top"><span class="t-label" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
+  <footer class="chrome chrome--bottom"><span class="t-label">{{page}}</span></footer>
+  {{/if}}
+  <div class="lc-head" data-region="head">
+    {{#if content.eyebrow}}<p class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    <h2 class="t-display-2" data-slot="content.title" data-slot-type="text" data-fit="shrink" data-min-step="display-3">{{content.title}}</h2>
+    {{#if content.lead}}<p class="t-lead" data-slot="content.lead" data-slot-type="text" data-fit="shrink" data-min-step="body">{{content.lead}}</p>{{/if}}
+  </div>
+  <div class="lc-body" data-region="body" data-slot="content.body" data-slot-type="paragraphs">
+    {{#each content.body}}<p class="t-body" data-slot="content.body[{{@index}}]" data-slot-type="text" data-fit="shrink" data-min-step="body-s">{{this}}</p>{{/each}}
+  </div>
+  <div data-decor="edge"></div>
+</section>

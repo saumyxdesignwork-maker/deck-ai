@@ -1,0 +1,31 @@
+.a-bullets.v-cards-grid {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  padding: calc(var(--space-frame-y) * 1.5) var(--space-frame-x) var(--space-frame-y);
+  row-gap: var(--space-section);
+}
+.a-bullets.v-cards-grid .cg-head { display: grid; gap: var(--space-tight); max-width: 70%; }
+.a-bullets.v-cards-grid .cg-items {
+  --cols: 3;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  grid-auto-rows: minmax(0, 1fr);
+  gap: var(--space-gutter);
+  overflow: hidden;
+}
+.a-bullets.v-cards-grid .cg-items[data-count="2"],
+.a-bullets.v-cards-grid .cg-items[data-count="4"] { --cols: 2; }
+.a-bullets.v-cards-grid .cg-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-tight);
+  padding: var(--space-gutter);
+  background: var(--color-surface-card, transparent);
+  border: var(--line-hair) solid var(--color-line);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+@container slide (aspect-ratio < 1) {
+  .a-bullets.v-cards-grid .cg-items { --cols: 2; }
+  .a-bullets.v-cards-grid .cg-head { max-width: none; }
+}

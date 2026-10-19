@@ -1,0 +1,18 @@
+{
+  "archetype": "bullets",
+  "variant": "cards-grid",
+  "slots": {
+    "eyebrow": { "type": "text", "optional": true, "chars_max": 48 },
+    "title": { "type": "text", "chars_ideal": 40, "chars_max": 70 },
+    "intro": { "type": "text", "optional": true, "chars_max": 120 },
+    "items": {
+      "type": "list", "min": 2, "max": 6,
+      "of": {
+        "title": { "type": "text", "chars_max": 50 },
+        "text": { "type": "text", "optional": true, "chars_max": 120 }
+      }
+    }
+  },
+  "decor_anchors": ["frame", "corner-tl", "item-mark", "edge"],
+  "supports_aspects": ["16:9", "4:3", "1:1", "4:5", "A4"]
+}

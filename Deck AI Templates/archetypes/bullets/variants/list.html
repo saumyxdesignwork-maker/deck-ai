@@ -1,0 +1,24 @@
+<section class="slide a-bullets v-list" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  <div data-decor="corner-tl"></div>
+  {{#if show_chrome}}
+  <header class="chrome chrome--top"><span class="t-label" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
+  <footer class="chrome chrome--bottom"><span class="t-label">{{page}}</span></footer>
+  {{/if}}
+  <div class="bl-head">
+    {{#if content.eyebrow}}<p class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    <h2 class="t-display-2" data-slot="content.title" data-slot-type="text" data-fit="shrink" data-min-step="display-3">{{content.title}}</h2>
+    {{#if content.intro}}<p class="t-body" data-slot="content.intro" data-slot-type="text">{{content.intro}}</p>{{/if}}
+  </div>
+  <ol class="bl-items" data-region="items" data-slot="content.items" data-slot-type="list" data-min="2" data-max="8" data-count="{{content.items.length}}">
+    {{#each content.items}}
+    <li class="bl-item" data-slot-item="{{@index}}">
+      <div data-decor="item-mark"></div>
+      <span class="bl-index t-label" aria-hidden="true"></span>
+      <span class="bl-title t-title" data-slot="content.items[{{@index}}].title" data-slot-type="text" data-fit="shrink" data-min-step="body">{{title}}</span>
+      {{#if text}}<span class="bl-text t-body-s" data-slot="content.items[{{@index}}].text" data-slot-type="text" data-fit="shrink" data-min-step="caption">{{text}}</span>{{/if}}
+    </li>
+    {{/each}}
+  </ol>
+  <div data-decor="edge"></div>
+</section>

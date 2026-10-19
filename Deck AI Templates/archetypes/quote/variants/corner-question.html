@@ -1,0 +1,9 @@
+<section class="slide a-quote v-corner-question" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div class="cq-main" data-region="main">
+    {{#if content.eyebrow}}<p class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    <p class="cq-quote t-display-2" data-slot="content.quote" data-slot-type="text" data-fit="shrink" data-min-step="display-3">{{content.quote}}</p>
+    {{#if content.attribution}}<p class="t-caption" data-slot="content.attribution" data-slot-type="text">{{content.attribution}}</p>{{/if}}
+  </div>
+  <div class="cq-strip" data-decor="strip"></div>
+  <div data-decor="edge"></div>
+</section>

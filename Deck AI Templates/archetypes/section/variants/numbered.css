@@ -1,0 +1,18 @@
+.a-section.v-numbered {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  padding: var(--space-frame-y) var(--space-frame-x);
+}
+.a-section.v-numbered .sn-main {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: end;
+  align-self: end;
+  max-height: 100%;
+  gap: var(--space-gutter);
+  overflow: hidden;
+}
+.a-section.v-numbered .sn-text { display: grid; gap: var(--space-tight); }
+@container slide (aspect-ratio < 1) {
+  .a-section.v-numbered .sn-main { grid-template-columns: 1fr; }
+}

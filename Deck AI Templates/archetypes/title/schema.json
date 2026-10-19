@@ -1,0 +1,25 @@
+{
+  "type": "object",
+  "required": ["title"],
+  "additionalProperties": false,
+  "properties": {
+    "eyebrow": { "type": "string" },
+    "title": { "type": "string" },
+    "subtitle": { "type": "string" },
+    "byline": { "type": "string" },
+    "date": { "type": "string" },
+    "image": { "$ref": "#/$defs/image" }
+  },
+  "$defs": {
+    "image": {
+      "type": "object",
+      "required": ["src", "alt"],
+      "properties": {
+        "src": { "type": "string" },
+        "alt": { "type": "string" },
+        "focal": { "type": "object", "properties": { "x": { "type": "number" }, "y": { "type": "number" } } },
+        "credit": { "type": "string" }
+      }
+    }
+  }
+}

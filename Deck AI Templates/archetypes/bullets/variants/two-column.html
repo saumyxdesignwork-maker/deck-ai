@@ -1,0 +1,23 @@
+<section class="slide a-bullets v-two-column" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if show_chrome}}
+  <header class="chrome chrome--top"><span class="t-caption" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <div class="tc2-head">
+    {{#if content.eyebrow}}<p class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    <h2 class="t-display-2" data-slot="content.title" data-slot-type="text" data-fit="shrink" data-min-step="display-3">{{content.title}}</h2>
+    {{#if content.intro}}<p class="t-body" data-slot="content.intro" data-slot-type="text">{{content.intro}}</p>{{/if}}
+  </div>
+  <ol class="tc2-items" data-region="items" data-slot="content.items" data-slot-type="list" data-min="3" data-max="8" data-count="{{content.items.length}}">
+    {{#each content.items}}
+    <li class="tc2-item" data-slot-item="{{@index}}">
+      <div data-decor="item-mark"></div>
+      <span class="tc2-index t-label" aria-hidden="true"></span>
+      <span class="tc2-title t-title" data-slot="content.items[{{@index}}].title" data-slot-type="text" data-fit="shrink" data-min-step="body">{{title}}</span>
+      {{#if text}}<span class="tc2-text t-body-s" data-slot="content.items[{{@index}}].text" data-slot-type="text" data-fit="shrink" data-min-step="caption">{{text}}</span>{{/if}}
+    </li>
+    {{/each}}
+  </ol>
+  <div data-decor="edge"></div>
+</section>

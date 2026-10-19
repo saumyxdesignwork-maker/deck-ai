@@ -1,0 +1,6 @@
+.a-freeform.v-block {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  padding: calc(var(--space-frame-y) * 1.5) var(--space-frame-x) var(--space-frame-y);
+}
+.a-freeform.v-block .ff-main { display: grid; align-content: start; gap: var(--space-gutter); max-width: 70%; overflow: hidden; }

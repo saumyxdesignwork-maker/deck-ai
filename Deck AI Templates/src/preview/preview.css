@@ -1,0 +1,39 @@
+:root {
+  --ui-bg: #e9e9e6;
+  --ui-panel: #ffffff;
+  --ui-ink: #1b1c1e;
+  --ui-muted: #6b6d72;
+  --ui-line: #d6d6d2;
+  --ui-warn: #b45309;
+  --ui-err: #b91c1c;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--ui-bg); color: var(--ui-ink); font: 14px/1.4 ui-sans-serif, system-ui, sans-serif; display: flex; flex-direction: column; }
+
+.bar { display: flex; align-items: center; gap: 14px; padding: 10px 16px; background: var(--ui-panel); border-bottom: 1px solid var(--ui-line); flex-wrap: wrap; }
+.bar__name { margin-right: 8px; }
+.bar__spacer { flex: 1; }
+.bar__status { color: var(--ui-muted); font-variant-numeric: tabular-nums; }
+.bar button, .bar select { font: inherit; padding: 4px 10px; border: 1px solid var(--ui-line); background: #fff; border-radius: 6px; cursor: pointer; }
+.bar button[aria-pressed="true"] { background: var(--ui-ink); color: #fff; border-color: var(--ui-ink); }
+.bar label { display: inline-flex; gap: 6px; align-items: center; }
+
+.layout { flex: 1; display: flex; min-height: 0; }
+.pane { width: 38%; max-width: 620px; min-width: 300px; border-right: 1px solid var(--ui-line); background: var(--ui-panel); display: flex; }
+.pane[hidden] { display: none; }
+.pane textarea, .pane pre { flex: 1; margin: 0; padding: 16px; border: 0; resize: none; font: 13px/1.55 ui-monospace, Menlo, monospace; overflow: auto; outline: none; white-space: pre-wrap; }
+.stage { flex: 1; overflow: auto; padding: 24px; min-width: 0; }
+
+.issues { list-style: none; margin: 0 0 16px; padding: 0; display: grid; gap: 4px; }
+.issues:empty { display: none; }
+.issues li { padding: 6px 10px; border-radius: 6px; background: #fff7ed; color: var(--ui-warn); font-size: 13px; }
+.issues li.is-error { background: #fef2f2; color: var(--ui-err); }
+.issues li.is-info { background: #eff6ff; color: #1d4ed8; }
+
+#deck { display: grid; gap: 28px; max-width: 1200px; margin: 0 auto; }
+.frame { position: relative; overflow: hidden; box-shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 8px 24px rgb(0 0 0 / 0.08); background: #fff; }
+.frame__scaler { transform-origin: 0 0; }
+.frame-meta { display: flex; gap: 12px; margin-top: 8px; color: var(--ui-muted); font: 12px/1.3 ui-monospace, Menlo, monospace; }
+.frame-meta .warn { color: var(--ui-warn); }

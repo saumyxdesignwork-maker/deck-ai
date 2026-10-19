@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "required": ["table"],
+  "additionalProperties": false,
+  "properties": {
+    "eyebrow": { "type": "string" },
+    "title": { "type": "string" },
+    "table": {
+      "type": "object",
+      "required": ["columns", "rows"],
+      "additionalProperties": false,
+      "properties": {
+        "columns": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "rows": { "type": "array", "items": { "type": "array", "items": { "type": "string" } } },
+        "highlight_row": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "note": { "type": "string" }
+  }
+}

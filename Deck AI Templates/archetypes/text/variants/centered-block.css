@@ -1,0 +1,20 @@
+.a-text.v-centered-block {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  place-items: center;
+  padding: var(--space-frame-y) var(--space-frame-x);
+  text-align: center;
+}
+.a-text.v-centered-block .cb-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-gutter);
+  max-width: 62%;
+  max-height: 100%;
+  overflow: hidden;
+}
+.a-text.v-centered-block .cb-body { display: grid; gap: var(--space-tight); }
+@container slide (aspect-ratio < 1) {
+  .a-text.v-centered-block .cb-main { max-width: 100%; }
+}

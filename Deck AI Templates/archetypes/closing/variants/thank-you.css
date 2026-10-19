@@ -1,0 +1,14 @@
+.a-closing.v-thank-you {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  padding: var(--space-frame-y) var(--space-frame-x);
+  gap: var(--space-section);
+}
+.a-closing.v-thank-you .ty-main {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: var(--space-gutter);
+  max-width: 75%;
+  overflow: hidden;
+}

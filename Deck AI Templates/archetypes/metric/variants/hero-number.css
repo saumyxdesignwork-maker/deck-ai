@@ -1,0 +1,20 @@
+.a-metric.v-hero-number {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  padding: var(--space-frame-y) var(--space-frame-x);
+  gap: var(--space-gutter);
+}
+.a-metric.v-hero-number .hn-main { display: grid; align-items: end; overflow: hidden; }
+.a-metric.v-hero-number .hn-item {
+  display: grid;
+  /* value gets a bounded share so a long figure shrinks (fit engine) instead of pushing the text off-frame */
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  align-items: end;
+  gap: var(--space-section);
+  min-width: 0;
+}
+.a-metric.v-hero-number .hn-value { display: block; min-width: 0; overflow: hidden; color: var(--color-emphasis); }
+.a-metric.v-hero-number .hn-text { display: grid; gap: var(--space-tight); padding-bottom: var(--space-gutter); }
+@container slide (aspect-ratio < 1) {
+  .a-metric.v-hero-number .hn-item { grid-template-columns: 1fr; }
+}

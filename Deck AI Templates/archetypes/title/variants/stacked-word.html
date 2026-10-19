@@ -1,0 +1,13 @@
+<section class="slide a-title v-stacked-word" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  <div data-decor="corner-tl"></div>
+  <div class="sw-word" data-region="word">
+    <h1 class="sw-title t-display-0" data-slot="content.title" data-slot-type="text" data-fit="shrink" data-min-step="display-1">{{content.title}}</h1>
+  </div>
+  <div class="sw-side">
+    {{#if content.eyebrow}}<p class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    {{#if content.subtitle}}<p class="t-lead" data-slot="content.subtitle" data-slot-type="text">{{content.subtitle}}</p>{{/if}}
+    {{#if content.date}}<p class="t-label" data-slot="content.date" data-slot-type="text">{{content.date}}</p>{{/if}}
+  </div>
+  <div data-decor="edge"></div>
+</section>

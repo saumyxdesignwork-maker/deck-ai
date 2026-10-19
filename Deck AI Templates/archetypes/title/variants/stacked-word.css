@@ -1,0 +1,14 @@
+.a-title.v-stacked-word {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
+  align-items: end;
+  padding: var(--space-frame-y) var(--space-frame-x);
+  gap: var(--space-gutter);
+}
+.a-title.v-stacked-word .sw-word { height: 100%; display: flex; align-items: flex-end; overflow: hidden; }
+/* one word per line */
+.a-title.v-stacked-word .sw-title { word-spacing: 100vw; text-wrap: wrap; }
+.a-title.v-stacked-word .sw-side { display: grid; gap: var(--space-tight); padding-bottom: var(--space-tight); }
+@container slide (aspect-ratio < 1) {
+  .a-title.v-stacked-word { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; }
+}

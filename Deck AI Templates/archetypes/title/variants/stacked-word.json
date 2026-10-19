@@ -1,0 +1,12 @@
+{
+  "archetype": "title",
+  "variant": "stacked-word",
+  "slots": {
+    "eyebrow": { "type": "text", "optional": true, "chars_max": 40 },
+    "title": { "type": "text", "chars_max": 28, "words_max": 3 },
+    "subtitle": { "type": "text", "optional": true, "chars_max": 90 },
+    "date": { "type": "text", "optional": true, "chars_max": 40 }
+  },
+  "decor_anchors": ["frame", "corner-tl", "edge"],
+  "supports_aspects": ["16:9", "4:3", "1:1", "4:5", "A4"]
+}

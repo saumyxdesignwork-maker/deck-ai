@@ -1,0 +1,11 @@
+<section class="slide a-title v-type-only" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  <div data-decor="corner-tl"></div>
+  <div class="tt-main" data-region="main">
+    {{#if content.eyebrow}}<p class="tt-eyebrow t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    <h1 class="tt-title t-display-1" data-slot="content.title" data-slot-type="text" data-fit="shrink" data-min-step="display-3">{{content.title}}</h1>
+    {{#if content.subtitle}}<p class="tt-subtitle t-lead" data-slot="content.subtitle" data-slot-type="text" data-fit="shrink" data-min-step="body">{{content.subtitle}}</p>{{/if}}
+  </div>
+  {{#if content.date}}<p class="tt-date t-label" data-slot="content.date" data-slot-type="text">{{content.date}}</p>{{/if}}
+  <div data-decor="edge"></div>
+</section>

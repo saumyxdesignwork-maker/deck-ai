@@ -1,0 +1,13 @@
+{
+  "id": "gradient-burn",
+  "version": "0.1.0",
+  "name": "Gradient Burn",
+  "tags": ["bold", "modern", "dark", "gradient", "keynote"],
+  "best_for": ["keynote", "vision narrative", "product launch", "research reveal"],
+  "palettes": ["default"],
+  "fonts": [
+    { "family": "Saira Semi Condensed", "licence": "OFL-1.1", "package": "@fontsource/saira-semi-condensed" },
+    { "family": "Manrope", "licence": "OFL-1.1", "package": "@fontsource/manrope" }
+  ],
+  "references": "5 user-supplied moodboards, 19 Oct 2026 — principles only, see analysis.md"
+}

@@ -1,0 +1,12 @@
+{
+  "archetype": "quote",
+  "variant": "centered-badge",
+  "slots": {
+    "number": { "type": "text", "optional": true, "chars_max": 6, "nowrap": true },
+    "eyebrow": { "type": "text", "optional": true, "chars_max": 40 },
+    "quote": { "type": "text", "chars_ideal": 70, "chars_max": 160 },
+    "attribution": { "type": "text", "optional": true, "chars_max": 60 }
+  },
+  "decor_anchors": ["frame", "edge"],
+  "supports_aspects": ["16:9", "4:3", "1:1", "4:5", "A4"]
+}

@@ -1,0 +1,13 @@
+.a-text.v-lead-column {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  grid-template-rows: minmax(0, 1fr);
+  align-items: start;
+  padding: calc(var(--space-frame-y) * 1.5) var(--space-frame-x) var(--space-frame-y);
+  column-gap: calc(var(--space-gutter) * 2);
+}
+.a-text.v-lead-column .lc-head,
+.a-text.v-lead-column .lc-body { display: grid; gap: var(--space-gutter); max-height: 100%; overflow: hidden; align-content: start; }
+@container slide (aspect-ratio < 1) {
+  .a-text.v-lead-column { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); row-gap: var(--space-section); }
+}

@@ -1,0 +1,12 @@
+<section class="slide a-quote v-centered-badge" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  <div class="qb-top">
+    {{#if content.number}}<span class="qb-badge t-label" data-slot="content.number" data-slot-type="text" data-nowrap data-fit="shrink">{{content.number}}</span>{{/if}}
+    {{#if content.eyebrow}}<p class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+  </div>
+  <div class="qb-main" data-region="main">
+    <p class="qb-quote t-display-3" data-slot="content.quote" data-slot-type="text" data-fit="shrink" data-min-step="lead">{{content.quote}}</p>
+  </div>
+  {{#if content.attribution}}<p class="qb-attr t-caption" data-slot="content.attribution" data-slot-type="text">{{content.attribution}}</p>{{/if}}
+  <div data-decor="edge"></div>
+</section>

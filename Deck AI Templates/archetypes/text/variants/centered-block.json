@@ -1,0 +1,12 @@
+{
+  "archetype": "text",
+  "variant": "centered-block",
+  "slots": {
+    "eyebrow": { "type": "text", "optional": true, "chars_max": 40 },
+    "title": { "type": "text", "chars_ideal": 36, "chars_max": 70 },
+    "lead": { "type": "text", "optional": true, "chars_max": 140 },
+    "body": { "type": "paragraphs", "chars_max": 520 }
+  },
+  "decor_anchors": ["frame", "edge"],
+  "supports_aspects": ["16:9", "4:3", "1:1", "4:5", "A4"]
+}

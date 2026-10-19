@@ -1,0 +1,11 @@
+/* Draft: neutral wireframe skin for exercising the engine. Not a product visual language. */
+.vl-draft .slide [data-decor="corner-tl"] {
+  position: absolute;
+  top: calc(var(--space-frame-y) * 0.4);
+  right: var(--space-frame-x);
+  width: 24px;
+  height: 24px;
+  color: var(--color-emphasis);
+}
+.vl-draft .slide .t-label { color: inherit; }
+.vl-draft .slide[data-ground="inverse"] { --color-line: color-mix(in srgb, currentColor 28%, transparent); }

@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "required": ["title", "body"],
+  "additionalProperties": false,
+  "properties": {
+    "eyebrow": { "type": "string" },
+    "title": { "type": "string" },
+    "lead": { "type": "string" },
+    "body": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "pull_quote": { "type": "string" }
+  }
+}

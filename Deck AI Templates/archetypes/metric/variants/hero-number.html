@@ -1,0 +1,23 @@
+<section class="slide a-metric v-hero-number" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  <div data-decor="corner-tl"></div>
+  {{#if show_chrome}}
+  <header class="chrome chrome--top"><span class="t-label" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
+  <footer class="chrome chrome--bottom"><span class="t-label">{{page}}</span></footer>
+  {{/if}}
+  <div class="hn-main" data-region="main" data-slot="content.items" data-slot-type="list" data-min="1" data-max="1">
+    {{#each content.items}}
+    <div class="hn-item" data-slot-item="{{@index}}">
+      <span class="hn-value t-display-0" data-slot="content.items[{{@index}}].value" data-slot-type="text" data-fit="shrink" data-nowrap data-min-step="display-1">{{value}}</span>
+      <div class="hn-text">
+        {{#if content.eyebrow}}<p class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+        <span class="hn-label t-display-3" data-slot="content.items[{{@index}}].label" data-slot-type="text" data-fit="shrink" data-min-step="lead">{{label}}</span>
+        {{#if note}}<span class="t-body" data-slot="content.items[{{@index}}].note" data-slot-type="text">{{note}}</span>{{/if}}
+        {{#if content.title}}<span class="t-body-s" data-slot="content.title" data-slot-type="text">{{content.title}}</span>{{/if}}
+      </div>
+    </div>
+    {{/each}}
+  </div>
+  {{#if content.source}}<footer class="t-caption" data-slot="content.source" data-slot-type="text">{{content.source}}</footer>{{/if}}
+  <div data-decor="edge"></div>
+</section>

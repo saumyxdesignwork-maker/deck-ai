@@ -1,0 +1,25 @@
+.a-metric.v-row {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  padding: calc(var(--space-frame-y) * 1.5) var(--space-frame-x) var(--space-frame-y);
+  gap: var(--space-section);
+}
+.a-metric.v-row .m-head { display: grid; gap: var(--space-tight); max-width: 70%; }
+.a-metric.v-row .m-items {
+  display: grid;
+  grid-template-columns: repeat(var(--item-count), minmax(0, 1fr));
+  gap: var(--space-gutter);
+  align-items: end;
+  overflow: hidden;
+}
+.a-metric.v-row .m-item {
+  display: grid;
+  gap: var(--space-tight);
+  align-content: end;
+  padding-top: var(--space-tight);
+  border-top: var(--line-rule) solid var(--color-line);
+  min-width: 0;
+}
+.a-metric.v-row .m-value { display: block; min-width: 0; overflow: hidden; }
+.a-metric.v-row .is-emphasis .m-value { color: var(--color-emphasis); }
+.a-metric.v-row .is-emphasis { border-top-color: var(--color-emphasis); }

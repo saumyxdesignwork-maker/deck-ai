@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <radialGradient id="high" cx="1760" cy="60" r="760" gradientUnits="userSpaceOnUse">
+      <stop offset="0" style="stop-color: var(--r-field-cool-2)" stop-opacity="0.8"/>
+      <stop offset="0.45" style="stop-color: var(--r-field-cool-0)" stop-opacity="0.5"/>
+      <stop offset="1" style="stop-color: var(--r-field-cool-0)" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="low" cx="1500" cy="1180" r="720" gradientUnits="userSpaceOnUse">
+      <stop offset="0" style="stop-color: var(--r-field-heat-1)" stop-opacity="0.9"/>
+      <stop offset="0.45" style="stop-color: var(--r-field-heat-0)" stop-opacity="0.55"/>
+      <stop offset="1" style="stop-color: var(--r-field-heat-2)" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#high)"/>
+  <rect width="1920" height="1080" fill="url(#low)"/>
+</svg>
