@@ -14,6 +14,44 @@ export function aspectRatioCss(ratio: AspectRatio | undefined): string {
   return ratio === '4:3' ? '4 / 3' : '16 / 9'
 }
 
+/** The template engine's slide shapes the AI picks per slide while drafting
+ * the outline (mirrors ARCHETYPES in Decks_AI_Service/src/contract/deck.ts —
+ * keep in sync by hand). The cover is always the engine's `title` shape. */
+export const ARCHETYPES = ['text', 'bullets', 'metric', 'quote', 'section', 'closing'] as const
+export type Archetype = (typeof ARCHETYPES)[number]
+
+export const ARCHETYPE_LABELS: Record<Archetype, string> = {
+  text: 'Text',
+  bullets: 'Key points',
+  metric: 'Stats',
+  quote: 'Quote',
+  section: 'Chapter break',
+  closing: 'Closing',
+}
+
+/** The layout an archetype implies — mirrors ARCHETYPE_LAYOUT on the backend. */
+export const ARCHETYPE_LAYOUT: Record<Archetype, LayoutType> = {
+  text: 'statement',
+  bullets: 'key-points',
+  metric: 'data',
+  quote: 'statement',
+  section: 'divider',
+  closing: 'closing',
+}
+
+/** The shape a layout implies — for showing a slide type on outlines whose
+ * copywriter didn't pick one (mirrors archetypeForLayout on the backend). */
+export function archetypeForLayout(layout: LayoutType): Archetype {
+  switch (layout) {
+    case 'divider': return 'section'
+    case 'closing': return 'closing'
+    case 'data': return 'metric'
+    case 'key-points':
+    case 'bento': return 'bullets'
+    default: return 'text'
+  }
+}
+
 export interface StorylineBullet {
   id: string
   text: string
@@ -24,6 +62,8 @@ export interface StorylineSection {
   title: string
   bullets: StorylineBullet[]
   layout: LayoutType
+  /** Set in Studio's outline review (engine templates) — see Archetype. */
+  archetype?: Archetype
 }
 
 export interface Block {
@@ -41,6 +81,9 @@ export interface DeckSection {
   id: string
   title: string
   layout: LayoutType
+  /** The engine slide shape picked at outline time; absent on older decks and
+   * the classic flow, which fall back to inferring it from the blocks. */
+  archetype?: Archetype
   blocks: Block[]
   thumbnailColor: string
 }

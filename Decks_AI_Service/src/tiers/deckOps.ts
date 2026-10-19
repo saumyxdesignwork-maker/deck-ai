@@ -5,6 +5,7 @@
 
 import { newId } from '../lib/ids.js'
 import type { DeckData, DeckSection, Block, LayoutType } from '../contract/deck.js'
+import { archetypeForLayout } from '../contract/deck.js'
 import type { Op } from './planner.js'
 import { COVER_SECTION_ID, COVER_TITLE_BLOCK_ID, COVER_SUBTITLE_BLOCK_ID } from './planner.js'
 
@@ -57,7 +58,17 @@ export function applyReorderSection(deck: DeckData, op: Extract<Op, { kind: 'reo
 }
 
 export function applySetLayout(deck: DeckData, op: Extract<Op, { kind: 'set-layout' }>): DeckData {
-  return { ...deck, sections: deck.sections.map(s => (s.id === op.sectionId ? { ...s, layout: op.layout as LayoutType } : s)) }
+  // A slide with an engine shape gets the shape the new layout implies —
+  // otherwise the template would keep drawing the old shape and the layout
+  // change would be invisible.
+  return {
+    ...deck,
+    sections: deck.sections.map(s =>
+      s.id === op.sectionId
+        ? { ...s, layout: op.layout as LayoutType, ...(s.archetype ? { archetype: archetypeForLayout(op.layout as LayoutType) } : {}) }
+        : s,
+    ),
+  }
 }
 
 /** True if a block/section id referenced by `op` still exists in `deck` —

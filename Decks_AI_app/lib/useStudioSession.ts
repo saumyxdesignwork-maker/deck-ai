@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ChatItem, ChatItemPatch, ClarifyQuestion, OutlineSection, VerifyFlag } from './studioScript'
 import { AspectRatio, DeckData } from './fixtures'
-import { StreamEvent } from './streamEvents'
+import { StreamEvent, RenderedDeckHtml } from './streamEvents'
 import { fetchStream, postJson, DeckServiceError } from './deckStream'
 import { CURRENT_USER } from './identity'
 import { useDeckEditor } from './useDeckEditor'
@@ -15,7 +15,7 @@ export type PreviewState = 'idle' | 'preparing' | 'thumbs' | 'done'
 /** Mirrors the backend's `progress` StreamEvent — see streamEvents.ts. Only
  * ever set during /approve's real slide-generation phases. */
 export interface GenerationProgress {
-  phase: 'structure' | 'images' | 'slides' | 'finalizing'
+  phase: 'structure' | 'images' | 'rendering' | 'slides' | 'finalizing'
   current?: number
   total?: number
 }
@@ -83,6 +83,11 @@ export function useStudioSession(
     resumeDeck ? Array.from({ length: resumeDeck.deck.sections.length + 1 }, (_, i) => i) : [],
   )
   const [streamedDeck, setStreamedDeck] = useState<DeckData | null>(resumeDeck?.deck ?? null)
+  // The generated deck as the server already compiled it into the selected
+  // engine template's HTML (/approve's rendering step). EngineDeck draws this
+  // as-is until an edit or template switch changes the deck's fingerprint,
+  // then compiles locally. Null for classic templates and resumed decks.
+  const [serverRender, setServerRender] = useState<RenderedDeckHtml | null>(null)
   const [sessionId, setSessionId] = useState<string | null>(resumeDeck?.sessionId ?? null)
   const [isWorking, setIsWorking] = useState(!resumeDeck)
   const [clarifyPending, setClarifyPending] = useState<{ id: string; questions: ClarifyQuestion[] } | null>(null)
@@ -259,6 +264,7 @@ export function useStudioSession(
           deckEditorRef.current.applyExternalDeck(event.deck, lastEditInstructionRef.current || undefined)
         } else {
           setStreamedDeck(event.deck)
+          setServerRender(event.rendered ?? null)
         }
         break
       case 'error':
@@ -477,6 +483,7 @@ export function useStudioSession(
     previewState,
     revealedSlides,
     deck: deckEditor.deck,
+    serverRender,
     sessionId,
     dataset,
     isAttachingDataset,

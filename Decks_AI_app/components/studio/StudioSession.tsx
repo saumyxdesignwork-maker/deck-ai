@@ -159,6 +159,7 @@ export function StudioSession({ initialPrompt, aspectRatio, deckStyle = 'profess
             onRegenerateOutline={() => session.regenerateOutline()}
             selectedTemplateId={session.selectedTemplateId}
             onChangeTemplate={session.setSelectedTemplateId}
+            serverRender={session.serverRender}
             verifyFlags={session.verifyFlags}
             isVerifying={session.isVerifying}
             generationProgress={session.generationProgress}

@@ -73,19 +73,23 @@ function sectionSlide(section: DeckSection, index: number): { slide: Slide; sour
   if (heading) from('content.title', heading)
   const done = (archetype: string, content: Record<string, unknown>) => ({ slide: slide(id, archetype, clean(content)), sources })
 
-  switch (section.layout) {
-    case 'divider':
-      return done('section', { number: String(index + 1).padStart(2, '0'), title, kicker: from('content.kicker', paras[0]), image })
-    case 'closing':
-      return done('closing', { title, body: from('content.body', paras[0]), contact: from('content.contact', callouts[0]), image })
-  }
+  // The slide shape the copywriter chose at outline time wins; each branch
+  // still checks the blocks can actually fill it, and anything they can't
+  // falls through to inferring a shape from the blocks (older decks, the
+  // classic flow, or content edited away from its shape).
+  const pick = section.archetype
 
-  if (quotes.length && !paras.length && !cards.length) {
+  if (pick === 'section' || (!pick && section.layout === 'divider'))
+    return done('section', { number: String(index + 1).padStart(2, '0'), title, kicker: from('content.kicker', paras[0]), image })
+  if (pick === 'closing' || (!pick && section.layout === 'closing'))
+    return done('closing', { title, body: from('content.body', paras[0]), contact: from('content.contact', callouts[0]), image })
+
+  if (pick === 'quote' ? quotes.length > 0 : quotes.length && !paras.length && !cards.length) {
     const attribution = callouts[0] ? from('content.attribution', callouts[0]) : section.title
     return done('quote', { quote: from('content.quote', quotes[0]), attribution, image })
   }
 
-  if (cards.length && (section.layout === 'data' || cards.every(c => /\d/.test(c.value) && c.value.length <= 12)))
+  if (cards.length && (pick === 'metric' || (!pick && (section.layout === 'data' || cards.every(c => /\d/.test(c.value) && c.value.length <= 12)))))
     return done('metric', {
       title,
       body: from('content.body', paras[0]),
@@ -96,7 +100,7 @@ function sectionSlide(section: DeckSection, index: number): { slide: Slide; sour
   if (cards.length)
     return done('bullets', { title, intro: from('content.intro', paras[0]), items: cards.map(c => clean({ title: c.title, text: c.value })) })
 
-  if (section.layout === 'key-points' && paras.length + callouts.length >= 2) {
+  if ((pick === 'bullets' || (!pick && section.layout === 'key-points')) && paras.length + callouts.length >= 2) {
     const items = [...paras, ...callouts].map((t, i) => {
       const lead = splitLead(t.text)
       if (!lead) return { title: from(`content.items[${i}].title`, t)! }
@@ -133,6 +137,18 @@ function slide(id: string, archetype: string, content: Record<string, unknown>):
 /** Drops empty optional slots so the engine's capacity rules see only real content. */
 function clean<T extends Record<string, unknown>>(o: T): T {
   return Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined && v !== '')) as T
+}
+
+/**
+ * Fingerprint of an engine deck — the backend computes the same one when it
+ * compiles a freshly generated deck to HTML (Decks_AI_Service/src/render/
+ * engineAdapter.ts mirrors this adapter). EngineDeck shows that server HTML
+ * only while the fingerprints match, i.e. until an edit or a template switch,
+ * after which it compiles locally. If the two adapters ever drift, the
+ * fingerprints just stop matching and the client compiles — slower, never wrong.
+ */
+export function engineDeckKey(deck: Deck): string {
+  return hashString(JSON.stringify(deck))
 }
 
 function hashString(s: string): string {

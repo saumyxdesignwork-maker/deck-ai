@@ -11,6 +11,8 @@ import type { SessionState } from '../session/store.js'
 import type { StreamEvent } from './events.js'
 import type { DeckData } from '../contract/deck.js'
 import type { ChecklistTask } from '../contract/chat.js'
+import { engineVlFor, renderDeckHtml, visualLanguageName, type RenderedDeckHtml } from '../render/renderDeckHtml.js'
+import { logError } from '../lib/log.js'
 
 export type Emit = (event: StreamEvent) => Promise<void>
 
@@ -145,7 +147,27 @@ export async function runApprove(state: SessionState, emit: Emit): Promise<void>
   }
   state.deck = deck
 
-  await emit({ t: 'deck', deck })
+  // Rendering — every slide's copy now fills the shape picked for it at
+  // outline time; compile slide + shape into the selected template's HTML
+  // here, server-side, so the deck arrives already drawn in its template.
+  // Only engine templates have this step (the classic ones render blocks
+  // directly). A failure isn't fatal: the client compiles the same deck.
+  let rendered: RenderedDeckHtml | undefined
+  const vl = engineVlFor(state.templateId)
+  if (vl) {
+    await emit({ t: 'progress', phase: 'rendering' })
+    const renderToolId = newId('tool')
+    await emit({ t: 'group-push', groupId, item: { id: renderToolId, type: 'tool', label: `Rendering into ${visualLanguageName(vl)}`, detail: `Laying out ${sections.length + 1} slides in the template`, status: 'running' } })
+    try {
+      rendered = renderDeckHtml(deck, vl)
+    } catch (err) {
+      logError('pipeline.renderDeckHtml', err)
+      await emit({ t: 'error', message: 'Could not pre-render the template — the slides will be laid out in the browser instead.', code: 'RENDER_FALLBACK' })
+    }
+    await emit({ t: 'update', id: renderToolId, patch: { status: 'done' } })
+  }
+
+  await emit({ t: 'deck', deck, rendered })
   await emit({ t: 'preview', state: 'preparing' })
   await emit({ t: 'preview', state: 'thumbs' })
 

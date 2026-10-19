@@ -2,11 +2,22 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { DeckData } from '@/lib/fixtures'
-import { toEngineDeckWithSources, type SlotSource, type SlotSources } from '@/lib/template-engine-adapter'
+import type { RenderedDeckHtml } from '@/lib/streamEvents'
+import { toEngineDeckWithSources, engineDeckKey, type SlotSource, type SlotSources } from '@/lib/template-engine-adapter'
 import { richFromDom } from '@/lib/template-engine/compiler'
+import type { Deck } from '@/lib/template-engine/types'
 
 type EngineModule = typeof import('@/lib/template-engine')
-type RenderedDeck = ReturnType<EngineModule['renderDeck']>
+
+/** What gets drawn: one HTML string per slide plus the deck's scoped
+ * stylesheet — from the server's render or a local compile, same shape. */
+interface DeckView {
+  css: string
+  scopeClass: string
+  frame: { w: number; h: number }
+  slideIds: string[]
+  slides: string[]
+}
 
 // The engine + its layouts (~400 KB) and fonts load only once a deck actually
 // uses an engine template, so pages on the classic templates never pay for them.
@@ -26,16 +37,29 @@ function useEngine(): EngineModule | null {
   return engine
 }
 
-// One render per deck object + visual language, shared by every EngineDeck
-// drawing it — the thumbnail rail mounts one per slide.
-const renderCache = new WeakMap<DeckData, Map<string, { rendered: RenderedDeck; sources: SlotSources }>>()
-function renderCached(engine: EngineModule, deck: DeckData, vl: string) {
-  let byVl = renderCache.get(deck)
-  if (!byVl) renderCache.set(deck, (byVl = new Map()))
+// Per deck object + visual language, shared by every EngineDeck drawing it —
+// the thumbnail rail mounts one per slide. Adapting (app deck → engine deck,
+// slot sources, fingerprint) needs no engine, so it's ready on first paint;
+// compiling needs the lazily loaded engine.
+interface Adapted { deck: Deck; sources: SlotSources; key: string }
+const adaptCache = new WeakMap<DeckData, Map<string, Adapted>>()
+function adaptCached(deck: DeckData, vl: string): Adapted {
+  let byVl = adaptCache.get(deck)
+  if (!byVl) adaptCache.set(deck, (byVl = new Map()))
   let hit = byVl.get(vl)
   if (!hit) {
     const { deck: engineDeck, sources } = toEngineDeckWithSources(deck, vl)
-    byVl.set(vl, (hit = { rendered: engine.renderDeck(engineDeck), sources }))
+    byVl.set(vl, (hit = { deck: engineDeck, sources, key: engineDeckKey(engineDeck) }))
+  }
+  return hit
+}
+
+const compileCache = new WeakMap<Deck, DeckView>()
+function compileCached(engine: EngineModule, engineDeck: Deck): DeckView {
+  let hit = compileCache.get(engineDeck)
+  if (!hit) {
+    const r = engine.renderDeck(engineDeck)
+    compileCache.set(engineDeck, (hit = { css: r.css, scopeClass: r.scopeClass, frame: r.frame, slideIds: r.plan.map(p => p.slide.id), slides: r.slides }))
   }
   return hit
 }
@@ -52,6 +76,11 @@ interface EngineDeckProps {
   deck: DeckData
   /** Template-engine visual language id (DeckTemplate.engine.vl). */
   vl: string
+  /** The deck as the server already compiled it into this template (Studio's
+   * /approve rendering step). Drawn as-is while it still matches `deck` + `vl`
+   * — i.e. until an edit or a template switch — then the deck is compiled
+   * locally instead. */
+  prerendered?: RenderedDeckHtml | null
   /** Render only these slide indexes (0 = cover). Omit to render every slide;
    * `[]` renders just the deck's stylesheet (see `styles`). */
   only?: number[]
@@ -80,7 +109,7 @@ interface EngineDeckProps {
  * escaped by the engine's compiler, so the HTML is safe to inject.
  */
 export function EngineDeck({
-  deck, vl, only, styles = true, slideRef, activeIndex, onSelect, gap = 18, showFrame = false,
+  deck, vl, prerendered, only, styles = true, slideRef, activeIndex, onSelect, gap = 18, showFrame = false,
   onUpdateBlockContent, onBeginBlockEdit, onCommitBlockEdit,
 }: EngineDeckProps) {
   const engine = useEngine()
@@ -88,8 +117,15 @@ export function EngineDeck({
   const [width, setWidth] = useState(0)
   const editable = !!onUpdateBlockContent
 
-  const result = useMemo(() => (engine ? renderCached(engine, deck, vl) : null), [engine, deck, vl])
-  const rendered = result?.rendered ?? null
+  const adapted = useMemo(() => adaptCached(deck, vl), [deck, vl])
+  const fromServer = prerendered && prerendered.vl === vl && prerendered.key === adapted.key ? prerendered : null
+  const rendered = useMemo<DeckView | null>(
+    () => fromServer ?? (engine ? compileCached(engine, adapted.deck) : null),
+    [fromServer, engine, adapted],
+  )
+  // Slot sources come from the adapter, so inline editing works on the
+  // server's HTML as well as a local compile.
+  const result = rendered ? { sources: adapted.sources } : null
 
   // While a slot is being typed into, its slide keeps the HTML it had when
   // editing began: re-injecting fresh engine HTML on every keystroke would
@@ -178,13 +214,18 @@ export function EngineDeck({
   const scale = width ? width / frame.w : 0
 
   return (
-    <div ref={rootRef} className={editable ? 'dk-engine-editable' : undefined} style={{ width: '100%' }}>
+    <div
+      ref={rootRef}
+      className={editable ? 'dk-engine-editable' : undefined}
+      data-render-source={rendered ? (fromServer ? 'server' : 'local') : undefined}
+      style={{ width: '100%' }}
+    >
       {rendered && styles && <style>{rendered.css}</style>}
       {rendered && styles && editable && <style>{editCss}</style>}
       {!rendered && only?.length !== 0 && <div style={{ aspectRatio: `${frame.w} / ${frame.h}`, borderRadius: 4, background: 'var(--surface-muted)' }} />}
       {rendered && indexes.map((i, n) => (
         <div
-          key={rendered.plan[i]?.slide.id ?? i}
+          key={rendered.slideIds[i] ?? i}
           ref={el => slideRef?.(i, el)}
           data-engine-slide={i}
           onClick={onSelect ? () => onSelect(i) : undefined}

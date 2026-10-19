@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { GripVertical, Copy, Trash2, Plus, X } from 'lucide-react'
-import { StorylineSection, LayoutType } from '@/lib/fixtures'
-import { LayoutSelector } from './LayoutSelector'
+import { StorylineSection, LayoutType, ARCHETYPE_LAYOUT, archetypeForLayout, type Archetype } from '@/lib/fixtures'
+import { LayoutSelector, SlideTypeSelector } from './LayoutSelector'
 import { useTheme } from '@/components/controls/ThemeProvider'
 
 interface StorylineSectionCardProps {
@@ -26,6 +26,11 @@ interface StorylineSectionCardProps {
    * buttons for a compact segmented control, visually separated from the
    * bullets above it. Classic's storyline page omits this. */
   compactLayoutPicker?: boolean
+  /** Studio's outline review with an engine template: the bottom control
+   * picks the slide's shape (its archetype) instead of a layout — the shape
+   * is what the template actually builds the slide from. Picking one also
+   * sets the layout it implies. */
+  slideTypePicker?: boolean
 }
 
 export function StorylineSectionCard({
@@ -39,6 +44,7 @@ export function StorylineSectionCard({
   hideNumberBadge,
   slideLabel,
   compactLayoutPicker,
+  slideTypePicker,
 }: StorylineSectionCardProps) {
   const [hovered, setHovered] = useState(false)
   const { vl } = useTheme()
@@ -65,6 +71,7 @@ export function StorylineSectionCard({
 
   const updateTitle = (title: string) => onUpdate({ ...section, title })
   const updateLayout = (layout: LayoutType) => onUpdate({ ...section, layout })
+  const updateArchetype = (archetype: Archetype) => onUpdate({ ...section, archetype, layout: ARCHETYPE_LAYOUT[archetype] })
   const updateBullet = (id: string, text: string) =>
     onUpdate({ ...section, bullets: section.bullets.map((b) => (b.id === id ? { ...b, text } : b)) })
   const addBullet = () =>
@@ -333,9 +340,13 @@ export function StorylineSectionCard({
         }}
       >
         <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 7, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          Layout
+          {slideTypePicker ? 'Slide type' : 'Layout'}
         </p>
-        <LayoutSelector selected={section.layout} onChange={updateLayout} variant={compactLayoutPicker ? 'compact' : 'thumbnail'} />
+        {slideTypePicker ? (
+          <SlideTypeSelector selected={section.archetype ?? archetypeForLayout(section.layout)} onChange={updateArchetype} />
+        ) : (
+          <LayoutSelector selected={section.layout} onChange={updateLayout} variant={compactLayoutPicker ? 'compact' : 'thumbnail'} />
+        )}
       </div>
     </div>
   )

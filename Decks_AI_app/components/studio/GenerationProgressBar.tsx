@@ -6,6 +6,7 @@ import type { GenerationProgress } from '@/lib/useStudioSession'
 const PHASE_LABEL: Record<GenerationProgress['phase'], string> = {
   structure: 'Building your slides',
   images: 'Preparing visuals',
+  rendering: 'Rendering into your template',
   slides: 'Creating slide layouts',
   finalizing: 'Finalizing your deck',
 }

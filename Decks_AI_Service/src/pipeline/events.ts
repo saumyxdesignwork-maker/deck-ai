@@ -1,5 +1,6 @@
 import type { ChatItem, ChatItemPatch, ClarifyQuestion, OutlineSection } from '../contract/chat.js'
 import type { DeckData } from '../contract/deck.js'
+import type { RenderedDeckHtml } from '../render/renderDeckHtml.js'
 
 /**
  * NDJSON wire protocol emitted by every streaming route. Thin wrapper around
@@ -19,7 +20,10 @@ export type StreamEvent =
   | { t: 'outline'; id: string; sections: OutlineSection[] }
   | { t: 'preview'; state: 'preparing' | 'thumbs' | 'done' }
   | { t: 'reveal-slide'; index: number }
-  | { t: 'deck'; deck: DeckData }
+  /** `rendered`: the deck already compiled into the selected engine template's
+   * HTML on the server (see render/renderDeckHtml.ts) — present only for
+   * engine templates, and only if compiling succeeded. */
+  | { t: 'deck'; deck: DeckData; rendered?: RenderedDeckHtml }
   | { t: 'error'; message: string; code: string }
   | { t: 'done' }
   /** Coarse, honest lifecycle progress for the /approve slide-generation
@@ -28,7 +32,7 @@ export type StreamEvent =
    * the phase has a genuinely countable unit of work (images rendered,
    * slides revealed); 'structure' and 'finalizing' are single atomic steps
    * with nothing to count, so they're indeterminate (no current/total). */
-  | { t: 'progress'; phase: 'structure' | 'images' | 'slides' | 'finalizing'; current?: number; total?: number }
+  | { t: 'progress'; phase: 'structure' | 'images' | 'rendering' | 'slides' | 'finalizing'; current?: number; total?: number }
 
 /** Serializes one event as an NDJSON line (including the trailing newline). */
 export function toLine(event: StreamEvent): string {

@@ -96,3 +96,35 @@ const catalogue = visualLanguages
 writeFileSync(join(out, "catalogue.json"), JSON.stringify(catalogue, null, 2));
 
 console.log(`exported ${variants.length} variants, ${visualLanguages.length} visual languages, ${fontImports.size} font imports → ${out}`);
+
+// ---------- server copy (Decks_AI_Service/src/template-engine/) ----------
+// The backend compiles each generated slide into its template's HTML right
+// after generation, so it needs the same engine — minus everything that
+// needs a browser: the fit pass (fit.ts, measures rendered text) and the
+// inline-edit DOM reader (compiler.ts's richFromDom). The service runs
+// NodeNext ESM, so relative imports get explicit `.js` suffixes and the
+// bundle is read from disk rather than imported as JSON.
+const serviceDir = resolve(root, "../Decks_AI_Service");
+if (existsSync(serviceDir)) {
+  const sout = join(serviceDir, "src/template-engine");
+  mkdirSync(sout, { recursive: true });
+  const nodeImports = (src) => src.replace(/(from\s+["'])(\.\/[^"']+?)(["'])/g, (m, a, p, b) => (p.endsWith(".js") ? m : `${a}${p}.js${b}`));
+  const stripDom = (src) => src.replace(/\/\*\* Inverse of richHtml[\s\S]*?\nexport function richFromDom[\s\S]*?\n}\n/, "");
+  for (const f of engineFiles.filter((f) => f !== "fit.ts")) {
+    let src = read(join(root, "src/engine", f));
+    if (f === "compiler.ts") src = stripDom(src);
+    if (src.includes("richFromDom") || src.includes("getComputedStyle")) throw new Error(`${f}: browser-only code left in the server copy`);
+    writeFileSync(join(sout, f), HEADER + nodeImports(src));
+  }
+  writeFileSync(join(sout, "bundle.json"), JSON.stringify(bundle));
+  writeFileSync(join(sout, "index.ts"), `${HEADER}import { readFileSync } from "node:fs";
+import { loadRegistry, type RegistryData } from "./registry.js";
+
+loadRegistry(JSON.parse(readFileSync(new URL("./bundle.json", import.meta.url), "utf8")) as RegistryData);
+
+export { renderDeck, type RenderedDeck } from "./render.js";
+export { getVisualLanguage, visualLanguages } from "./registry.js";
+export type { Deck, Slide, Aspect } from "./types.js";
+`);
+  console.log(`exported server engine (no fit pass) → ${sout}`);
+}

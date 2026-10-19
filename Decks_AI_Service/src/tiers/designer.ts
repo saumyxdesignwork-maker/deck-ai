@@ -30,6 +30,7 @@ export function applyTheme(
     id: newId('section'),
     title: s.title,
     layout: s.layout,
+    ...(s.archetype ? { archetype: s.archetype } : {}),
     thumbnailColor: sectionColors[i] ?? FALLBACK_PALETTE[i % FALLBACK_PALETTE.length],
     blocks: s.blocks.map(b => ({ ...b, id: newId('block') })),
   }))

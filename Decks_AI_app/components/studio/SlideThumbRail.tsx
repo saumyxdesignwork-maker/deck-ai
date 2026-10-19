@@ -4,11 +4,14 @@ import { motion, useReducedMotion } from 'motion/react'
 import { AspectRatio, DeckData, DeckSection, Block, aspectRatioCss } from '@/lib/fixtures'
 import { motionPresets } from '@/lib/motion'
 import { EngineDeck } from '@/components/deck/EngineDeck'
+import type { RenderedDeckHtml } from '@/lib/streamEvents'
 
 interface SlideThumbRailProps {
   deck: DeckData | null
   /** Template-engine visual language — thumbnails are then the real engine slides. */
   engineVl?: string
+  /** The server's compiled HTML for this deck, when still current (see EngineDeck). */
+  prerendered?: RenderedDeckHtml | null
   revealedSlides: number[]
   activeIndex: number | null
   onSelect: (index: number) => void
@@ -171,7 +174,7 @@ function MiniSection({ section, height }: { section: DeckSection; height: number
   )
 }
 
-export function SlideThumbRail({ deck, engineVl, revealedSlides, activeIndex, onSelect }: SlideThumbRailProps) {
+export function SlideThumbRail({ deck, engineVl, prerendered, revealedSlides, activeIndex, onSelect }: SlideThumbRailProps) {
   const fadeIn = motionPresets(useReducedMotion()).content
   const totalSlides = deck ? 1 + deck.sections.length : 0
   const slots = Array.from({ length: totalSlides }, (_, i) => i)
@@ -197,7 +200,7 @@ export function SlideThumbRail({ deck, engineVl, revealedSlides, activeIndex, on
       }}
     >
       {/* One copy of the engine stylesheet for every thumbnail below. */}
-      {engineVl && deck && <EngineDeck deck={deck} vl={engineVl} only={[]} />}
+      {engineVl && deck && <EngineDeck deck={deck} vl={engineVl} prerendered={prerendered} only={[]} />}
       {slots.map(i => {
         const revealed = revealedSlides.includes(i)
         const isActive = activeIndex === i
@@ -233,7 +236,7 @@ export function SlideThumbRail({ deck, engineVl, revealedSlides, activeIndex, on
               >
                 {engineVl ? (
                   <div style={{ pointerEvents: 'none' }}>
-                    <EngineDeck deck={deck} vl={engineVl} only={[i]} styles={false} />
+                    <EngineDeck deck={deck} vl={engineVl} prerendered={prerendered} only={[i]} styles={false} />
                   </div>
                 ) : (
                   <div style={{ width: DESIGN_WIDTH, height, transform: `scale(${SCALE})`, transformOrigin: 'top left', pointerEvents: 'none' }}>

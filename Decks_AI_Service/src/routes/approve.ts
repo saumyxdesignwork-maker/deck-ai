@@ -5,6 +5,7 @@ import { getSession } from '../session/store.js'
 import { runApprove } from '../pipeline/pipeline.js'
 import { toLine } from '../pipeline/events.js'
 import { log, logError } from '../lib/log.js'
+import { ARCHETYPES } from '../contract/deck.js'
 
 const BodySchema = z.object({
   sessionId: z.string().min(1),
@@ -18,6 +19,9 @@ const BodySchema = z.object({
         title: z.string().min(1),
         bullets: z.array(z.string()).min(1),
         layout: z.enum(['statement', 'key-points', 'heading-media', 'media-text', 'bento', 'data', 'divider', 'two-column', 'closing']).optional(),
+        // The slide type picked in the outline (by the copywriter, or changed
+        // by the user in the outline review) — expandDeck fills this shape.
+        archetype: z.enum(ARCHETYPES).optional(),
       }),
     )
     .min(1)

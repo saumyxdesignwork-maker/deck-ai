@@ -13,7 +13,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { OutlineSection } from '@/lib/studioScript'
-import { StorylineSection, LayoutType } from '@/lib/fixtures'
+import { StorylineSection, LayoutType, ARCHETYPE_LAYOUT, archetypeForLayout } from '@/lib/fixtures'
 import { StorylineSectionCard } from '@/components/storyline/StorylineSectionCard'
 import { getTemplate } from '@/lib/deckTemplates'
 import { TemplatePreviewModal } from './TemplatePreviewModal'
@@ -24,7 +24,13 @@ function toEditable(sections: OutlineSection[]): StorylineSection[] {
   return sections.map((s, i) => ({
     id: `outline-${i}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     title: s.title,
-    layout: s.layout ?? DEFAULT_LAYOUT_CYCLE[i % DEFAULT_LAYOUT_CYCLE.length],
+    // A slide type picked by the copywriter implies its layout; only an
+    // outline without one falls back to the positional cycle.
+    layout: s.layout ?? (s.archetype ? ARCHETYPE_LAYOUT[s.archetype] : DEFAULT_LAYOUT_CYCLE[i % DEFAULT_LAYOUT_CYCLE.length]),
+    // Every slide leaves the review with a definite type — the one the
+    // picker shows, even when the copywriter didn't pick one — so what the
+    // user sees selected is exactly the shape that gets built.
+    archetype: s.archetype ?? archetypeForLayout(s.layout ?? DEFAULT_LAYOUT_CYCLE[i % DEFAULT_LAYOUT_CYCLE.length]),
     bullets: s.bullets.map((text, bi) => ({ id: `b-${i}-${bi}-${Date.now()}`, text })),
   }))
 }
@@ -34,6 +40,7 @@ function toOutline(sections: StorylineSection[]): OutlineSection[] {
     title: s.title,
     bullets: s.bullets.map(b => b.text),
     layout: s.layout,
+    ...(s.archetype ? { archetype: s.archetype } : {}),
   }))
 }
 
@@ -56,9 +63,10 @@ interface SortableCardProps {
   onDuplicate: () => void
   onDelete: () => void
   onAddBelow: () => void
+  slideTypePicker: boolean
 }
 
-function SortableCard({ section, index, onUpdate, onDuplicate, onDelete, onAddBelow }: SortableCardProps) {
+function SortableCard({ section, index, onUpdate, onDuplicate, onDelete, onAddBelow, slideTypePicker }: SortableCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: section.id })
   return (
     <div
@@ -81,6 +89,7 @@ function SortableCard({ section, index, onUpdate, onDuplicate, onDelete, onAddBe
         onAddBelow={onAddBelow}
         slideLabel={`Slide ${index + 1}`}
         compactLayoutPicker
+        slideTypePicker={slideTypePicker}
       />
     </div>
   )
@@ -204,6 +213,7 @@ export function OutlineReviewPanel({ sections, onApprove, onRegenerate, template
         id: `s-${Date.now()}`,
         title: 'New Section',
         layout: 'key-points',
+        archetype: 'bullets',
         bullets: [{ id: `b-${Date.now()}`, text: 'Add your key point here' }],
       }
       const next = [...prev]
@@ -215,7 +225,7 @@ export function OutlineReviewPanel({ sections, onApprove, onRegenerate, template
   const addSection = () => {
     setLocal(prev => [
       ...prev,
-      { id: `s-${Date.now()}`, title: 'New Section', layout: 'key-points', bullets: [{ id: `b-${Date.now()}`, text: 'Add a point…' }] },
+      { id: `s-${Date.now()}`, title: 'New Section', layout: 'key-points', archetype: 'bullets', bullets: [{ id: `b-${Date.now()}`, text: 'Add a point…' }] },
     ])
   }
 
@@ -354,6 +364,7 @@ export function OutlineReviewPanel({ sections, onApprove, onRegenerate, template
                 onDuplicate={() => duplicateSection(section.id)}
                 onDelete={() => deleteSection(section.id)}
                 onAddBelow={() => addSectionBelow(section.id)}
+                slideTypePicker={!!activeTemplate.engine}
               />
             ))}
           </SortableContext>

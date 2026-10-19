@@ -21,6 +21,7 @@ import { ResizeHandle } from '@/components/shared/ResizeHandle'
 import { MOCK_DECK, DeckData, LayoutType } from '@/lib/fixtures'
 import { ChatItem, OutlineSection, VerifyFlag } from '@/lib/studioScript'
 import { PreviewState, GenerationProgress } from '@/lib/useStudioSession'
+import type { RenderedDeckHtml } from '@/lib/streamEvents'
 import { GenerationProgressBar } from './GenerationProgressBar'
 import { useResizableWidth } from '@/lib/useResizableWidth'
 import { useDoubleMetaTap, isApplePlatform } from '@/lib/useDoubleMetaTap'
@@ -50,6 +51,9 @@ interface PreviewPaneProps {
    * once a template exists in context either way (see DeckTemplateProvider). */
   selectedTemplateId?: string
   onChangeTemplate: (templateId: string) => void
+  /** The deck as the server compiled it into its engine template (/approve's
+   * rendering step) — drawn as-is until an edit or template switch. */
+  serverRender?: RenderedDeckHtml | null
   verifyFlags: VerifyFlag[]
   isVerifying: boolean
   onVerify: () => void
@@ -98,7 +102,7 @@ interface PreviewPaneProps {
 
 export function PreviewPane({
   previewState, revealedSlides, deck, isWorking, outlinePending, onApproveOutline, onRegenerateOutline,
-  selectedTemplateId, onChangeTemplate,
+  selectedTemplateId, onChangeTemplate, serverRender,
   verifyFlags, isVerifying, onVerify, generationProgress, generationFailed, onRetryGeneration,
   canUndo, canRedo, onUndo, onRedo, deckHistory, onRestoreHistoryPoint,
   onInsertBlock, onInsertSection, onDeleteBlocks, onDuplicateBlocks,
@@ -442,7 +446,7 @@ export function PreviewPane({
       {/* Body */}
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>
         {previewState !== 'idle' && (
-          <SlideThumbRail deck={deck} engineVl={engineVl} revealedSlides={revealedSlides} activeIndex={activeIndex} onSelect={handleSelect} />
+          <SlideThumbRail deck={deck} engineVl={engineVl} prerendered={serverRender} revealedSlides={revealedSlides} activeIndex={activeIndex} onSelect={handleSelect} />
         )}
 
         {/* Canvas */}
@@ -624,6 +628,7 @@ export function PreviewPane({
               <EngineDeck
                 deck={engineDeckData}
                 vl={engineVl}
+                prerendered={serverRender}
                 only={isDone ? undefined : [activeIndex!]}
                 slideRef={(i, el) => { slideRefs.current[i] = el }}
                 activeIndex={activeIndex}

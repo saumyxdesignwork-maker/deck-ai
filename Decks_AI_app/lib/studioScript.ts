@@ -4,7 +4,7 @@
 // useStudioSession.ts streams real events from Decks_AI_Service. This file
 // mirrors Decks_AI_Service/src/contract/chat.ts; keep them in sync by hand.
 
-import type { LayoutType } from './fixtures'
+import type { Archetype, LayoutType } from './fixtures'
 
 export interface ChecklistTask {
   label: string
@@ -29,6 +29,9 @@ export interface OutlineSection {
   /** Set when the user explicitly picked a layout in the outline review
    * card (mirrors Classic's storyline editor). */
   layout?: LayoutType
+  /** Engine slide shape picked by the copywriter while drafting the outline
+   * (mirrors the backend's OutlineSection.archetype). */
+  archetype?: Archetype
 }
 
 export type ChatItem =

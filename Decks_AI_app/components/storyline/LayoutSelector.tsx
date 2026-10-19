@@ -3,9 +3,9 @@
 import { ReactElement } from 'react'
 import {
   AlignLeft, ListTree, LayoutTemplate, Columns2, Columns3, LayoutGrid, BarChart3,
-  SeparatorHorizontal, Megaphone,
+  SeparatorHorizontal, Megaphone, Quote,
 } from 'lucide-react'
-import { LayoutType, LAYOUT_OPTIONS } from '@/lib/fixtures'
+import { LayoutType, LAYOUT_OPTIONS, ARCHETYPES, ARCHETYPE_LABELS, type Archetype } from '@/lib/fixtures'
 
 // Small, literal icons for the compact variant — a control, not a preview
 // thumbnail of what the slide will look like (that's what the SVG mini-
@@ -192,6 +192,52 @@ export function LayoutSelector({ selected, onChange, variant = 'thumbnail' }: La
           <span style={{ fontSize: 9, fontWeight: 500, whiteSpace: 'nowrap' }}>{label}</span>
         </button>
       ))}
+    </div>
+  )
+}
+
+const ARCHETYPE_ICONS: Record<Archetype, ReactElement> = {
+  text: <AlignLeft size={13} />,
+  bullets: <ListTree size={13} />,
+  metric: <BarChart3 size={13} />,
+  quote: <Quote size={13} />,
+  section: <SeparatorHorizontal size={13} />,
+  closing: <Megaphone size={13} />,
+}
+
+/** Studio's outline review, engine templates: picks the slide's shape (the
+ * template-engine archetype the copywriter chose for it) — same compact
+ * segmented look as LayoutSelector's 'compact' variant. */
+export function SlideTypeSelector({ selected, onChange }: { selected: Archetype; onChange: (a: Archetype) => void }) {
+  return (
+    <div role="radiogroup" aria-label="Slide type" style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+      {ARCHETYPES.map(id => {
+        const on = selected === id
+        return (
+          <button
+            key={id}
+            type="button"
+            role="radio"
+            aria-checked={on}
+            onClick={() => onChange(id)}
+            className="dk-focus-ring"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 5,
+              padding: '5px 10px', borderRadius: 'var(--r-pill)',
+              border: '1px solid', borderColor: on ? 'var(--accent)' : 'var(--border)',
+              background: on ? 'var(--accent-soft)' : 'transparent',
+              color: on ? 'var(--accent)' : 'var(--text-muted)',
+              cursor: 'pointer', transition: 'all 0.12s',
+              fontFamily: 'var(--font-body)', fontSize: 11.5, fontWeight: 500, whiteSpace: 'nowrap',
+            }}
+            onMouseEnter={e => { if (!on) (e.currentTarget as HTMLElement).style.borderColor = 'var(--accent)' }}
+            onMouseLeave={e => { if (!on) (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)' }}
+          >
+            {ARCHETYPE_ICONS[id]}
+            {ARCHETYPE_LABELS[id]}
+          </button>
+        )
+      })}
     </div>
   )
 }

@@ -1,6 +1,6 @@
 // Mirrors Decks_AI_app/lib/studioScript.ts — keep these two files in sync by hand.
 
-import type { LayoutType } from './deck.js'
+import type { Archetype, LayoutType } from './deck.js'
 import type { VerifyFlag } from './verify.js'
 
 export interface ChecklistTask {
@@ -20,6 +20,11 @@ export interface OutlineSection {
    * (mirrors Classic's storyline editor). When present, expandDeck honors
    * it instead of letting the model choose. */
   layout?: LayoutType
+  /** The slide shape (template-engine archetype) the copywriter picked for
+   * this slide while drafting the outline — the slide's HTML structure,
+   * decided before any copy is written; expandDeck then fills it. The user
+   * can change it in the outline review before generating. */
+  archetype?: Archetype
 }
 
 export type ChatItem =
