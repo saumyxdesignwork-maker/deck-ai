@@ -1,0 +1,22 @@
+<section class="slide a-metric v-duo" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if show_chrome}}
+  <header class="chrome chrome--top"><span class="t-caption" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <div class="du-head">
+    {{#if content.eyebrow}}<p class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    {{#if content.title}}<h2 class="t-display-3" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="title">{{rich content.title}}</h2>{{/if}}
+  </div>
+  <ol class="du-items" data-region="items" data-slot="content.items" data-slot-type="list" data-min="2" data-max="2">
+    {{#each content.items}}
+    <li class="du-item{{#if emphasis}} is-emphasis{{/if}}" data-slot-item="{{@index}}">
+      <span class="du-pill t-caption" data-slot="content.items[{{@index}}].label" data-slot-type="text" data-nowrap>{{label}}</span>
+      <span class="du-value t-display-0" data-slot="content.items[{{@index}}].value" data-slot-type="text" data-fit="shrink" data-nowrap data-min-step="display-1">{{value}}</span>
+      {{#if note}}<span class="du-note t-caption" data-slot="content.items[{{@index}}].note" data-slot-type="text">{{note}}</span>{{/if}}
+    </li>
+    {{/each}}
+  </ol>
+  {{#if content.source}}<p class="du-source t-caption" data-slot="content.source" data-slot-type="text">{{content.source}}</p>{{/if}}
+  <div data-decor="edge"></div>
+</section>

@@ -1,0 +1,18 @@
+{
+  "archetype": "bullets",
+  "variant": "icon-rows",
+  "slots": {
+    "eyebrow": { "type": "text", "optional": true, "chars_max": 40 },
+    "title": { "type": "text", "chars_ideal": 28, "chars_max": 56 },
+    "intro": { "type": "text", "optional": true, "chars_max": 180 },
+    "items": {
+      "type": "list", "min": 3, "max": 6,
+      "of": {
+        "title": { "type": "text", "chars_max": 40 },
+        "text": { "type": "text", "optional": true, "chars_max": 70 }
+      }
+    }
+  },
+  "decor_anchors": ["frame", "item-mark", "edge"],
+  "supports_aspects": ["16:9", "4:3"]
+}

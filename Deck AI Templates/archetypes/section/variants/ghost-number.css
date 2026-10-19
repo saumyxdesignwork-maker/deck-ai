@@ -1,0 +1,31 @@
+/* a giant numeral runs off the right edge behind a bottom-left title; VLs decide how it fades */
+.a-section.v-ghost-number {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  padding: var(--space-frame-y) var(--space-frame-x);
+}
+.a-section.v-ghost-number .gn-num {
+  position: absolute;
+  z-index: 0;
+  right: -6cqh;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-display);
+  font-size: 128cqh;
+  font-weight: 300;
+  line-height: 0.8;
+  letter-spacing: -0.07em;
+  white-space: nowrap;
+  opacity: 0.25;
+  pointer-events: none;
+}
+.a-section.v-ghost-number .gn-main {
+  position: relative;
+  z-index: 1;
+  align-self: end;
+  display: grid;
+  gap: var(--space-tight);
+  max-width: 55%;
+  max-height: 100%;
+  overflow: hidden;
+}

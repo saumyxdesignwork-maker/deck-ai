@@ -1,0 +1,17 @@
+.a-title.v-pill-top {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  padding: calc(var(--space-frame-y) * 1.6) var(--space-frame-x) var(--space-frame-y);
+}
+.a-title.v-pill-top .pt-main { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-gutter); max-width: 82%; overflow: hidden; }
+.a-title.v-pill-top .pt-pill { padding: 0.45em 0.9em; border: var(--line-hair) solid var(--color-line); border-radius: 4px; white-space: nowrap; }
+.a-title.v-pill-top .pt-subtitle { max-width: 34em; opacity: 0.75; }
+.a-title.v-pill-top .pt-foot {
+  justify-self: end;
+  display: flex;
+  justify-content: space-between;
+  gap: calc(var(--space-gutter) * 3);
+  min-width: 40%;
+  padding-bottom: var(--space-tight);
+  border-bottom: var(--line-hair) solid var(--color-line);
+}

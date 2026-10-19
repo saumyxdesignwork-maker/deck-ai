@@ -36,6 +36,9 @@
           },
           "tag": {
             "type": "string"
+          },
+          "emphasis": {
+            "type": "boolean"
           }
         }
       }

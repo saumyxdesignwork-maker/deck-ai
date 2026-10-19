@@ -1,0 +1,9 @@
+<section class="slide a-closing v-streak" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if content.contact}}<p class="sk-contact t-body-s" data-slot="content.contact" data-slot-type="text">{{content.contact}}</p>{{/if}}
+  <div class="sk-main" data-region="main">
+    <h2 class="sk-title t-display-1" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h2>
+    {{#if content.body}}<p class="sk-body t-body-s" data-slot="content.body" data-slot-type="text">{{content.body}}</p>{{/if}}
+  </div>
+  <div data-decor="edge"></div>
+</section>

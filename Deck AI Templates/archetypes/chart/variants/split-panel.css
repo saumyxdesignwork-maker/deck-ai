@@ -1,0 +1,16 @@
+.a-chart.v-split-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  grid-template-rows: minmax(0, 1fr);
+}
+.a-chart.v-split-panel .sp-left {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-gutter);
+  padding: var(--space-frame-y) calc(var(--space-gutter) * 1.5) var(--space-frame-y) var(--space-frame-x);
+  background: var(--color-ground-inverse);
+  color: var(--color-ink-on-inverse);
+  overflow: hidden;
+}
+.a-chart.v-split-panel .sp-foot { margin-top: auto; display: grid; gap: var(--space-tight); opacity: 0.75; }
+.a-chart.v-split-panel .sp-chart { min-height: 0; padding: calc(var(--space-frame-y) * 1.6) var(--space-frame-x) var(--space-frame-y) calc(var(--space-gutter) * 1.5); }

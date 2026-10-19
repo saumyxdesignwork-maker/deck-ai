@@ -69,7 +69,8 @@ export function fitSlide(section: HTMLElement): FitIssue[] {
   // Frame-bounds check catches absolutely positioned display text clipped by the slide edge.
   const frame = section.getBoundingClientRect();
   for (const el of section.querySelectorAll<HTMLElement>("[data-slot]")) {
-    if (el.dataset.overflow) continue;
+    // data-bleed marks display type designed to run off the frame (e.g. ghost numerals)
+    if (el.dataset.overflow || el.closest("[data-bleed]")) continue;
     const r = el.getBoundingClientRect();
     if (r.width === 0 && r.height === 0) continue;
     if (r.left < frame.left - 1 || r.top < frame.top - 1 || r.right > frame.right + 1 || r.bottom > frame.bottom + 1) {

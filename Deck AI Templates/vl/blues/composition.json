@@ -1,0 +1,38 @@
+{
+  "variant_allow": {
+    "title": ["pill-top"],
+    "section": ["ghost-number"],
+    "text": ["statement-columns", "lead-column"],
+    "bullets": ["glass-stack", "split-rows", "icon-rows", "list"],
+    "metric": ["glass-cards", "duo", "row", "hero-tiles", "hero-number"],
+    "chart": ["split-panel", "takeaway"],
+    "timeline": ["gantt", "wave"],
+    "table": ["ruled"],
+    "comparison": ["tiers"],
+    "quote": ["centered-badge"],
+    "closing": ["streak"],
+    "freeform": ["block"]
+  },
+  "variant_weights": {
+    "bullets.glass-stack": 1.3,
+    "bullets.split-rows": 1.3,
+    "metric.glass-cards": 1.3,
+    "metric.duo": 1.6,
+    "chart.split-panel": 1.3,
+    "text.statement-columns": 1.4
+  },
+  "grounds": {
+    "rotation": "role-based",
+    "by_role": {
+      "title": ["inverse"],
+      "section": ["accent:1"],
+      "bullets": ["accent:0", "inverse"],
+      "metric": ["accent:0", "inverse"],
+      "chart": ["accent:1"],
+      "closing": ["base"]
+    },
+    "default": "inverse",
+    "max_consecutive_same": 3
+  },
+  "chrome": { "show_on": "all-but-title" }
+}

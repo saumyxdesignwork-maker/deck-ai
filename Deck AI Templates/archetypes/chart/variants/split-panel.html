@@ -1,0 +1,17 @@
+<section class="slide a-chart v-split-panel" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if show_chrome}}
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <div class="sp-left" data-region="left">
+    {{#if content.eyebrow}}<p class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    {{#if content.title}}<h2 class="t-display-2" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h2>{{/if}}
+    {{#if content.takeaway}}<p class="t-lead" data-slot="content.takeaway" data-slot-type="text" data-fit="shrink" data-min-step="body">{{content.takeaway}}</p>{{/if}}
+    <div class="sp-foot">
+      {{#if content.body}}<p class="t-body-s" data-slot="content.body" data-slot-type="text">{{content.body}}</p>{{/if}}
+      {{#if content.source}}<p class="t-caption" data-slot="content.source" data-slot-type="text">{{content.source}}</p>{{/if}}
+    </div>
+  </div>
+  <figure class="sp-chart" data-slot="content.chart" data-slot-type="chart">{{chart content.chart}}</figure>
+  <div data-decor="edge"></div>
+</section>

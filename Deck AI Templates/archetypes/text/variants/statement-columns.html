@@ -1,0 +1,18 @@
+<section class="slide a-text v-statement-columns" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if show_chrome}}
+  <header class="chrome chrome--top"><span class="t-caption" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <div class="sc2-head">
+    {{#if content.eyebrow}}<p class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    <h2 class="t-display-3" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="title">{{rich content.title}}</h2>
+  </div>
+  <div class="sc2-body" data-region="body" data-slot="content.body" data-slot-type="paragraphs">
+    {{#if content.lead}}<p class="sc2-label t-title" data-slot="content.lead" data-slot-type="text">{{content.lead}}</p>{{/if}}
+    <div class="sc2-cols">
+      {{#each content.body}}<p class="sc2-col t-display-3" data-slot="content.body[{{@index}}]" data-slot-type="text" data-fit="shrink" data-min-step="lead">{{this}}</p>{{/each}}
+    </div>
+  </div>
+  <div data-decor="edge"></div>
+</section>

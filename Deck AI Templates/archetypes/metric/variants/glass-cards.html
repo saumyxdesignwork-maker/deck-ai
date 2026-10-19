@@ -1,0 +1,24 @@
+<section class="slide a-metric v-glass-cards" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if show_chrome}}
+  <header class="chrome chrome--top"><span class="t-caption" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <div class="gc-head">
+    {{#if content.eyebrow}}<p class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    {{#if content.title}}<h2 class="t-display-2" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h2>{{/if}}
+    {{#if content.body}}<p class="gc-body t-body-s" data-slot="content.body" data-slot-type="text">{{content.body}}</p>{{/if}}
+  </div>
+  <ol class="gc-items" data-region="items" data-slot="content.items" data-slot-type="list" data-min="2" data-max="4" style="--item-count: {{content.items.length}}">
+    {{#each content.items}}
+    <li class="gc-card{{#if emphasis}} is-emphasis{{/if}}" data-slot-item="{{@index}}">
+      <div class="gc-icon" data-decor="item-mark"></div>
+      <span class="gc-value t-display-2" data-slot="content.items[{{@index}}].value" data-slot-type="text" data-fit="shrink" data-nowrap data-min-step="display-3">{{value}}</span>
+      <span class="gc-chip t-caption" data-slot="content.items[{{@index}}].label" data-slot-type="text">{{label}}</span>
+      {{#if note}}<span class="gc-note t-body-s" data-slot="content.items[{{@index}}].note" data-slot-type="text" data-fit="shrink" data-min-step="caption">{{note}}</span>{{/if}}
+    </li>
+    {{/each}}
+  </ol>
+  {{#if content.source}}<p class="gc-source t-caption" data-slot="content.source" data-slot-type="text">{{content.source}}</p>{{/if}}
+  <div data-decor="edge"></div>
+</section>

@@ -1,0 +1,14 @@
+[
+  {"id": "streaks", "file": "streaks.svg", "anchors": ["frame"], "roles": ["bullets", "metric", "text", "chart", "quote"], "grounds": ["accent"], "max_per_slide": 1, "exclude_variants": ["duo"]},
+  {"id": "streaks-right", "file": "streaks-right.svg", "anchors": ["frame"], "roles": ["closing"], "grounds": ["base"], "max_per_slide": 1},
+  {"id": "streak-panel", "file": "streaks.svg", "anchors": ["panel"], "roles": ["*"], "max_per_slide": 1},
+  {"id": "horizon", "file": "horizon.svg", "anchors": ["frame"], "roles": ["title", "section", "text", "quote"], "grounds": ["inverse", "accent"], "variants": ["pill-top", "ghost-number", "statement-columns", "centered-badge"], "max_per_slide": 1},
+  {"id": "beam", "file": "beam.svg", "anchors": ["frame"], "roles": ["metric"], "variants": ["duo"], "max_per_slide": 1},
+  {"id": "corner-glow", "file": "corner-glow.svg", "anchors": ["frame"], "roles": ["bullets", "metric", "text", "table", "timeline", "comparison", "chart", "freeform"], "grounds": ["inverse"], "max_per_slide": 1, "exclude_variants": ["duo"]},
+  {"id": "icon-trend", "file": "icon-trend.svg", "anchors": ["item-mark"], "roles": ["*"], "max_per_slide": 1, "variants": ["glass-cards", "split-rows", "icon-rows"]},
+  {"id": "icon-bars", "file": "icon-bars.svg", "anchors": ["item-mark"], "roles": ["*"], "max_per_slide": 1, "variants": ["glass-cards", "split-rows", "icon-rows"]},
+  {"id": "icon-wave", "file": "icon-wave.svg", "anchors": ["item-mark"], "roles": ["*"], "max_per_slide": 1, "variants": ["glass-cards", "split-rows", "icon-rows"]},
+  {"id": "icon-shield", "file": "icon-shield.svg", "anchors": ["item-mark"], "roles": ["*"], "max_per_slide": 1, "variants": ["glass-cards", "split-rows", "icon-rows"]},
+  {"id": "icon-layers", "file": "icon-layers.svg", "anchors": ["item-mark"], "roles": ["*"], "max_per_slide": 1, "variants": ["glass-cards", "split-rows", "icon-rows"]},
+  {"id": "icon-link", "file": "icon-link.svg", "anchors": ["item-mark"], "roles": ["*"], "max_per_slide": 1, "variants": ["glass-cards", "split-rows", "icon-rows"]}
+]

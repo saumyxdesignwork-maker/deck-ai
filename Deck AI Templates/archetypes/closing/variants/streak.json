@@ -1,0 +1,11 @@
+{
+  "archetype": "closing",
+  "variant": "streak",
+  "slots": {
+    "title": { "type": "text", "chars_ideal": 32, "chars_max": 60 },
+    "body": { "type": "text", "optional": true, "chars_max": 160 },
+    "contact": { "type": "text", "optional": true, "chars_max": 60 }
+  },
+  "decor_anchors": ["frame", "edge"],
+  "supports_aspects": ["16:9", "4:3", "1:1"]
+}

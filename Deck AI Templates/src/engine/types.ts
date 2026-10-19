@@ -93,6 +93,8 @@ export interface OrnamentDef {
   grounds?: GroundKind[];
   /** limit to specific layout variants (by variant name) */
   variants?: string[];
+  /** never place on these layout variants */
+  exclude_variants?: string[];
 }
 
 export interface VisualLanguage {

@@ -1,0 +1,7 @@
+.a-closing.v-streak {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  padding: var(--space-frame-y) var(--space-frame-x);
+}
+.a-closing.v-streak .sk-main { align-self: end; display: grid; gap: var(--space-gutter); max-width: 52%; overflow: hidden; }
+.a-closing.v-streak .sk-body { max-width: 30em; opacity: 0.7; }

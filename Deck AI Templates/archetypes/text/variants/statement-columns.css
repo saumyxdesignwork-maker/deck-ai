@@ -1,0 +1,10 @@
+/* a short heading top-left; one or two large light statements sit low across the slide */
+.a-text.v-statement-columns {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  padding: var(--space-frame-y) var(--space-frame-x);
+}
+.a-text.v-statement-columns .sc2-head { display: grid; gap: var(--space-tight); max-width: 50%; }
+.a-text.v-statement-columns .sc2-body { align-self: end; display: grid; gap: var(--space-tight); overflow: hidden; }
+.a-text.v-statement-columns .sc2-cols { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); column-gap: calc(var(--space-gutter) * 2); }
+.a-text.v-statement-columns .sc2-col { font-weight: 300; text-transform: none; }

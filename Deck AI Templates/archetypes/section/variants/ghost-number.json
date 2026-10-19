@@ -1,0 +1,11 @@
+{
+  "archetype": "section",
+  "variant": "ghost-number",
+  "slots": {
+    "number": { "type": "text", "pattern": "^\\S{1,3}$" },
+    "title": { "type": "text", "chars_ideal": 24, "chars_max": 48 },
+    "kicker": { "type": "text", "optional": true, "chars_max": 120 }
+  },
+  "decor_anchors": ["frame", "edge"],
+  "supports_aspects": ["16:9", "4:3", "1:1"]
+}

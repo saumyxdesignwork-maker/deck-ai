@@ -1,0 +1,30 @@
+<section class="slide a-bullets v-split-rows" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if show_chrome}}
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <div class="sr-left" data-region="left">
+    {{#if content.eyebrow}}<p class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    <h2 class="sr-title t-display-2" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h2>
+    {{#if content.intro}}<p class="sr-intro t-body-s" data-slot="content.intro" data-slot-type="text">{{content.intro}}</p>{{/if}}
+    <ol class="sr-rows" data-slot="content.items" data-slot-type="list" data-min="3" data-max="6">
+      {{#each content.items}}
+      <li class="sr-row{{#if emphasis}} is-emphasis{{/if}}" data-slot-item="{{@index}}">
+        <span class="t-body-s" data-slot="content.items[{{@index}}].title" data-slot-type="text">{{title}}</span>
+        <span class="sr-tag t-caption" aria-hidden="true"></span>
+      </li>
+      {{/each}}
+    </ol>
+  </div>
+  <div class="sr-right">
+    <div class="sr-panel" data-decor="panel"></div>
+    {{#each content.items}}{{#if emphasis}}
+    <article class="sr-card">
+      <div class="sr-icon" data-decor="item-mark"></div>
+      <h3 class="sr-card-title t-display-3" data-slot="content.items[{{@index}}].title" data-slot-type="text" data-fit="shrink" data-min-step="title">{{title}}</h3>
+      {{#if text}}<p class="sr-card-text t-body-s" data-slot="content.items[{{@index}}].text" data-slot-type="text" data-fit="shrink" data-min-step="caption">{{text}}</p>{{/if}}
+    </article>
+    {{/if}}{{/each}}
+  </div>
+  <div data-decor="edge"></div>
+</section>

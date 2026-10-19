@@ -153,6 +153,7 @@ function decorate(html: string, p: PlannedSlide, vl: VisualLanguage, deck: Deck,
         (o.roles.includes("*") || o.roles.includes(p.slide.archetype)) &&
         (!o.grounds || o.grounds.includes(kind)) &&
         (!o.variants || o.variants.includes(p.variant.variant)) &&
+        !o.exclude_variants?.includes(p.variant.variant) &&
         (used.get(o.id) ?? 0) < o.max_per_slide,
     );
     if (!eligible.length) return whole;

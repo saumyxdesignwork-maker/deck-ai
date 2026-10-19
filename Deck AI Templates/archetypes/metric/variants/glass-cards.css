@@ -1,0 +1,32 @@
+.a-metric.v-glass-cards {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  padding: var(--space-frame-y) var(--space-frame-x);
+  row-gap: var(--space-section);
+}
+.a-metric.v-glass-cards .gc-head { display: grid; gap: var(--space-tight); max-width: 60%; }
+.a-metric.v-glass-cards .gc-body { opacity: 0.7; }
+.a-metric.v-glass-cards .gc-items {
+  display: grid;
+  grid-template-columns: repeat(var(--item-count), minmax(0, 1fr));
+  gap: var(--space-gutter);
+  padding: 0 4%;
+  overflow: hidden;
+}
+.a-metric.v-glass-cards .gc-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-tight);
+  padding: calc(var(--space-gutter) * 1.1);
+  border: var(--line-hair) solid var(--color-line);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-card, transparent);
+  min-width: 0;
+  overflow: hidden;
+}
+.a-metric.v-glass-cards .gc-icon { width: 48px; height: 48px; margin-bottom: auto; }
+.a-metric.v-glass-cards .gc-icon:empty { display: block; visibility: hidden; }
+.a-metric.v-glass-cards .gc-value { display: block; width: 100%; overflow: hidden; margin-top: var(--space-section); }
+.a-metric.v-glass-cards .gc-chip { align-self: flex-start; padding: 0.25em 0.6em; background: color-mix(in srgb, currentColor 14%, transparent); }
+.a-metric.v-glass-cards .gc-note { opacity: 0.7; }
+.a-metric.v-glass-cards .is-emphasis { background: var(--color-surface-highlight, var(--color-ink-on-inverse)); color: var(--color-ink-on-highlight, var(--color-ground-inverse)); border-color: transparent; }

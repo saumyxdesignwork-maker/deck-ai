@@ -77,7 +77,8 @@ const MAPPERS: Record<string, (ex: Extracted, warn: string[]) => Content> = {
       image: ex.image,
       items: ex.lists.flat().map((i) => {
         const [rest, tag] = splitTag(i.rest);
-        return i.lead ? { title: i.lead, text: rest || undefined, tag } : { title: rest, tag };
+        const emphasis = i.flags.has("emphasis") || undefined;
+        return i.lead ? { title: i.lead, text: rest || undefined, tag, emphasis } : { title: rest, tag, emphasis };
       }),
     };
   },

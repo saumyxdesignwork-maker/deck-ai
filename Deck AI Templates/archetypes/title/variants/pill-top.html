@@ -1,0 +1,13 @@
+<section class="slide a-title v-pill-top" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  <div class="pt-main" data-region="main">
+    {{#if content.eyebrow}}<p class="pt-pill t-caption" data-slot="content.eyebrow" data-slot-type="text" data-nowrap>{{content.eyebrow}}</p>{{/if}}
+    <h1 class="pt-title t-display-1" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h1>
+    {{#if content.subtitle}}<p class="pt-subtitle t-lead" data-slot="content.subtitle" data-slot-type="text">{{content.subtitle}}</p>{{/if}}
+  </div>
+  <div class="pt-foot">
+    {{#if content.byline}}<span class="t-caption" data-slot="content.byline" data-slot-type="text">{{content.byline}}</span>{{/if}}
+    {{#if content.date}}<span class="t-caption" data-slot="content.date" data-slot-type="text">{{content.date}}</span>{{/if}}
+  </div>
+  <div data-decor="edge"></div>
+</section>

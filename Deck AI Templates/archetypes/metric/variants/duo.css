@@ -1,0 +1,15 @@
+/* two big figures face each other across the slide (a VL may draw a beam between them) */
+.a-metric.v-duo {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  padding: var(--space-frame-y) var(--space-frame-x);
+  row-gap: var(--space-gutter);
+}
+.a-metric.v-duo .du-head { display: grid; gap: var(--space-tight); max-width: 50%; }
+.a-metric.v-duo .du-items { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 14%; align-items: center; overflow: hidden; }
+.a-metric.v-duo .du-item { display: grid; justify-items: start; gap: var(--space-tight); min-width: 0; }
+.a-metric.v-duo .du-item:nth-child(2) { justify-items: end; text-align: right; }
+.a-metric.v-duo .du-pill { padding: 0.35em 0.9em; border-radius: var(--radius-pill); background: color-mix(in srgb, var(--color-emphasis) 70%, transparent); color: var(--color-ground-inverse); white-space: nowrap; }
+.a-metric.v-duo .du-value { display: block; width: 100%; overflow: hidden; line-height: 1; }
+.a-metric.v-duo .du-note { padding: 0.45em 0.9em; border: var(--line-hair) solid var(--color-line); border-radius: var(--radius-pill); text-transform: none; letter-spacing: 0; }
+.a-metric.v-duo .du-note::before { content: "↗ "; }

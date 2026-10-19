@@ -1,0 +1,89 @@
+/* Blues — skin. Electric light on midnight glass; one inverted white card marks the point. */
+
+/* ---------- layers ---------- */
+.vl-blues .slide > [data-decor="frame"] { position: absolute; inset: 0; z-index: 0; }
+.vl-blues .slide > :not([data-decor]):not(.chrome):not(.gn-num) { position: relative; z-index: 1; }
+.vl-blues .slide > :is([data-decor="edge"], [data-decor="corner-tl"]) { display: none; }
+
+/* accent grounds are gradients, not flat fields: cobalt falls into midnight */
+.vl-blues .slide[data-ground="accent"] {
+  background: linear-gradient(115deg, var(--slide-bg) 0%, color-mix(in srgb, var(--slide-bg) 70%, var(--color-ground-inverse)) 70%, var(--color-ground-inverse) 100%);
+}
+.vl-blues .slide[data-ground="base"] {
+  --color-emphasis: var(--color-emphasis-on-base);
+  --color-line: var(--color-line-on-base);
+}
+
+/* ---------- headlines: light grotesk with a soft white→lavender fill on dark; *muted* lead-in ---------- */
+.vl-blues .slide:not([data-ground="base"]) :is(.t-display-0, .t-display-1, .t-display-2) {
+  background-image: linear-gradient(180deg, var(--color-ink-on-inverse) 35%, var(--color-ink-muted-on-inverse) 115%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.vl-blues .slide em { opacity: 1; color: var(--color-ink-muted-on-inverse); -webkit-text-fill-color: var(--color-ink-muted-on-inverse); }
+.vl-blues .slide[data-ground="base"] em { color: var(--color-ink-muted); -webkit-text-fill-color: var(--color-ink-muted); }
+
+/* ---------- chrome: tiny mono footer ---------- */
+.vl-blues .chrome { opacity: 0.55; }
+.vl-blues .chrome--top { top: auto; bottom: calc(var(--space-frame-y) * 0.4); }
+.vl-blues .chrome--bottom { bottom: calc(var(--space-frame-y) * 0.4); }
+.vl-blues .slide .t-label { opacity: 0.8; }
+
+/* ---------- glass + the one white card ---------- */
+.vl-blues :is(.gk-card, .gc-card, .ti-col, .cg-card) {
+  background: var(--color-surface-card);
+  -webkit-backdrop-filter: blur(calc(var(--fx-glass-blur) * 1px));
+  backdrop-filter: blur(calc(var(--fx-glass-blur) * 1px));
+  border-color: var(--color-line);
+}
+.vl-blues :is(.gk-card, .gc-card, .ti-col).is-emphasis,
+.vl-blues .sr-row.is-emphasis {
+  background: var(--color-surface-highlight);
+  color: var(--color-ink-on-highlight);
+  border-color: transparent;
+  box-shadow: 0 0 60px color-mix(in srgb, var(--color-glow-c) 45%, transparent);
+}
+.vl-blues :is(.gk-card, .gc-card).is-emphasis :is(.t-display-0, .t-display-1, .t-display-2) { background-image: none; color: inherit; }
+.vl-blues .gc-chip { background: linear-gradient(90deg, color-mix(in srgb, var(--color-glow-a) 70%, transparent), transparent); }
+.vl-blues .is-emphasis .gc-chip { background: linear-gradient(90deg, color-mix(in srgb, var(--color-glow-a) 30%, transparent), transparent); }
+
+/* icon squares: the SVG's own rect is the square */
+.vl-blues [data-decor="item-mark"] svg { width: 100%; height: 100%; }
+.vl-blues .ic-bg { fill: var(--color-ground-inverse); }
+.vl-blues [data-decor="item-mark"] { color: var(--color-ink-on-inverse); }
+.vl-blues .is-emphasis .ic-bg, .vl-blues .sr-card .ic-bg { fill: var(--color-ground-accent-0); }
+.vl-blues .ir-icon .ic-bg { fill: color-mix(in srgb, var(--color-glow-a) 22%, transparent); }
+.vl-blues .ir-icon { color: var(--color-emphasis); }
+
+/* ---------- chapter ghost numerals ---------- */
+.vl-blues .gn-num {
+  opacity: 1;
+  background-image: linear-gradient(200deg, color-mix(in srgb, var(--color-glow-c) 55%, transparent) 0%, color-mix(in srgb, var(--color-ground-inverse) 85%, transparent) 70%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---------- data ---------- */
+.vl-blues .du-value { font-weight: 300; }
+.vl-blues .du-pill { background: color-mix(in srgb, var(--color-glow-b) 80%, transparent); color: var(--color-ink-on-inverse); }
+.vl-blues .ch--bar .ch-bar { background: linear-gradient(180deg, color-mix(in srgb, var(--color-ink-on-inverse) 14%, transparent), transparent); opacity: 1; border-radius: 6px 6px 0 0; border-top: var(--line-rule) solid color-mix(in srgb, var(--color-ink-on-inverse) 30%, transparent); }
+.vl-blues .ch--bar .is-hl .ch-bar { background: linear-gradient(180deg, var(--color-glow-c), var(--color-glow-b) 55%, var(--color-glow-a)); border-top-color: var(--color-ink-on-inverse); }
+.vl-blues .ch--hbar .ch-bar { background: linear-gradient(90deg, var(--color-glow-a), var(--color-glow-c)); opacity: 0.7; }
+.vl-blues .ch--hbar .is-hl .ch-bar { opacity: 1; }
+.vl-blues .ch--area .ch-line { stroke: var(--color-glow-c); }
+.vl-blues .ch--area .ch-fill-a { stop-color: var(--color-glow-b); stop-opacity: 0.5; }
+.vl-blues .ch--area .ch-fill-b { stop-color: var(--color-glow-a); }
+.vl-blues .ch--area .ch-dot { background: var(--color-glow-c); }
+.vl-blues .a-metric .m-value, .vl-blues .a-metric .hn-value, .vl-blues .ht-value { font-weight: 300; }
+.vl-blues .a-table th { color: var(--color-ink-muted-on-inverse); border-bottom-width: var(--line-hair); }
+.vl-blues .gt-bar { background: linear-gradient(90deg, color-mix(in srgb, var(--color-glow-a) 60%, transparent), color-mix(in srgb, var(--color-glow-b) 60%, transparent)); }
+.vl-blues .is-emphasis .gt-bar { background: linear-gradient(90deg, var(--color-glow-a), var(--color-glow-c)); }
+
+/* ---------- split rows: right half stays ice-white with light streaks ---------- */
+.vl-blues .sr-card { box-shadow: 0 30px 80px color-mix(in srgb, var(--color-glow-a) 25%, transparent); }
+.vl-blues .sr-card .sr-card-title { background-image: none; color: inherit; }
+/* rows sit on a solid panel: no backdrop blur (it also mis-paints inside scaled previews) */
+.vl-blues .sr-row { background: var(--color-surface-card); border-color: var(--color-line); }
+.vl-blues .sr-row.is-emphasis { background: var(--color-surface-highlight); }

@@ -1,0 +1,47 @@
+/* left half paints the inverse role with a list of pill rows; the emphasised item gets a feature card on the light right half */
+.a-bullets.v-split-rows {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+}
+.a-bullets.v-split-rows .sr-left {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-gutter);
+  padding: var(--space-frame-y) calc(var(--space-gutter) * 1.5) var(--space-frame-y) var(--space-frame-x);
+  background: var(--color-ground-inverse);
+  color: var(--color-ink-on-inverse);
+  overflow: hidden;
+}
+.a-bullets.v-split-rows .sr-intro { opacity: 0.7; max-width: 32em; }
+.a-bullets.v-split-rows .sr-rows { display: grid; gap: var(--space-tight); margin-top: auto; counter-reset: sr; }
+.a-bullets.v-split-rows .sr-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-gutter);
+  padding: 0.7em 1em;
+  border: var(--line-hair) solid var(--color-line);
+  border-radius: var(--radius-card);
+  counter-increment: sr;
+}
+.a-bullets.v-split-rows .sr-tag::before { content: "(" counter(sr, decimal-leading-zero) ")"; }
+.a-bullets.v-split-rows .sr-row.is-emphasis { background: var(--color-ink-on-inverse); color: var(--color-ground-inverse); border-color: transparent; }
+.a-bullets.v-split-rows .sr-right { position: relative; display: grid; place-items: center; padding: var(--space-frame-y) var(--space-frame-x); overflow: hidden; }
+.a-bullets.v-split-rows .sr-panel { position: absolute; inset: 0; }
+.a-bullets.v-split-rows .sr-card {
+  position: relative;
+  width: 82%;
+  aspect-ratio: 1.25;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: var(--space-tight);
+  padding: calc(var(--space-gutter) * 1.4);
+  background: var(--color-ground-base);
+  color: var(--color-ink-primary);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+.a-bullets.v-split-rows .sr-icon { position: absolute; top: calc(var(--space-gutter) * 1.4); right: calc(var(--space-gutter) * 1.4); width: 48px; height: 48px; }
+.a-bullets.v-split-rows .sr-card-text { opacity: 0.7; max-width: 30em; }
