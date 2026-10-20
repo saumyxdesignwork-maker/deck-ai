@@ -3,6 +3,7 @@
 // Fonts for every template visual language (open licence, @fontsource). Imported only by the template renderer chunk.
 import "@fontsource-variable/archivo/wdth.css";
 import "@fontsource-variable/newsreader/opsz.css";
+import "@fontsource/chango/400.css";
 import "@fontsource/geist-mono/400.css";
 import "@fontsource/geist-sans/300.css";
 import "@fontsource/geist-sans/400.css";

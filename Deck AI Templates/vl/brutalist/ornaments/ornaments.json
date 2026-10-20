@@ -1,0 +1,173 @@
+[
+  {
+    "id": "burst",
+    "file": "burst.svg",
+    "anchors": [
+      "burst"
+    ],
+    "roles": [
+      "*"
+    ],
+    "max_per_slide": 1
+  },
+  {
+    "id": "burst-rays",
+    "file": "ray-star.svg",
+    "anchors": [
+      "burst"
+    ],
+    "roles": [
+      "*"
+    ],
+    "max_per_slide": 1
+  },
+  {
+    "id": "sparkles",
+    "file": "sparkles.svg",
+    "anchors": [
+      "edge"
+    ],
+    "roles": [
+      "*"
+    ],
+    "max_per_slide": 1,
+    "exclude_variants": [
+      "block-collage",
+      "block-split",
+      "burst",
+      "block-checker"
+    ]
+  },
+  {
+    "id": "ray-star",
+    "file": "ray-star.svg",
+    "anchors": [
+      "edge"
+    ],
+    "roles": [
+      "*"
+    ],
+    "max_per_slide": 1,
+    "exclude_variants": [
+      "block-collage",
+      "block-split",
+      "burst",
+      "block-checker"
+    ]
+  },
+  {
+    "id": "fr-quarter",
+    "file": "fr-quarter.svg",
+    "anchors": [
+      "frame"
+    ],
+    "roles": [
+      "*"
+    ],
+    "max_per_slide": 1,
+    "exclude_variants": [
+      "block-collage",
+      "block-split",
+      "burst",
+      "block-checker",
+      "cards-grid",
+      "hero-tiles",
+      "thank-you"
+    ]
+  },
+  {
+    "id": "fr-corner",
+    "file": "fr-corner.svg",
+    "anchors": [
+      "frame"
+    ],
+    "roles": [
+      "*"
+    ],
+    "max_per_slide": 1,
+    "exclude_variants": [
+      "block-collage",
+      "block-split",
+      "burst",
+      "block-checker",
+      "cards-grid",
+      "hero-tiles",
+      "thank-you"
+    ]
+  },
+  {
+    "id": "fr-strip",
+    "file": "fr-strip.svg",
+    "anchors": [
+      "frame"
+    ],
+    "roles": [
+      "*"
+    ],
+    "max_per_slide": 1,
+    "exclude_variants": [
+      "block-collage",
+      "block-split",
+      "burst",
+      "block-checker",
+      "cards-grid",
+      "hero-tiles",
+      "thank-you"
+    ]
+  },
+  {
+    "id": "fr-band",
+    "file": "fr-band.svg",
+    "anchors": [
+      "frame"
+    ],
+    "roles": [
+      "*"
+    ],
+    "max_per_slide": 1,
+    "exclude_variants": [
+      "block-collage",
+      "block-split",
+      "burst",
+      "block-checker",
+      "cards-grid",
+      "hero-tiles",
+      "thank-you"
+    ]
+  },
+  {
+    "id": "zig-box",
+    "file": "zig-box.svg",
+    "anchors": [
+      "zig"
+    ],
+    "roles": [
+      "*"
+    ],
+    "max_per_slide": 1
+  },
+  {
+    "id": "photo-fill",
+    "file": "photo-fill.svg",
+    "anchors": [
+      "photo"
+    ],
+    "roles": [
+      "*"
+    ],
+    "max_per_slide": 4,
+    "fill": true
+  },
+  {
+    "id": "photo-grey",
+    "file": "photo-grey.svg",
+    "anchors": [
+      "photo"
+    ],
+    "roles": [
+      "*"
+    ],
+    "max_per_slide": 4,
+    "placeholder": true
+  }
+]

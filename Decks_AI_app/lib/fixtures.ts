@@ -282,6 +282,7 @@ export const SUGGESTED_PROMPTS = [
   'Create a competitive analysis deck for our marketing team',
   'Build an onboarding deck for new team members',
   'Make a case study deck showcasing our top customer win',
+  'Create a brand portfolio for a creative studio',
   'Generate a roadmap presentation for the next two quarters',
 ]
 
@@ -299,7 +300,7 @@ export interface StudioTemplate {
 // whose use case the template's own `bestFor` tags fit best (e.g. Blues'
 // "investor update" pairs with the Series A prompt). A styling judgment
 // call, not load-bearing logic — safe to re-map if a template changes.
-const STUDIO_TEMPLATE_IDS = ['vl-gradient-burn', 'vl-data-first', 'vl-blues', 'vl-playful', 'vl-cherry', 'vl-illustration', 'vl-editorial']
+const STUDIO_TEMPLATE_IDS = ['vl-gradient-burn', 'vl-data-first', 'vl-blues', 'vl-playful', 'vl-cherry', 'vl-illustration', 'vl-editorial', 'vl-brutalist']
 export const STUDIO_TEMPLATES: StudioTemplate[] = SUGGESTED_PROMPTS.slice(0, STUDIO_TEMPLATE_IDS.length).map((prompt, i) => ({
   prompt,
   templateId: STUDIO_TEMPLATE_IDS[i],

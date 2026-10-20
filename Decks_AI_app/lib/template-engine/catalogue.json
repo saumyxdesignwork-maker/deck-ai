@@ -52,6 +52,60 @@
     "defaultGround": "inverse"
   },
   {
+    "id": "brutalist",
+    "name": "Brutalist",
+    "category": "creative",
+    "blurb": "Loud flat colour blocks colliding on every slide: acid lime, bubblegum pink, coral red, kelly green and marigold, with black for punctuation.",
+    "bestFor": [
+      "brand portfolio",
+      "agency credentials",
+      "campaign pitch",
+      "creative studio intro"
+    ],
+    "palette": {
+      "ground.base": "#DDF02B",
+      "ground.inverse": "#121212",
+      "ground.accent": [
+        "#DDF02B",
+        "#F590CE",
+        "#F2433C",
+        "#22B357",
+        "#F7B500"
+      ],
+      "ink.primary": "#121212",
+      "ink.secondary": "#121212",
+      "ink.muted": "#121212B8",
+      "ink.on-inverse": "#FFFFFF",
+      "ink.muted-on-inverse": "#FFFFFFB8",
+      "ink.on-accent": [
+        "#121212",
+        "#121212",
+        "#121212",
+        "#121212",
+        "#121212"
+      ],
+      "line": "#121212",
+      "emphasis": "#121212",
+      "signal": "#F2433C",
+      "photo.light": "#D9D4CB",
+      "photo.dark": "#8F8A82",
+      "surface.card": "#FFFFFF66",
+      "chart.series": [
+        "#121212",
+        "#F2433C",
+        "#22B357",
+        "#F590CE",
+        "#F7B500"
+      ]
+    },
+    "fonts": {
+      "display": "Chango",
+      "text": "Archivo Variable",
+      "label": "Chango"
+    },
+    "defaultGround": "base"
+  },
+  {
     "id": "cherry",
     "name": "Cherry",
     "category": "creative",

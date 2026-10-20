@@ -1,0 +1,14 @@
+/* cover: a colour-block collage with a framed photo on the left, a loud title block on the right */
+.a-title.v-block-collage { display: grid; grid-template-columns: minmax(0, 42fr) minmax(0, 58fr); padding: 0; }
+.a-title.v-block-collage .bc-art { position: relative; overflow: hidden; }
+.a-title.v-block-collage .bc-block { position: absolute; }
+.a-title.v-block-collage .bc-block--a { left: 0; top: 0; width: 64%; height: 58%; background: var(--b1); }
+.a-title.v-block-collage .bc-block--b { right: 0; bottom: 0; width: 44%; aspect-ratio: 1; border-radius: 100% 0 0 0; background: var(--b2); }
+.a-title.v-block-collage .bc-block--c { left: 8%; bottom: 10%; width: 15%; aspect-ratio: 1; border-radius: 50%; background: var(--b3); z-index: 2; }
+.a-title.v-block-collage .bc-photo { position: absolute; left: 22%; top: 14%; width: 56%; height: 70%; margin: 0; overflow: hidden; z-index: 1; }
+.a-title.v-block-collage .bc-photo :is(img, .ph) { width: 100%; height: 100%; object-fit: cover; display: block; }
+.a-title.v-block-collage .bc-main { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: center; gap: var(--space-gutter); padding: var(--space-frame-y) var(--space-frame-x) var(--space-frame-y) calc(var(--space-frame-x) * 0.8); overflow: hidden; }
+.a-title.v-block-collage .bc-title { overflow-wrap: normal; hyphens: manual; }
+.a-title.v-block-collage .bc-sub { max-width: 28em; }
+.a-title.v-block-collage .bc-meta { display: flex; flex-wrap: wrap; gap: 0.4em var(--space-gutter); margin-top: calc(var(--space-gutter) * 0.5); }
+.a-title.v-block-collage .bc-burst { position: absolute; left: calc(42% * 0.78 - 80px); top: calc(14% * 0.7 - 20px); width: 160px; height: 160px; z-index: 2; }

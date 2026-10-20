@@ -1,0 +1,36 @@
+{
+  "archetype": "section",
+  "variant": "burst",
+  "slots": {
+    "number": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 6
+    },
+    "title": {
+      "type": "text",
+      "chars_ideal": 10,
+      "chars_max": 28,
+      "words_max": 4
+    },
+    "kicker": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 160
+    },
+    "image": {
+      "type": "image",
+      "optional": true
+    }
+  },
+  "decor_anchors": [
+    "frame",
+    "burst",
+    "zig",
+    "edge"
+  ],
+  "supports_aspects": [
+    "16:9",
+    "4:3"
+  ]
+}

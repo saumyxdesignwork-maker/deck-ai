@@ -1,0 +1,36 @@
+{
+  "archetype": "closing",
+  "variant": "block-checker",
+  "slots": {
+    "title": {
+      "type": "text",
+      "chars_ideal": 10,
+      "chars_max": 28,
+      "words_max": 4
+    },
+    "body": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 140
+    },
+    "contact": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 90
+    },
+    "image": {
+      "type": "image",
+      "optional": true
+    }
+  },
+  "decor_anchors": [
+    "frame",
+    "photo",
+    "burst",
+    "edge"
+  ],
+  "supports_aspects": [
+    "16:9",
+    "4:3"
+  ]
+}

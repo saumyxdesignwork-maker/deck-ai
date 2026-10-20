@@ -1,0 +1,12 @@
+/* sign-off: a 2×2 checker of colour blocks (one holds a photo, one a starburst) beside a loud thank-you */
+.a-closing.v-block-checker { display: grid; grid-template-columns: minmax(0, 44fr) minmax(0, 56fr); padding: 0; }
+.a-closing.v-block-checker .ck-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+.a-closing.v-block-checker .ck-cell { position: relative; margin: 0; overflow: hidden; }
+.a-closing.v-block-checker .ck-cell--a { background: var(--b1); }
+.a-closing.v-block-checker .ck-cell--b { background: var(--b2); display: grid; place-items: center; --b-burst: var(--b1); }
+.a-closing.v-block-checker .ck-cell--c { background: var(--b3); border-radius: 0 0 0 100%; }
+.a-closing.v-block-checker .ck-photo :is(img, .ph) { width: 100%; height: 100%; object-fit: cover; display: block; }
+.a-closing.v-block-checker .ck-burst { width: 62%; aspect-ratio: 1; }
+.a-closing.v-block-checker .ck-main { display: flex; flex-direction: column; justify-content: center; gap: var(--space-gutter); padding: var(--space-frame-y) var(--space-frame-x); overflow: hidden; }
+.a-closing.v-block-checker .ck-title { overflow-wrap: normal; hyphens: manual; }
+.a-closing.v-block-checker .ck-contact { align-self: flex-start; padding: 0.7em 1em; background: var(--b1); color: var(--color-ink-primary); }

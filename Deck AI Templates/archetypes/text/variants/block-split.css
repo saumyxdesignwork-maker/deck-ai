@@ -1,0 +1,14 @@
+/* text left, a colour block bleeding off the right edge with a framed photo set into it */
+.a-text.v-block-split { display: grid; grid-template-columns: minmax(0, 60fr) minmax(0, 40fr); padding: 0; }
+.a-text.v-block-split .bs-text { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: center; gap: calc(var(--space-gutter) * 0.75); padding: var(--space-frame-y) calc(var(--space-gutter) * 1.5) var(--space-frame-y) var(--space-frame-x); overflow: hidden; }
+.a-text.v-block-split .bs-title { overflow-wrap: normal; hyphens: manual; }
+.a-text.v-block-split .bs-lead { max-width: 30em; }
+.a-text.v-block-split .bs-body { columns: 2; column-gap: var(--space-gutter); max-width: 52em; }
+.a-text.v-block-split .bs-body p { break-inside: avoid; margin-bottom: 0.8em; }
+.a-text.v-block-split .bs-pull { align-self: flex-start; padding: 0.55em 0.8em; background: var(--b2); max-width: 30em; }
+.a-text.v-block-split .bs-media { position: relative; overflow: hidden; }
+.a-text.v-block-split .bs-block { position: absolute; inset: 0 0 0 18%; background: var(--b1); }
+.a-text.v-block-split .bs-photo { position: absolute; left: 0; top: 16%; width: 74%; height: 62%; margin: 0; overflow: hidden; z-index: 1; }
+.a-text.v-block-split .bs-photo :is(img, .ph) { width: 100%; height: 100%; object-fit: cover; display: block; }
+.a-text.v-block-split .bs-square { position: absolute; left: 58%; top: 70%; width: 30%; aspect-ratio: 1; background: var(--b3); z-index: 0; }
+.a-text.v-block-split .bs-burst { position: absolute; right: 8%; top: 6%; width: 130px; height: 130px; z-index: 2; }

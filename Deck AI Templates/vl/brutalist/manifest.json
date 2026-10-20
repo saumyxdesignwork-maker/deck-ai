@@ -1,0 +1,13 @@
+{
+  "id": "brutalist",
+  "version": "0.1.0",
+  "name": "Brutalist",
+  "tags": ["brutalist", "bold", "colour-block", "pop", "creative", "loud"],
+  "best_for": ["brand portfolio", "agency credentials", "campaign pitch", "creative studio intro"],
+  "palettes": ["default"],
+  "fonts": [
+    { "family": "Chango", "licence": "OFL-1.1", "package": "@fontsource/chango" },
+    { "family": "Archivo", "licence": "OFL-1.1", "package": "@fontsource-variable/archivo" }
+  ],
+  "references": "1 user-supplied 18-slide brand-portfolio board, 20 Oct 2026 — principles only, see analysis.md"
+}

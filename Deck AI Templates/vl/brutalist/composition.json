@@ -1,0 +1,83 @@
+{
+  "variant_allow": {
+    "title": [
+      "block-collage"
+    ],
+    "section": [
+      "burst",
+      "numbered"
+    ],
+    "text": [
+      "block-split",
+      "statement-columns",
+      "lead-column"
+    ],
+    "bullets": [
+      "cards-grid",
+      "numbered-grid",
+      "two-column",
+      "list"
+    ],
+    "metric": [
+      "nested-circles",
+      "hero-tiles",
+      "row",
+      "hero-number"
+    ],
+    "chart": [
+      "takeaway"
+    ],
+    "table": [
+      "ruled"
+    ],
+    "timeline": [
+      "wave",
+      "gantt"
+    ],
+    "comparison": [
+      "tiers"
+    ],
+    "quote": [
+      "centered-badge"
+    ],
+    "image": [
+      "collage",
+      "grid"
+    ],
+    "people": [
+      "portrait-row"
+    ],
+    "closing": [
+      "block-checker",
+      "thank-you"
+    ],
+    "freeform": [
+      "block"
+    ]
+  },
+  "variant_weights": {
+    "text.block-split": 1.5,
+    "section.burst": 1.4,
+    "bullets.cards-grid": 1.2,
+    "metric.nested-circles": 1.2,
+    "closing.block-checker": 1.5
+  },
+  "grounds": {
+    "rotation": "cycle",
+    "by_role": {
+      "title": [
+        "accent:0"
+      ],
+      "quote": [
+        "inverse"
+      ],
+      "closing": [
+        "accent:1"
+      ]
+    },
+    "default": "base"
+  },
+  "chrome": {
+    "show_on": "all-but-title"
+  }
+}

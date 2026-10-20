@@ -1,0 +1,76 @@
+/* Brutalist — skin. Flat acid colour blocks collide on every slide; heavy retro caps; black ink; starbursts and sparkles. */
+
+/* ---------- block colours: every ground gets its own clash (never the ground's own colour) ---------- */
+.vl-brutalist .slide {
+  --b1: var(--color-ground-accent-1); --b2: var(--color-ground-accent-2); --b3: var(--color-ground-accent-3);
+  --b-burst: var(--color-ground-accent-2); --b-spark: var(--color-ink-primary);
+}
+.vl-brutalist .slide[style*="ground-accent-1)"] { --b1: var(--color-ground-accent-2); --b2: var(--color-ground-accent-0); --b3: var(--color-ground-accent-4); --b-burst: var(--color-ground-accent-0); }
+.vl-brutalist .slide[style*="ground-accent-2)"] { --b1: var(--color-ground-accent-3); --b2: var(--color-ground-accent-1); --b3: var(--color-ground-accent-0); --b-burst: #FFFFFF; --b-spark: #FFFFFF; }
+.vl-brutalist .slide[style*="ground-accent-3)"] { --b1: var(--color-ground-accent-2); --b2: var(--color-ground-accent-0); --b3: var(--color-ground-accent-1); --b-burst: #FFFFFF; --b-spark: #FFFFFF; }
+.vl-brutalist .slide[style*="ground-accent-4)"] { --b1: var(--color-ground-accent-2); --b2: var(--color-ground-accent-1); --b3: var(--color-ground-accent-3); --b-burst: #FFFFFF; }
+.vl-brutalist .slide[style*="ground-inverse)"] { --b1: var(--color-ground-accent-1); --b2: var(--color-ground-accent-2); --b3: var(--color-ground-accent-0); --b-burst: var(--color-ground-accent-2); --b-spark: var(--color-ground-accent-1); }
+/* text sitting on a block is always black, even on the black ground */
+.vl-brutalist .slide :is(.bs-pull, .bc-block, .bs-block) { color: var(--color-ink-primary); }
+
+/* ---------- layers ---------- */
+.vl-brutalist .slide > [data-decor="frame"] { position: absolute; z-index: 0; }
+.vl-brutalist .slide > [data-decor="corner-tl"] { display: none; }
+.vl-brutalist .slide > [data-decor="edge"] { position: absolute; z-index: 3; top: 26px; right: 30px; width: 104px; height: 84px; }
+.vl-brutalist .slide > :not([data-decor]):not(.chrome) { position: relative; z-index: 1; }
+.vl-brutalist .ph svg { width: 100%; height: 100%; display: block; }
+.vl-brutalist img { filter: saturate(1.12) contrast(1.04); }
+
+/* frame blocks hug an edge or a corner and stay out of the reading area */
+.vl-brutalist .slide > [data-ornament="fr-quarter"] { left: 0; bottom: 0; width: 240px; height: 240px; }
+.vl-brutalist .slide > [data-ornament="fr-corner"] { right: 0; bottom: 0; width: 280px; height: 210px; }
+.vl-brutalist .slide > [data-ornament="fr-strip"] { right: 0; top: 0; width: 56px; height: 100%; }
+.vl-brutalist .slide > [data-ornament="fr-band"] { left: 0; bottom: 0; width: 42%; height: 46px; }
+/* the corner block owns the bottom-right, so the page number moves up */
+.vl-brutalist .slide:has(> [data-ornament="fr-corner"]) .chrome--bottom,
+.vl-brutalist .slide:has(> [data-ornament="fr-strip"]) .chrome--bottom { right: calc(var(--space-frame-x) + 40px); }
+.vl-brutalist .slide:has(> [data-ornament="fr-strip"]) > [data-decor="edge"] { right: 78px; }
+
+/* burst anchors keep their aspect */
+.vl-brutalist [data-decor="burst"] svg { overflow: visible; }
+.vl-brutalist [data-ornament="burst-rays"] { --b-spark: var(--b-burst); }
+
+/* ---------- chrome ---------- */
+.vl-brutalist .chrome { opacity: 1; font-family: var(--font-label); text-transform: uppercase; letter-spacing: 0.02em; }
+
+/* ---------- type ---------- */
+.vl-brutalist .slide em { opacity: 1; font-style: normal; color: inherit; -webkit-text-stroke: 0; }
+.vl-brutalist .slide mark { color: var(--color-ink-primary); background: var(--b1); padding: 0 0.12em; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.vl-brutalist .slide :is(h1, h2) { overflow-wrap: normal; hyphens: manual; }
+.vl-brutalist .slide[data-ground="inverse"] mark { background: var(--b1); }
+
+/* ---------- shared layouts, Brutalist accent ---------- */
+/* cards become flat colour blocks, cycling through the clash colours */
+.vl-brutalist .a-bullets.v-cards-grid :is(.cg-card, li) { background: var(--b1); border: 0; border-radius: 0; color: var(--color-ink-primary); box-shadow: none; }
+.vl-brutalist .a-bullets.v-cards-grid li:nth-child(3n+2) { background: var(--b2); }
+.vl-brutalist .a-bullets.v-cards-grid li:nth-child(3n+3) { background: var(--b3); }
+.vl-brutalist .a-bullets :is(.bl-index, .tc2-index, .ng-index) { font-family: var(--font-display); }
+.vl-brutalist .a-metric.v-nested-circles .nc-item { color: var(--color-ink-primary); border: 0; }
+.vl-brutalist .a-metric.v-hero-tiles :is(li, .ht-tile) { background: var(--b1); color: var(--color-ink-primary); border-radius: 0; }
+.vl-brutalist .a-metric.v-hero-tiles li:nth-child(even) { background: var(--b2); }
+.vl-brutalist .a-quote.v-centered-badge blockquote { font-family: var(--font-display); text-transform: uppercase; }
+.vl-brutalist .a-table th { font-family: var(--font-label); text-transform: uppercase; font-weight: 400; border-bottom-width: var(--line-rule); }
+.vl-brutalist .ch--bar .ch-bar, .vl-brutalist .ch--hbar .ch-bar { border-radius: 0; }
+.vl-brutalist .a-closing.v-thank-you .ty-contact { background: var(--b1); color: var(--color-ink-primary); padding: 0.7em 1em; }
+.vl-brutalist .a-bullets.v-cards-grid li:nth-child(4n) { background: var(--color-ground-inverse); color: var(--color-ink-on-inverse); }
+/* tiers: flat blocks, the recommended one in black */
+.vl-brutalist .a-comparison.v-tiers .ti-head h2 { font-size: var(--t-display-3-size); }
+.vl-brutalist .a-comparison.v-tiers .ti-col { background: var(--b1); border: 0; border-radius: 0; color: var(--color-ink-primary); }
+.vl-brutalist .a-comparison.v-tiers .ti-col:nth-child(3) { background: var(--b2); }
+.vl-brutalist .a-comparison.v-tiers .is-emphasis { background: var(--color-ground-inverse); color: var(--color-ink-on-inverse); }
+/* nested circles: flat colour discs instead of tints */
+.vl-brutalist .a-metric.v-nested-circles .nc-item { background: var(--b1); }
+.vl-brutalist .a-metric.v-nested-circles .nc-item:nth-child(2) { background: var(--b2); }
+.vl-brutalist .a-metric.v-nested-circles .nc-item:nth-child(3) { background: var(--b3); }
+.vl-brutalist .a-metric.v-nested-circles .nc-item:nth-child(4) { background: var(--color-ground-inverse); color: var(--color-ink-on-inverse); }
+.vl-brutalist .a-metric.v-nested-circles .is-emphasis { box-shadow: none; }
+/* card copy sized for big blocks */
+.vl-brutalist .a-bullets.v-cards-grid .cg-title { font-size: calc(var(--t-title-size) * 1.45); }
+.vl-brutalist .a-bullets.v-cards-grid .cg-text { font-size: var(--t-body-size); line-height: 1.45; }
+/* Chango runs wide: let big single figures shrink further before they count as overflow */
+.vl-brutalist .a-metric.v-hero-number { --t-display-1-size: 64px; }
