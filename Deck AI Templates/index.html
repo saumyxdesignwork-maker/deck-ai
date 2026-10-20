@@ -3,39 +3,85 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Deck Template Engine</title>
+    <title>Deck Templates</title>
     <link rel="stylesheet" href="/src/preview/preview.css" />
   </head>
   <body>
-    <header class="bar">
-      <strong class="bar__name">Deck Template Engine</strong>
-      <label>Deck <select id="fixture"></select></label>
-      <label>Aspect
-        <select id="aspect">
-          <option>16:9</option><option>4:3</option><option>1:1</option><option>4:5</option><option>A4</option>
-        </select>
-      </label>
-      <label>Language <select id="vl"></select></label>
-      <label><input type="checkbox" id="edit" checked /> Edit text</label>
-      <button id="undo" type="button">Undo</button>
-      <button id="redo" type="button">Redo</button>
-      <span class="bar__spacer"></span>
-      <button id="toggle-md" type="button" aria-pressed="true">Markdown</button>
-      <button id="toggle-json" type="button" aria-pressed="false">deck.json</button>
-      <span id="status" class="bar__status"></span>
-    </header>
-    <main class="layout">
-      <section class="pane pane--md" id="pane-md">
-        <textarea id="md" spellcheck="false" aria-label="Deck Markdown"></textarea>
-      </section>
-      <section class="pane pane--json" id="pane-json" hidden>
-        <pre id="json"></pre>
-      </section>
-      <section class="stage">
-        <ol id="issues" class="issues"></ol>
-        <div id="deck" class="deck"></div>
-      </section>
-    </main>
+    <!-- Home: every template as a row; hovering a row opens its cover and details -->
+    <section id="home" class="home">
+      <header class="home__head">
+        <span class="home__brand">Deck Templates</span>
+        <span id="home-count" class="home__count"></span>
+      </header>
+      <ol id="tl" class="tl"></ol>
+    </section>
+
+    <!-- Studio: one template, its slides, and the content that fills them -->
+    <section id="studio" class="studio" hidden>
+      <header class="bar">
+        <button id="back" type="button" class="bar__back" aria-label="All templates">← All templates</button>
+        <label class="field">
+          <span class="field__label">Template</span>
+          <select id="vl"></select>
+        </label>
+        <label class="field">
+          <span class="field__label">Sample content</span>
+          <select id="fixture"></select>
+        </label>
+        <label class="field">
+          <span class="field__label">Slide size</span>
+          <select id="aspect">
+            <option value="16:9">Widescreen (16:9)</option>
+            <option value="4:3">Standard (4:3)</option>
+            <option value="1:1">Square (1:1)</option>
+            <option value="4:5">Portrait (4:5)</option>
+            <option value="A4">A4 document</option>
+          </select>
+        </label>
+        <label class="switch">
+          <input type="checkbox" id="edit" checked />
+          <span>Click slides to edit text</span>
+        </label>
+        <span class="bar__group">
+          <button id="undo" type="button" class="icon-btn" title="Undo (⌘Z)" aria-label="Undo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
+          <button id="redo" type="button" class="icon-btn" title="Redo (⇧⌘Z)" aria-label="Redo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button>
+        </span>
+        <span class="bar__spacer"></span>
+        <button id="toggle-panel" type="button" class="quiet-btn" aria-pressed="true">Content</button>
+        <details class="more">
+          <summary class="quiet-btn">More</summary>
+          <div class="more__menu">
+            <label class="switch"><input type="checkbox" id="show-meta" /><span>Show layout names under slides</span></label>
+            <label class="switch"><input type="checkbox" id="show-notes" /><span>Show layout notes</span></label>
+            <button id="show-json" type="button" class="link-btn">View deck data (JSON)</button>
+            <p id="status" class="more__status"></p>
+          </div>
+        </details>
+      </header>
+      <main class="layout">
+        <aside class="panel" id="panel">
+          <div class="panel__head">
+            <div class="tabs" role="tablist">
+              <button type="button" role="tab" id="tab-md" class="tab" aria-selected="true">Content</button>
+              <button type="button" role="tab" id="tab-json" class="tab tab--quiet" aria-selected="false">Deck data</button>
+            </div>
+            <button id="close-panel" type="button" class="icon-btn" aria-label="Close panel" title="Close">✕</button>
+          </div>
+          <p class="panel__hint" id="panel-hint">Write in Markdown: <code>#</code> for a slide title, <code>-</code> for list items, <code>---</code> for a new slide. Slides update as you type.</p>
+          <textarea id="md" spellcheck="false" aria-label="Slide content (Markdown)"></textarea>
+          <pre id="json" hidden></pre>
+        </aside>
+        <section class="stage">
+          <details id="notes" class="notes" hidden>
+            <summary id="notes-summary"></summary>
+            <ol id="issues" class="issues"></ol>
+          </details>
+          <div id="deck" class="deck"></div>
+        </section>
+      </main>
+    </section>
+
+    <style id="home-css"></style>
     <style id="deck-css"></style>
     <script type="module" src="/src/preview/main.ts"></script>
   </body>
