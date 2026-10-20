@@ -1,0 +1,13 @@
+{
+  "id": "blossom",
+  "version": "0.1.0",
+  "name": "Blossom",
+  "tags": ["soft", "lavender", "light", "editorial", "wellness", "creative"],
+  "best_for": ["brand guidelines", "wellness and beauty brands", "lifestyle pitch", "marketing playbook"],
+  "palettes": ["default"],
+  "fonts": [
+    { "family": "Raleway", "licence": "OFL-1.1", "package": "@fontsource/raleway" },
+    { "family": "Instrument Serif", "licence": "OFL-1.1", "package": "@fontsource/instrument-serif" }
+  ],
+  "references": "1 user-supplied brand-guidelines board, 20 Oct 2026 — principles only, see analysis.md"
+}

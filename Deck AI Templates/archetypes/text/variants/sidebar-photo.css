@@ -1,0 +1,7 @@
+/* a narrow reading column with a short rule over the title; a photo bleeds off the right edge */
+.a-text.v-sidebar-photo { display: grid; grid-template-columns: minmax(0, 36fr) minmax(0, 64fr); padding: 0; }
+.a-text.v-sidebar-photo .sp-side { display: flex; flex-direction: column; justify-content: center; gap: var(--space-gutter); padding: var(--space-frame-y) calc(var(--space-gutter) * 1.6) var(--space-frame-y) var(--space-frame-x); overflow: hidden; }
+.a-text.v-sidebar-photo .sp-title::before { content: ""; display: block; width: 64px; height: var(--line-hair); margin-bottom: var(--space-gutter); background: currentColor; }
+.a-text.v-sidebar-photo .sp-body { display: grid; gap: 0.8em; max-width: 30em; }
+.a-text.v-sidebar-photo .sp-photo { margin: 0; overflow: hidden; }
+.a-text.v-sidebar-photo .sp-photo :is(img, .ph) { width: 100%; height: 100%; object-fit: cover; display: block; }

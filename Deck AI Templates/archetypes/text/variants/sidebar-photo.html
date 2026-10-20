@@ -1,0 +1,16 @@
+<section class="slide a-text v-sidebar-photo" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if show_chrome}}
+  <header class="chrome chrome--top"><span class="t-caption" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <div class="sp-side" data-region="side">
+    {{#if content.eyebrow}}<p class="sp-eyebrow t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    <h2 class="sp-title t-display-3" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="lead">{{rich content.title}}</h2>
+    {{#if content.lead}}<p class="t-body" data-slot="content.lead" data-slot-type="text">{{content.lead}}</p>{{/if}}
+    <div class="sp-body" data-slot="content.body" data-slot-type="paragraphs">{{#each content.body}}<p class="t-body-s" data-slot="content.body[{{@index}}]" data-slot-type="text" data-fit="shrink" data-min-step="caption">{{this}}</p>{{/each}}</div>
+    {{#if content.pull_quote}}<p class="sp-pull t-label" data-slot="content.pull_quote" data-slot-type="text">{{content.pull_quote}}</p>{{/if}}
+  </div>
+  <figure class="sp-photo" data-slot="content.image" data-slot-type="image">{{#if content.image}}<img src="{{content.image.src}}" alt="{{content.image.alt}}" style="object-position: {{content.image.pos}}" />{{else}}<div class="ph" data-decor="photo"></div>{{/if}}</figure>
+  <div data-decor="edge"></div>
+</section>

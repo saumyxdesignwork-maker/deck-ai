@@ -1,5 +1,52 @@
 [
   {
+    "id": "blossom",
+    "name": "Blossom",
+    "category": "creative",
+    "blurb": "A white page holding one soft lavender panel, like a printed brand book.",
+    "bestFor": [
+      "brand guidelines",
+      "wellness and beauty brands",
+      "lifestyle pitch",
+      "marketing playbook"
+    ],
+    "palette": {
+      "ground.base": "#F7F1FD",
+      "ground.inverse": "#2E2140",
+      "ground.accent": [
+        "#E8D7FA"
+      ],
+      "ink.primary": "#1F1A26",
+      "ink.secondary": "#3B3445",
+      "ink.muted": "#6B6377",
+      "ink.on-inverse": "#F7F1FD",
+      "ink.muted-on-inverse": "#C9BCDA",
+      "ink.on-accent": [
+        "#1F1A26"
+      ],
+      "line": "#1F1A2659",
+      "emphasis": "#F25A32",
+      "signal": "#DCF44A",
+      "photo.light": "#EFE4FB",
+      "photo.dark": "#C7B2E6",
+      "surface.card": "#FFFFFF",
+      "page": "#FFFFFF",
+      "chart.series": [
+        "#F25A32",
+        "#B48DE8",
+        "#DCF44A",
+        "#1F1A26"
+      ]
+    },
+    "fonts": {
+      "display": "Raleway",
+      "text": "Raleway",
+      "label": "Raleway",
+      "accent": "Instrument Serif"
+    },
+    "defaultGround": "base"
+  },
+  {
     "id": "blues",
     "name": "Blues",
     "category": "corporate",

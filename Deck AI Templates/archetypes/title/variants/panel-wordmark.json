@@ -1,0 +1,44 @@
+{
+  "archetype": "title",
+  "variant": "panel-wordmark",
+  "slots": {
+    "eyebrow": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 48
+    },
+    "title": {
+      "type": "text",
+      "chars_ideal": 12,
+      "chars_max": 40,
+      "words_max": 6
+    },
+    "subtitle": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 120
+    },
+    "byline": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 130
+    },
+    "date": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 24
+    },
+    "image": {
+      "type": "image",
+      "optional": true
+    }
+  },
+  "decor_anchors": [
+    "frame",
+    "edge"
+  ],
+  "supports_aspects": [
+    "16:9",
+    "4:3"
+  ]
+}

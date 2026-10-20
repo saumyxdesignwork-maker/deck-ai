@@ -1,0 +1,26 @@
+[
+  {
+    "id": "photo-fill",
+    "file": "photo-fill.svg",
+    "anchors": [
+      "photo"
+    ],
+    "roles": [
+      "*"
+    ],
+    "max_per_slide": 4,
+    "fill": true
+  },
+  {
+    "id": "photo-grey",
+    "file": "photo-grey.svg",
+    "anchors": [
+      "photo"
+    ],
+    "roles": [
+      "*"
+    ],
+    "max_per_slide": 4,
+    "placeholder": true
+  }
+]

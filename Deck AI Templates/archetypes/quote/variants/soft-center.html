@@ -1,0 +1,9 @@
+<section class="slide a-quote v-soft-center" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  <figure class="qs-main" data-region="main">
+    {{#if content.eyebrow}}<p class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    <blockquote class="qs-quote t-display-3" data-slot="content.quote" data-slot-type="rich" data-fit="shrink" data-min-step="lead">{{rich content.quote}}</blockquote>
+    {{#if content.attribution}}<figcaption class="qs-by t-body-s" data-slot="content.attribution" data-slot-type="text">{{content.attribution}}</figcaption>{{/if}}
+  </figure>
+  <div data-decor="edge"></div>
+</section>

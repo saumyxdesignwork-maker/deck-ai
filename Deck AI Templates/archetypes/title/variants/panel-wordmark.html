@@ -1,0 +1,15 @@
+<section class="slide a-title v-panel-wordmark" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  <div class="pw-main" data-region="main">
+    {{#if content.eyebrow}}<p class="pw-eyebrow t-lead" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    <h1 class="pw-title t-display-1" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h1>
+  </div>
+  <div class="pw-foot">
+    {{#if content.subtitle}}<p class="pw-sub t-body" data-slot="content.subtitle" data-slot-type="text">{{content.subtitle}}</p>{{/if}}
+    <div class="pw-meta">
+      {{#if content.byline}}<span class="t-label" data-slot="content.byline" data-slot-type="text">{{content.byline}}</span>{{/if}}
+      {{#if content.date}}<span class="t-label" data-slot="content.date" data-slot-type="text">{{content.date}}</span>{{/if}}
+    </div>
+  </div>
+  <div data-decor="edge"></div>
+</section>

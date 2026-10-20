@@ -1,0 +1,17 @@
+<section class="slide a-text v-sidebar-feature" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div data-decor="frame"></div>
+  {{#if show_chrome}}
+  <header class="chrome chrome--top"><span class="t-caption" data-slot="meta.running_label" data-slot-type="text" data-editable="deck">{{meta.running_label}}</span></header>
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <aside class="sf-side" data-region="side">
+    {{#if content.eyebrow}}<p class="sf-eyebrow t-display-3" data-slot="content.eyebrow" data-slot-type="text" data-fit="shrink" data-min-step="lead">{{content.eyebrow}}</p>{{/if}}
+    {{#if content.lead}}<p class="sf-lead t-body-s" data-slot="content.lead" data-slot-type="text" data-fit="shrink" data-min-step="caption">{{content.lead}}</p>{{/if}}
+  </aside>
+  <div class="sf-main" data-region="main">
+    <h2 class="sf-title t-display-2" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="display-3">{{rich content.title}}</h2>
+    <div class="sf-body" data-slot="content.body" data-slot-type="paragraphs">{{#each content.body}}<p class="t-body" data-slot="content.body[{{@index}}]" data-slot-type="text" data-fit="shrink" data-min-step="body-s">{{this}}</p>{{/each}}</div>
+    {{#if content.pull_quote}}<p class="sf-pill t-label" data-slot="content.pull_quote" data-slot-type="text" data-nowrap>{{content.pull_quote}}</p>{{/if}}
+  </div>
+  <div data-decor="edge"></div>
+</section>

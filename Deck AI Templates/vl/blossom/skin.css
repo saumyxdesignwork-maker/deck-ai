@@ -1,0 +1,39 @@
+/* Blossom — skin. A white page holding one soft lavender panel; light Raleway, coral headlines, an italic serif accent and a lime pill. */
+
+/* ---------- page and panel ---------- */
+.vl-blossom .slide { background: var(--color-page); }
+.vl-blossom .slide::before { content: ""; position: absolute; inset: 34px; z-index: 0; background: var(--slide-bg); pointer-events: none; }
+.vl-blossom .slide[data-ground="base"]::before { border: var(--line-hair) solid var(--color-line); }
+.vl-blossom .slide > :not([data-decor]):not(.chrome) { position: relative; z-index: 1; }
+.vl-blossom .slide > :is([data-decor="frame"], [data-decor="corner-tl"], [data-decor="edge"]) { display: none; }
+.vl-blossom .ph svg { width: 100%; height: 100%; display: block; }
+/* photos that bleed run over the page margin, like a print spread */
+.vl-blossom .a-text.v-sidebar-photo .sp-photo { margin: 0; }
+
+/* ---------- chrome: tiny running header, folio bottom-right ---------- */
+.vl-blossom .chrome { opacity: 1; color: var(--color-ink-muted); }
+.vl-blossom .chrome--top { top: calc(34px + 26px); left: calc(34px + 30px); }
+.vl-blossom .chrome--bottom { bottom: calc(34px + 22px); right: calc(34px + 30px); }
+.vl-blossom .a-text.v-sidebar-photo .chrome--bottom { right: auto; left: calc(34px + 30px); }
+
+/* ---------- type ---------- */
+.vl-blossom .slide em { opacity: 1; font-family: var(--font-accent); font-style: italic; font-weight: 400; letter-spacing: 0; text-transform: uppercase; }
+.vl-blossom .slide mark { color: var(--color-ink-primary); background: var(--color-signal); padding: 0 0.15em; border-radius: 0.2em; }
+/* on the lavender panel, headlines and quotes turn coral */
+.vl-blossom .slide[data-ground="accent"] :is(h1, h2, blockquote, .pw-eyebrow, .qs-by) { color: var(--color-emphasis); }
+.vl-blossom .slide :is(h1, h2) { overflow-wrap: normal; hyphens: manual; }
+
+/* ---------- shared layouts, Blossom accent ---------- */
+.vl-blossom .a-bullets :is(.bl-index, .tc2-index, .ng-index) { color: var(--color-emphasis); font-weight: 300; }
+.vl-blossom .a-bullets.v-numbered-grid :is(li, .ng-item) { background: var(--color-surface-card); color: var(--color-ink-primary); }
+.vl-blossom .a-bullets.v-cards-grid .cg-card { background: var(--color-surface-card); border: 0; box-shadow: 0 10px 30px -18px #2E214059; }
+.vl-blossom .a-metric :is(.m-value, .hn-value, .md-value) { color: var(--color-emphasis); }
+.vl-blossom .a-table th { font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; font-size: var(--t-label-size); }
+.vl-blossom .a-comparison.v-tiers .ti-col { background: var(--color-surface-card); border: 0; box-shadow: 0 10px 30px -18px #2E214059; }
+.vl-blossom .a-comparison.v-tiers .is-emphasis { background: var(--color-emphasis); color: #FFFFFF; }
+.vl-blossom .a-closing.v-thank-you .ty-contact { align-self: start; justify-self: start; padding: 0.8em 1.6em; border-radius: var(--radius-pill); background: var(--color-signal); color: var(--color-ink-primary); text-transform: uppercase; }
+.vl-blossom .a-image img { border-radius: var(--radius-card); }
+.vl-blossom .a-metric.v-hero-tiles .ht-item { background: var(--color-surface-card); border: 0; border-radius: var(--radius-card); box-shadow: 0 10px 30px -18px #2E214059; color: var(--color-ink-primary); }
+.vl-blossom .a-metric.v-hero-tiles .ht-value { color: var(--color-emphasis); }
+.vl-blossom .a-metric.v-hero-tiles .is-emphasis { background: var(--color-ground-accent-0); }
+.vl-blossom .a-timeline.v-wave { --color-line: var(--color-emphasis); }

@@ -1,0 +1,7 @@
+/* cover: a quiet wordmark sitting in the upper third of a soft panel; meta at the foot */
+.a-title.v-panel-wordmark { display: grid; grid-template-rows: 14% auto minmax(0, 1fr) auto; padding: var(--space-frame-y) var(--space-frame-x); }
+.a-title.v-panel-wordmark .pw-main { grid-row: 2; display: grid; gap: calc(var(--space-tight) * 0.5); max-width: 70%; }
+.a-title.v-panel-wordmark .pw-title { overflow-wrap: normal; hyphens: manual; }
+.a-title.v-panel-wordmark .pw-foot { grid-row: 4; display: flex; justify-content: space-between; align-items: end; gap: var(--space-section); }
+.a-title.v-panel-wordmark .pw-sub { max-width: 34em; }
+.a-title.v-panel-wordmark .pw-meta { display: grid; justify-items: end; gap: 0.3em; text-align: right; }
