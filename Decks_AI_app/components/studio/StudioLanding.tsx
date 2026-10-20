@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Sparkles, Layers, Briefcase, Palette, RectangleHorizontal, Square, Wand2 } from 'lucide-react'
+import { Sparkles, Layers, Briefcase, Palette, RectangleHorizontal, Square, Wand2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 import { Composer } from './Composer'
 import { TemplatePreviewModal } from './TemplatePreviewModal'
@@ -51,6 +51,9 @@ interface StudioLandingProps {
 }
 
 const LAST_TEMPLATE_KEY = 'deckai.lastTemplate'
+
+// Three rows of the grid's three columns.
+const TRY_PAGE_SIZE = 9
 
 function readLastTemplate(): string {
   try {
@@ -119,6 +122,10 @@ export function StudioLanding({ onSubmit, onResume }: StudioLandingProps) {
   // navigation back to this landing page anyway).
   const [savedDecks, setSavedDecks] = useState<SavedDeck[]>([])
   const [activeTab, setActiveTab] = useState<'try' | 'yours'>('try')
+  // "Try these" shows three rows of three at a time, then pages.
+  const [tryPage, setTryPage] = useState(0)
+  const tryPageCount = Math.max(1, Math.ceil(STUDIO_TEMPLATES.length / TRY_PAGE_SIZE))
+  const tryPageItems = STUDIO_TEMPLATES.slice(tryPage * TRY_PAGE_SIZE, (tryPage + 1) * TRY_PAGE_SIZE)
   useEffect(() => {
     setSavedDecks(getSavedDecks())
   }, [])
@@ -321,9 +328,11 @@ export function StudioLanding({ onSubmit, onResume }: StudioLandingProps) {
         {activeTab === 'try' ? (
           // One card per template-engine visual language, a live render each
           // (see StudioTemplateThumb) — 3 per row so they read left-to-right,
-          // top-to-bottom in the same order as lib/fixtures' STUDIO_TEMPLATES.
+          // top-to-bottom in the same order as lib/fixtures' STUDIO_TEMPLATES,
+          // nine to a page with a pager underneath.
+          <>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 }}>
-            {STUDIO_TEMPLATES.map(({ prompt, templateId: cardTemplateId }, i) => (
+            {tryPageItems.map(({ prompt, templateId: cardTemplateId }, i) => (
               <button
                 key={i}
                 type="button"
@@ -347,6 +356,8 @@ export function StudioLanding({ onSubmit, onResume }: StudioLandingProps) {
               </button>
             ))}
           </div>
+          {tryPageCount > 1 && <TemplatePager page={tryPage} count={tryPageCount} onChange={setTryPage} />}
+          </>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 }}>
             {savedDecks.map(saved => (
@@ -441,6 +452,60 @@ function StudioTemplateThumb({ templateId }: { templateId: string }) {
         </div>
       )}
     </div>
+  )
+}
+
+/** Previous / numbered pages / next for the "Try these" grid. */
+function TemplatePager({ page, count, onChange }: { page: number; count: number; onChange: (page: number) => void }) {
+  const arrow = (dir: -1 | 1, label: string, Icon: React.ElementType) => {
+    const target = page + dir
+    const disabled = target < 0 || target >= count
+    return (
+      <button
+        type="button"
+        onClick={() => onChange(target)}
+        disabled={disabled}
+        aria-label={label}
+        className="dk-select dk-focus-ring"
+        style={{
+          width: 32, height: 32, borderRadius: '50%',
+          border: '1px solid var(--border)', background: 'var(--surface-muted)',
+          color: disabled ? 'var(--text-disabled)' : 'var(--text)',
+          cursor: disabled ? 'not-allowed' : 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}
+      >
+        <Icon size={15} aria-hidden />
+      </button>
+    )
+  }
+  return (
+    <nav aria-label="Template pages" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 20 }}>
+      {arrow(-1, 'Previous page', ChevronLeft)}
+      {Array.from({ length: count }, (_, i) => {
+        const on = i === page
+        return (
+          <button
+            key={i}
+            type="button"
+            onClick={() => onChange(i)}
+            aria-label={`Page ${i + 1}`}
+            aria-current={on ? 'page' : undefined}
+            className="dk-select dk-focus-ring"
+            style={{
+              minWidth: 32, height: 32, padding: '0 8px', borderRadius: 'var(--r-pill)',
+              border: '1px solid', borderColor: on ? 'var(--accent)' : 'var(--border)',
+              background: on ? 'var(--accent-soft)' : 'transparent',
+              color: on ? 'var(--accent)' : 'var(--text-muted)',
+              fontSize: 13, fontWeight: on ? 600 : 500, fontFamily: 'var(--font-body)', cursor: 'pointer',
+            }}
+          >
+            {i + 1}
+          </button>
+        )
+      })}
+      {arrow(1, 'Next page', ChevronRight)}
+    </nav>
   )
 }
 
