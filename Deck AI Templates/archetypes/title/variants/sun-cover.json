@@ -1,0 +1,45 @@
+{
+  "archetype": "title",
+  "variant": "sun-cover",
+  "slots": {
+    "eyebrow": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 40
+    },
+    "title": {
+      "type": "text",
+      "chars_ideal": 24,
+      "chars_max": 60,
+      "words_max": 9
+    },
+    "subtitle": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 120
+    },
+    "byline": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 130
+    },
+    "date": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 24
+    },
+    "image": {
+      "type": "image",
+      "optional": true
+    }
+  },
+  "decor_anchors": [
+    "sun",
+    "photo"
+  ],
+  "supports_aspects": [
+    "16:9",
+    "4:3"
+  ],
+  "image_led": true
+}

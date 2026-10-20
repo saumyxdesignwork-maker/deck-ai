@@ -1,0 +1,32 @@
+{
+  "archetype": "closing",
+  "variant": "quiet-sign",
+  "slots": {
+    "title": {
+      "type": "text",
+      "chars_max": 48,
+      "words_max": 8
+    },
+    "body": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 160
+    },
+    "contact": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 90
+    },
+    "image": {
+      "type": "image",
+      "optional": true
+    }
+  },
+  "decor_anchors": [
+    "mark"
+  ],
+  "supports_aspects": [
+    "16:9",
+    "4:3"
+  ]
+}

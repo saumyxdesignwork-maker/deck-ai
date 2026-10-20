@@ -1,0 +1,12 @@
+{
+  "id": "sunflower",
+  "version": "0.1.0",
+  "name": "Sunflower",
+  "tags": ["minimal", "warm", "energy", "tech", "professional", "brand"],
+  "best_for": ["brand identity", "energy and climate startups", "investor overview", "product strategy"],
+  "palettes": ["default"],
+  "fonts": [
+    { "family": "Host Grotesk", "licence": "OFL-1.1", "package": "@fontsource-variable/host-grotesk" }
+  ],
+  "references": "1 user-supplied 25-slide brand-identity board, 20 Oct 2026 — principles only, see analysis.md"
+}

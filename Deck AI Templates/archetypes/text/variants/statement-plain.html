@@ -1,0 +1,13 @@
+<section class="slide a-text v-statement-plain" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  {{#if show_chrome}}
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <div class="sp-main" data-region="main">
+    {{#if content.eyebrow}}<p class="t-caption sp-eyebrow" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    <h2 class="sp-statement t-display-3" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="lead">{{rich content.title}}</h2>
+  </div>
+  <div class="sp-notes">
+    {{#if content.lead}}<p class="t-body" data-slot="content.lead" data-slot-type="text">{{content.lead}}</p>{{/if}}
+    <div class="sp-paras" data-slot="content.body" data-slot-type="paragraphs">{{#each content.body}}<p class="t-body-s" data-slot="content.body[{{@index}}]" data-slot-type="text" data-fit="shrink" data-min-step="caption">{{this}}</p>{{/each}}</div>
+  </div>
+</section>

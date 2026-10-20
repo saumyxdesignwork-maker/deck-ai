@@ -1,0 +1,33 @@
+/* Sunflower — skin. Warm greige paper, small quiet grotesk, near-black chapters lit by a golden halftone sun. */
+
+/* ---------- layers ---------- */
+.vl-sunflower .slide > :not([data-decor]):not(.chrome) { position: relative; z-index: 1; }
+.vl-sunflower .slide > :is([data-decor="frame"], [data-decor="corner-tl"], [data-decor="edge"]) { display: none; }
+.vl-sunflower [data-decor] svg { width: 100%; height: 100%; display: block; }
+.vl-sunflower .ph svg { width: 100%; height: 100%; display: block; }
+.vl-sunflower img { filter: sepia(0.12) saturate(0.95); }
+
+/* ---------- chrome: only a quiet folio, bottom-right ---------- */
+.vl-sunflower .chrome--top { display: none; }
+.vl-sunflower .chrome--bottom { opacity: 0.6; bottom: var(--space-frame-y); right: var(--space-frame-x); }
+
+/* ---------- type: titles stay small; ==key words== go heavier, *asides* go muted ---------- */
+.vl-sunflower .slide mark { color: inherit; background: none; font-weight: 600; }
+.vl-sunflower .slide em { font-style: normal; opacity: 1; color: var(--color-ink-muted); }
+.vl-sunflower .slide[data-ground="inverse"] em { color: var(--color-ink-muted-on-inverse); }
+.vl-sunflower .slide :is(h1, h2) { overflow-wrap: normal; hyphens: manual; }
+.vl-sunflower .sun-mark, .vl-sunflower [data-ornament="sun-mark"], .vl-sunflower [data-ornament="star-mark"] { color: var(--slide-ink); }
+
+/* ---------- shared layouts, Sunflower accent ---------- */
+/* shared layouts open with a big headline; here headlines stay small, the way the brand book labels pages */
+.vl-sunflower :is(.a-bullets, .a-metric, .a-table, .a-timeline, .a-chart, .a-comparison, .a-image, .a-people) :is(h2.t-display-1, h2.t-display-2, h2.t-display-3) { font-size: var(--t-title-size); line-height: 1.2; letter-spacing: -0.01em; }
+.vl-sunflower .a-metric :is(.m-value, .hn-value, .ht-value) { font-weight: 300; }
+.vl-sunflower .a-metric.v-hero-tiles .ht-item { background: var(--color-surface-card); border: 0; border-radius: 0; }
+.vl-sunflower .a-comparison.v-tiers .ti-col { background: var(--color-surface-card); border: 0; border-radius: 0; }
+.vl-sunflower .a-comparison.v-tiers .is-emphasis { background: var(--color-ground-inverse); color: var(--color-ink-on-inverse); }
+.vl-sunflower .a-table th { font-weight: 500; color: var(--color-ink-muted); }
+.vl-sunflower .a-quote.v-soft-center blockquote { font-weight: 400; }
+.vl-sunflower .a-quote.v-soft-center .qs-by { color: var(--color-signal); }
+.vl-sunflower .a-timeline.v-wave { --color-line: var(--color-signal); }
+/* the cover title reads as two quiet lines: label, then name */
+.vl-sunflower .a-title.v-sun-cover .sc-title em { display: block; color: inherit; }

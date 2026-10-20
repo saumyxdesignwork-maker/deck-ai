@@ -1,0 +1,6 @@
+/* chapter: near-black page, a golden halftone burst breaking in from the right edge, a small label top-left */
+.a-section.v-ray-field { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; padding: var(--space-frame-y) var(--space-frame-x); }
+.a-section.v-ray-field .rf-rays { position: absolute; top: 0; right: 0; bottom: 0; width: 72%; z-index: 0; }
+.a-section.v-ray-field .rf-head { position: relative; z-index: 1; display: grid; gap: 0.2em; max-width: 34%; }
+.a-section.v-ray-field .rf-number { color: var(--color-ink-muted-on-inverse); }
+.a-section.v-ray-field .rf-kicker { grid-row: 3; position: relative; z-index: 1; max-width: 30%; color: var(--color-ink-muted-on-inverse); }

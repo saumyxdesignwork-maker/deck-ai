@@ -1,0 +1,48 @@
+{
+  "archetype": "bullets",
+  "variant": "toc",
+  "slots": {
+    "eyebrow": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 40
+    },
+    "title": {
+      "type": "text",
+      "chars_max": 40,
+      "words_max": 6
+    },
+    "intro": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 140
+    },
+    "items": {
+      "type": "list",
+      "min": 3,
+      "max": 8,
+      "of": {
+        "title": {
+          "type": "text",
+          "chars_max": 40
+        },
+        "text": {
+          "type": "text",
+          "optional": true,
+          "chars_max": 30
+        },
+        "tag": {
+          "type": "text",
+          "optional": true,
+          "chars_max": 14,
+          "nowrap": true
+        }
+      }
+    }
+  },
+  "decor_anchors": [],
+  "supports_aspects": [
+    "16:9",
+    "4:3"
+  ]
+}

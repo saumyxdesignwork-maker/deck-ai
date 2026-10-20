@@ -460,5 +460,54 @@
       "label": "IBM Plex Mono"
     },
     "defaultGround": "base"
+  },
+  {
+    "id": "sunflower",
+    "name": "Sunflower",
+    "category": "corporate",
+    "blurb": "Warm sand-coloured paper and a small, quiet grotesk, interrupted by near-black chapter pages where a golden halftone sun breaks in from the right edge.",
+    "bestFor": [
+      "brand identity",
+      "energy and climate startups",
+      "investor overview",
+      "product strategy"
+    ],
+    "palette": {
+      "ground.base": "#E4DCCD",
+      "ground.inverse": "#141311",
+      "ground.accent": [
+        "#E2C46E"
+      ],
+      "ink.primary": "#1C1A17",
+      "ink.secondary": "#3A3631",
+      "ink.muted": "#6F685D",
+      "ink.on-inverse": "#EFE8DA",
+      "ink.muted-on-inverse": "#A79F90",
+      "ink.on-accent": [
+        "#1C1A17"
+      ],
+      "line": "#1C1A1733",
+      "line.on-inverse": "#EFE8DA2E",
+      "emphasis": "#1C1A17",
+      "signal": "#D4AE52",
+      "sun.light": "#F3DE93",
+      "sun.deep": "#C79A3B",
+      "photo.light": "#EADDB5",
+      "photo.dark": "#B99A5C",
+      "surface.card": "#EDE7DC",
+      "chart.series": [
+        "#1C1A17",
+        "#D4AE52",
+        "#5E9C5A",
+        "#DD6E48",
+        "#A79F90"
+      ]
+    },
+    "fonts": {
+      "display": "Host Grotesk Variable",
+      "text": "Host Grotesk Variable",
+      "label": "Host Grotesk Variable"
+    },
+    "defaultGround": "base"
   }
 ]

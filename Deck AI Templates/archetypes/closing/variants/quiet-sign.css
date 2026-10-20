@@ -1,0 +1,6 @@
+/* sign-off: a small thank-you top-left, contact at the foot, the brand mark large and faint on the right */
+.a-closing.v-quiet-sign { display: grid; grid-template-rows: minmax(0, 1fr) auto; padding: var(--space-frame-y) var(--space-frame-x); }
+.a-closing.v-quiet-sign .qs-mark { position: absolute; right: -6%; top: 50%; width: 58%; aspect-ratio: 1; transform: translateY(-50%); opacity: 0.07; z-index: 0; }
+.a-closing.v-quiet-sign .qs-head { position: relative; z-index: 1; display: grid; align-content: start; gap: 0.4em; max-width: 34%; }
+.a-closing.v-quiet-sign .qs-body { color: var(--color-ink-secondary); }
+.a-closing.v-quiet-sign .qs-contact { position: relative; z-index: 1; }

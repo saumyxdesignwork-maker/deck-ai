@@ -1,0 +1,8 @@
+<section class="slide a-closing v-quiet-sign" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div class="qs-mark" data-decor="mark"></div>
+  <div class="qs-head" data-region="head">
+    <h2 class="t-title" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="lead">{{rich content.title}}</h2>
+    {{#if content.body}}<p class="qs-body t-body" data-slot="content.body" data-slot-type="text">{{content.body}}</p>{{/if}}
+  </div>
+  {{#if content.contact}}<p class="qs-contact t-body" data-slot="content.contact" data-slot-type="text">{{content.contact}}</p>{{/if}}
+</section>

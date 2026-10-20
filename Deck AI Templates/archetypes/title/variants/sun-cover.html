@@ -1,0 +1,14 @@
+<section class="slide a-title v-sun-cover" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  {{#if content.image}}<figure class="sc-photo" data-slot="content.image" data-slot-type="image"><img src="{{content.image.src}}" alt="{{content.image.alt}}" style="object-position: {{content.image.pos}}" /></figure>{{else}}<div class="sc-sun" data-decor="sun"></div>{{/if}}
+  <div class="sc-head" data-region="head">
+    <h1 class="sc-title t-title" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="lead">{{rich content.title}}</h1>
+    {{#if content.subtitle}}<p class="sc-sub t-title" data-slot="content.subtitle" data-slot-type="text">{{content.subtitle}}</p>{{/if}}
+  </div>
+  <div class="sc-foot">
+    {{#if content.eyebrow}}<span class="t-label" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</span>{{/if}}
+    <span class="sc-meta">
+      {{#if content.byline}}<span class="t-caption" data-slot="content.byline" data-slot-type="text">{{content.byline}}</span>{{/if}}
+      {{#if content.date}}<span class="t-caption" data-slot="content.date" data-slot-type="text">{{content.date}}</span>{{/if}}
+    </span>
+  </div>
+</section>

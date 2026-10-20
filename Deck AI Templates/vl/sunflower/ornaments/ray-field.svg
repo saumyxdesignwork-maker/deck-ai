@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1080" preserveAspectRatio="xMaxYMid slice">
+<defs>
+<pattern id="dots" width="12" height="12" patternUnits="userSpaceOnUse"><circle cx="6" cy="6" r="2.4" style="fill: var(--color-sun-light)"/></pattern>
+<pattern id="crosses" width="22" height="22" patternUnits="userSpaceOnUse"><path d="M11 6v10M6 11h10" stroke-width="2" style="stroke: var(--color-sun-light)"/></pattern>
+<radialGradient id="fade" cx="1240" cy="540" r="980" gradientUnits="userSpaceOnUse"><stop offset="0.12" stop-color="#fff" stop-opacity="1"/><stop offset="0.55" stop-color="#fff" stop-opacity="0.55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+<radialGradient id="glow" cx="1240" cy="540" r="760" gradientUnits="userSpaceOnUse"><stop offset="0" style="stop-color: var(--color-sun-deep)" stop-opacity="0.9"/><stop offset="0.5" style="stop-color: var(--color-sun-deep)" stop-opacity="0.25"/><stop offset="1" style="stop-color: var(--color-sun-deep)" stop-opacity="0"/></radialGradient>
+<mask id="m"><rect width="1200" height="1080" fill="url(#fade)"/></mask>
+<mask id="m2"><circle cx="1240" cy="540" r="420" fill="url(#fade)"/></mask>
+</defs>
+<rect width="1200" height="1080" fill="url(#glow)"/>
+<g mask="url(#m)"><path d="M1240 540 L716 1838 L663 1815Z M1240 540 L599 1785 L549 1757Z M1240 540 L489 1721 L441 1689Z M1240 540 L384 1648 L339 1612Z M1240 540 L287 1565 L245 1525Z M1240 540 L197 1474 L160 1430Z M1240 540 L116 1375 L83 1328Z M1240 540 L45 1269 L16 1219Z M1240 540 L-17 1157 L-41 1105Z M1240 540 L-68 1040 L-87 986Z M1240 540 L-108 919 L-122 863Z M1240 540 L-137 794 L-146 737Z M1240 540 L-154 668 L-158 610Z M1240 540 L-160 540 L-159 483Z M1240 540 L-154 412 L-148 355Z M1240 540 L-137 286 L-125 229Z M1240 540 L-108 161 L-91 106Z M1240 540 L-68 40 L-46 -13Z M1240 540 L-17 -77 L10 -128Z M1240 540 L45 -189 L76 -238Z M1240 540 L116 -295 L152 -340Z M1240 540 L197 -394 L236 -436Z M1240 540 L287 -485 L329 -523Z M1240 540 L384 -568 L430 -602Z M1240 540 L489 -641 L538 -671Z M1240 540 L599 -705 L651 -730Z" fill="url(#dots)"/></g>
+<g mask="url(#m2)"><rect width="1200" height="1080" fill="url(#crosses)" opacity="0.8"/></g>
+</svg>

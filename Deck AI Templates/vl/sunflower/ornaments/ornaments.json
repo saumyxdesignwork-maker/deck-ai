@@ -1,0 +1,81 @@
+[
+  {
+    "id": "ray-field",
+    "file": "ray-field.svg",
+    "anchors": [
+      "rays"
+    ],
+    "roles": [
+      "*"
+    ],
+    "max_per_slide": 1
+  },
+  {
+    "id": "sun-field",
+    "file": "sun-field.svg",
+    "anchors": [
+      "sun"
+    ],
+    "roles": [
+      "*"
+    ],
+    "max_per_slide": 1
+  },
+  {
+    "id": "cross-stairs",
+    "file": "cross-stairs.svg",
+    "anchors": [
+      "pattern"
+    ],
+    "roles": [
+      "*"
+    ],
+    "max_per_slide": 1
+  },
+  {
+    "id": "sun-mark",
+    "file": "sun-mark.svg",
+    "anchors": [
+      "mark"
+    ],
+    "roles": [
+      "*"
+    ],
+    "max_per_slide": 1
+  },
+  {
+    "id": "star-mark",
+    "file": "star-mark.svg",
+    "anchors": [
+      "mark"
+    ],
+    "roles": [
+      "*"
+    ],
+    "max_per_slide": 1
+  },
+  {
+    "id": "photo-fill",
+    "file": "photo-fill.svg",
+    "anchors": [
+      "photo"
+    ],
+    "roles": [
+      "*"
+    ],
+    "max_per_slide": 4,
+    "fill": true
+  },
+  {
+    "id": "photo-grey",
+    "file": "photo-grey.svg",
+    "anchors": [
+      "photo"
+    ],
+    "roles": [
+      "*"
+    ],
+    "max_per_slide": 4,
+    "placeholder": true
+  }
+]

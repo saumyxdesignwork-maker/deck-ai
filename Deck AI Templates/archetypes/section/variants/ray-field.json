@@ -1,0 +1,33 @@
+{
+  "archetype": "section",
+  "variant": "ray-field",
+  "slots": {
+    "number": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 6
+    },
+    "title": {
+      "type": "text",
+      "chars_ideal": 14,
+      "chars_max": 64,
+      "words_max": 10
+    },
+    "kicker": {
+      "type": "text",
+      "optional": true,
+      "chars_max": 160
+    },
+    "image": {
+      "type": "image",
+      "optional": true
+    }
+  },
+  "decor_anchors": [
+    "rays"
+  ],
+  "supports_aspects": [
+    "16:9",
+    "4:3"
+  ]
+}

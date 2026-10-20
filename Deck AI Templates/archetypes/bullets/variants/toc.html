@@ -1,0 +1,18 @@
+<section class="slide a-bullets v-toc" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  {{#if show_chrome}}
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <div class="tc-head" data-region="head">
+    {{#if content.eyebrow}}<p class="t-caption" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    <h2 class="t-title" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="lead">{{rich content.title}}</h2>
+    {{#if content.intro}}<p class="tc-intro t-body-s" data-slot="content.intro" data-slot-type="text">{{content.intro}}</p>{{/if}}
+  </div>
+  <ol class="tc-items" data-region="items" data-slot="content.items" data-slot-type="list" data-min="3" data-max="8">
+    {{#each content.items}}
+    <li class="tc-item{{#if emphasis}} is-emphasis{{/if}}" data-slot-item="{{@index}}">
+      <span class="tc-title t-body" data-slot="content.items[{{@index}}].title" data-slot-type="text">{{title}}</span>
+      <span class="tc-page t-body">{{#if tag}}<span data-slot="content.items[{{@index}}].tag" data-slot-type="text">{{tag}}</span>{{else}}{{#if text}}<span data-slot="content.items[{{@index}}].text" data-slot-type="text">{{text}}</span>{{/if}}{{/if}}</span>
+    </li>
+    {{/each}}
+  </ol>
+</section>

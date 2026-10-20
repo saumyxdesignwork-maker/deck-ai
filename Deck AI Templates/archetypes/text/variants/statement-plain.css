@@ -1,0 +1,7 @@
+/* one considered paragraph set large in the top-left, key words in a heavier weight; supporting notes low on the right */
+.a-text.v-statement-plain { display: grid; grid-template-columns: minmax(0, 55%) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; padding: var(--space-frame-y) var(--space-frame-x); column-gap: var(--space-section); }
+.a-text.v-statement-plain .sp-main { display: grid; align-content: start; gap: var(--space-tight); overflow: hidden; }
+.a-text.v-statement-plain .sp-statement { text-wrap: pretty; }
+.a-text.v-statement-plain .sp-eyebrow { color: var(--color-ink-muted); }
+.a-text.v-statement-plain .sp-notes { grid-column: 2; grid-row: 2; display: grid; gap: 0.8em; max-width: 32em; }
+.a-text.v-statement-plain .sp-paras { display: grid; gap: 0.8em; color: var(--color-ink-secondary); }

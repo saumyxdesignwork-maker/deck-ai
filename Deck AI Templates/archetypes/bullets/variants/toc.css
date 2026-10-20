@@ -1,0 +1,8 @@
+/* contents: a small title top-left; entries and their page or note in two quiet columns, set high on the right */
+.a-bullets.v-toc { display: grid; grid-template-columns: minmax(0, 31%) minmax(0, 1fr); padding: var(--space-frame-y) var(--space-frame-x); column-gap: var(--space-gutter); }
+.a-bullets.v-toc .tc-head { display: grid; align-content: start; gap: 0.4em; }
+.a-bullets.v-toc .tc-intro { color: var(--color-ink-muted); max-width: 22em; margin-top: 0.6em; }
+.a-bullets.v-toc .tc-items { display: grid; align-content: start; gap: calc(var(--space-gutter) * 0.9); max-width: 34em; }
+.a-bullets.v-toc .tc-item { display: grid; grid-template-columns: minmax(0, 1fr) 10em; gap: var(--space-gutter); }
+.a-bullets.v-toc .tc-page { color: var(--color-ink-muted); }
+.a-bullets.v-toc .is-emphasis .tc-title { font-weight: 600; }

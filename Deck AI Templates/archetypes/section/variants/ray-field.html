@@ -1,0 +1,8 @@
+<section class="slide a-section v-ray-field" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  <div class="rf-rays" data-decor="rays"></div>
+  <div class="rf-head" data-region="head">
+    {{#if content.number}}<p class="rf-number t-caption" data-slot="content.number" data-slot-type="text" data-nowrap>{{content.number}}</p>{{/if}}
+    <h2 class="rf-title t-title" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="lead">{{rich content.title}}</h2>
+  </div>
+  {{#if content.kicker}}<p class="rf-kicker t-body" data-slot="content.kicker" data-slot-type="text" data-fit="shrink" data-min-step="body-s">{{content.kicker}}</p>{{/if}}
+</section>

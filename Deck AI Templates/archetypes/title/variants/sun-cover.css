@@ -1,0 +1,8 @@
+/* cover: warm sun-light field (or a photo), a small two-line title tucked top-left, the label at the foot */
+.a-title.v-sun-cover { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; padding: var(--space-frame-y) var(--space-frame-x); }
+.a-title.v-sun-cover :is(.sc-sun, .sc-photo) { position: absolute; inset: 0; margin: 0; z-index: 0; }
+.a-title.v-sun-cover .sc-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.a-title.v-sun-cover .sc-head { position: relative; z-index: 1; display: grid; gap: 0; max-width: 40%; }
+.a-title.v-sun-cover .sc-sub { color: var(--color-ink-secondary); }
+.a-title.v-sun-cover .sc-foot { grid-row: 3; position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: end; gap: var(--space-gutter); }
+.a-title.v-sun-cover .sc-meta { display: grid; justify-items: end; text-align: right; gap: 0.2em; }

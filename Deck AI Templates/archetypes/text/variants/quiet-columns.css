@@ -1,0 +1,8 @@
+/* a small title top-left, a narrow reading column top-right, a fading cross pattern in the lower-left corner */
+.a-text.v-quiet-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 46%); padding: var(--space-frame-y) var(--space-frame-x); column-gap: var(--space-section); }
+.a-text.v-quiet-columns .qc-head { display: grid; align-content: start; gap: 0.3em; max-width: 26em; }
+.a-text.v-quiet-columns .qc-eyebrow { color: var(--color-ink-muted); }
+.a-text.v-quiet-columns .qc-body { display: grid; align-content: start; gap: var(--space-gutter); padding-top: calc(var(--space-frame-y) * 1.4); overflow: hidden; }
+.a-text.v-quiet-columns .qc-paras { display: grid; gap: 0.9em; max-width: 34em; }
+.a-text.v-quiet-columns .qc-pull { font-weight: 600; max-width: 34em; }
+.a-text.v-quiet-columns .qc-pattern { position: absolute; left: var(--space-frame-x); bottom: var(--space-frame-y); width: 24%; aspect-ratio: 1; z-index: 0; }

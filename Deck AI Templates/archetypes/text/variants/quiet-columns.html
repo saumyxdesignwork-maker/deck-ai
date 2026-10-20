@@ -1,0 +1,15 @@
+<section class="slide a-text v-quiet-columns" data-slide-id="{{id}}" data-ground="{{ground}}" data-density="{{density}}" data-aspect="{{aspect}}">
+  {{#if show_chrome}}
+  <footer class="chrome chrome--bottom"><span class="t-caption">{{page}}</span></footer>
+  {{/if}}
+  <div class="qc-head" data-region="head">
+    {{#if content.eyebrow}}<p class="t-caption qc-eyebrow" data-slot="content.eyebrow" data-slot-type="text">{{content.eyebrow}}</p>{{/if}}
+    <h2 class="qc-title t-title" data-slot="content.title" data-slot-type="rich" data-fit="shrink" data-min-step="lead">{{rich content.title}}</h2>
+  </div>
+  <div class="qc-body" data-region="body">
+    {{#if content.lead}}<p class="t-lead" data-slot="content.lead" data-slot-type="text" data-fit="shrink" data-min-step="body">{{content.lead}}</p>{{/if}}
+    <div class="qc-paras" data-slot="content.body" data-slot-type="paragraphs">{{#each content.body}}<p class="t-body-s" data-slot="content.body[{{@index}}]" data-slot-type="text" data-fit="shrink" data-min-step="caption">{{this}}</p>{{/each}}</div>
+    {{#if content.pull_quote}}<p class="qc-pull t-body-s" data-slot="content.pull_quote" data-slot-type="text">{{content.pull_quote}}</p>{{/if}}
+  </div>
+  <div class="qc-pattern" data-decor="pattern"></div>
+</section>
