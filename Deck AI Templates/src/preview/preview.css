@@ -114,3 +114,5 @@ button { font: inherit; color: inherit; }
   .panel { position: absolute; inset: auto 0 0 0; top: 0; width: auto; max-width: none; z-index: 5; }
   .layout { position: relative; }
 }
+/* the content toggle sits at the left, above the panel it opens */
+.panel-btn { display: inline-flex; align-items: center; gap: 6px; margin-right: 6px; }
